@@ -1,25 +1,10 @@
-import express, { Express } from 'express';
-import cors from 'cors';
 import dotenv from 'dotenv';
+import app from './app';
 import { connectDB } from './config/database';
-import gameRoutes from './routes/gameRoutes';
 
 dotenv.config();
 
-const app: Express = express();
 const PORT = process.env.PORT || 3000;
-
-// Middleware
-app.use(cors());
-app.use(express.json());
-
-// Routes
-app.use('/v1', gameRoutes);
-
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'OK', message: 'API is running' });
-});
 
 // Start server
 const startServer = async () => {

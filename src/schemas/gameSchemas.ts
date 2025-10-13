@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 // Schema for game ID parameter validation
 export const gameIdParamSchema = z.object({
-  id: z.number().int().positive('ID must be a positive integer'),
+  id: z.coerce.number().int().positive('ID must be a positive integer'),
 });
 
 export const gameSchema = z.object({
