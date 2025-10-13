@@ -5,6 +5,6 @@ import { gameIdParamSchema } from '../schemas/game-schemas';
 
 const router = Router();
 
-router.get('/game/:id', validateParams(gameIdParamSchema), getGameById);
+router.get('/games/:id', validateParams(gameIdParamSchema), getGameById);
 
 export default router;
