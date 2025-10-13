@@ -6,11 +6,21 @@ export const gameIdParamSchema = z.object({
 });
 
 export const gameSchema = z.object({
-  id: gameIdParamSchema.shape.id,
-  name: z.string().min(1, 'Name is required'),
-  settings: z.any().optional(),
-  createdAt: z.date().optional(),
-  updatedAt: z.date().optional(),
+  game_id: gameIdParamSchema.shape.id,
+  game_name: z.string().min(1, 'Name is required'),
+  game_performance_summary: z.string().optional(),
+  game_review_summary: z.string().optional(),
+  steamdeck_rating: z.enum(['gold', 'platinum', 'native', 'unsupported']).optional(),
+  steamdeck_verified: z.boolean().optional(),
+  settings: z.array(z.object({
+    game_settings: z.record(z.string(), z.any()).optional(),
+    steamdeck_settings: z.record(z.string(), z.any()).optional(),
+    steamdeck_hardware: z.enum(['lcd', 'oled']).optional(),
+    battery_performance: z.record(z.string(), z.any()).optional(),
+    posted_at: z.date().optional(),
+  })).nullable().optional(),
+  updated_at: z.date(),
+  created_at: z.date(),
 });
 
 // Type exports

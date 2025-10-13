@@ -36,14 +36,21 @@ describe('GET /v1/game/:id', () => {
     it('should return a game when valid ID is provided', async () => {
       // Arrange
       const testGame: Game = {
-        id: 1,
-        name: 'Elden Ring',
-        settings: {
-          graphics: 'High',
-          resolution: '1920x1080',
-        },
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        game_id: 1,
+        game_name: 'Elden Ring',
+        game_performance_summary: 'Runs smoothly on Steam Deck',
+        steamdeck_rating: 'gold',
+        steamdeck_verified: true,
+        settings: [
+          {
+            game_settings: { graphics: 'High', resolution: '1920x1080' },
+            steamdeck_settings: { tdp: '15W' },
+            steamdeck_hardware: 'lcd',
+            posted_at: new Date(),
+          }
+        ],
+        created_at: new Date(),
+        updated_at: new Date(),
       };
       const db: Db = getTestDB();
       await db.collection('games').insertOne(testGame);
@@ -56,21 +63,23 @@ describe('GET /v1/game/:id', () => {
 
       // Assert
       expect(response.body).toMatchObject({
-        id: 1,
-        name: 'Elden Ring',
-        settings: {
-          graphics: 'High',
-          resolution: '1920x1080',
-        },
+        game_id: 1,
+        game_name: 'Elden Ring',
+        game_performance_summary: 'Runs smoothly on Steam Deck',
+        steamdeck_rating: 'gold',
+        steamdeck_verified: true,
       });
       expect(response.body).toHaveProperty('_id');
+      expect(response.body.settings).toBeInstanceOf(Array);
     });
 
     it('should return a game with minimal data', async () => {
       // Arrange
       const testGame: Game = {
-        id: 2,
-        name: 'Cyberpunk 2077',
+        game_id: 2,
+        game_name: 'Cyberpunk 2077',
+        created_at: new Date(),
+        updated_at: new Date(),
       };
 
       const db: Db = getTestDB();
@@ -84,27 +93,32 @@ describe('GET /v1/game/:id', () => {
 
       // Assert
       expect(response.body).toMatchObject({
-        id: 2,
-        name: 'Cyberpunk 2077',
+        game_id: 2,
+        game_name: 'Cyberpunk 2077',
       });
     });
 
     it('should return a game with complex settings', async () => {
       // Arrange
       const testGame: Game = {
-        id: 3,
-        name: 'Red Dead Redemption 2',
-        settings: {
-          graphics: {
-            quality: 'Ultra',
-            antiAliasing: 'TAA',
-            vsync: true,
-          },
-          performance: {
-            fps: 60,
-            resolution: '2560x1440',
-          },
-        },
+        game_id: 3,
+        game_name: 'Red Dead Redemption 2',
+        settings: [
+          {
+            game_settings: {
+              quality: 'Ultra',
+              antiAliasing: 'TAA',
+              vsync: true,
+            },
+            steamdeck_settings: {
+              fps: 60,
+              resolution: '2560x1440',
+            },
+            steamdeck_hardware: 'oled',
+          }
+        ],
+        created_at: new Date(),
+        updated_at: new Date(),
       };
 
       const db: Db = getTestDB();
@@ -122,9 +136,9 @@ describe('GET /v1/game/:id', () => {
     it('should return the correct game when multiple games exist', async () => {
       // Arrange
       const games = [
-        { id: 1, name: 'Game 1' },
-        { id: 2, name: 'Game 2' },
-        { id: 3, name: 'Game 3' },
+        { game_id: 1, game_name: 'Game 1', created_at: new Date(), updated_at: new Date() },
+        { game_id: 2, game_name: 'Game 2', created_at: new Date(), updated_at: new Date() },
+        { game_id: 3, game_name: 'Game 3', created_at: new Date(), updated_at: new Date() },
       ];
 
       const db: Db = getTestDB();
@@ -137,8 +151,8 @@ describe('GET /v1/game/:id', () => {
 
       // Assert
       expect(response.body).toMatchObject({
-        id: 2,
-        name: 'Game 2',
+        game_id: 2,
+        game_name: 'Game 2',
       });
     });
   });
@@ -227,8 +241,10 @@ describe('GET /v1/game/:id', () => {
       // Arrange
       const largeId = 2147483647; // Max 32-bit integer
       const testGame: Game = {
-        id: largeId,
-        name: 'Test Game',
+        game_id: largeId,
+        game_name: 'Test Game',
+        created_at: new Date(),
+        updated_at: new Date(),
       };
 
       const db: Db = getTestDB();
@@ -240,15 +256,17 @@ describe('GET /v1/game/:id', () => {
         .expect(200);
 
       // Assert
-      expect(response.body.id).toBe(largeId);
+      expect(response.body.game_id).toBe(largeId);
     });
 
     it('should handle games with null settings', async () => {
       // Arrange
       const testGame: Game = {
-        id: 4,
-        name: 'Game with null settings',
+        game_id: 4,
+        game_name: 'Game with null settings',
         settings: null,
+        created_at: new Date(),
+        updated_at: new Date(),
       };
 
       const db: Db = getTestDB();
