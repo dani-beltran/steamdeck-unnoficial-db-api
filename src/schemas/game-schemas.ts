@@ -1,12 +1,14 @@
 import { z } from 'zod';
 
+export const gameIdSchema = z.coerce.number().int().positive('ID must be a positive integer');
+
 // Schema for game ID parameter validation
 export const gameIdParamSchema = z.object({
-  id: z.coerce.number().int().positive('ID must be a positive integer'),
+  id: gameIdSchema,
 });
 
 export const gameSchema = z.object({
-  game_id: gameIdParamSchema.shape.id,
+  game_id: gameIdSchema,
   game_name: z.string().min(1, 'Name is required'),
   game_performance_summary: z.string().optional(),
   game_review_summary: z.string().optional(),
@@ -19,6 +21,8 @@ export const gameSchema = z.object({
     battery_performance: z.record(z.string(), z.any()).optional(),
     posted_at: z.date().optional(),
   })).nullable().optional(),
+  rescrape_requested: z.boolean().optional(),
+  regenerate_requested: z.boolean().optional(),
   updated_at: z.date(),
   created_at: z.date(),
 });
