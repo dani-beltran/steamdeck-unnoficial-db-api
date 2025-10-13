@@ -1,25 +1,6 @@
 # Test Suite for getGameById Endpoint
 
-This directory contains comprehensive tests for the `getGameById` API endpoint using **Vitest**.
-
-## Test Files
-
-### 1. `endpoints/games.test.ts`
-Integration tests using an in-memory MongoDB and Supertest.
-
-**Test Coverage:**
-- ✅ Successful game retrieval
-- ✅ Game not found scenarios (404)
-- ✅ Error handling (500)
-- ✅ ID parameter conversion and validation
-- ✅ Response data integrity
-- ✅ Edge cases (large IDs, minimal data)
-
-**What it tests:**
-- Controller properly calls the model with correct parameters
-- Correct HTTP status codes are returned
-- Error responses are properly formatted
-- ID string-to-number conversion works correctly
+This directory contains comprehensive tests for API endpoints using **Vitest**.
 
 **Test Coverage:**
 - ✅ Full request/response cycle
@@ -55,7 +36,7 @@ npm run test:coverage
 
 ### Run specific test file
 ```bash
-npm test -- gameController.unit.test
+npm test -- game
 ```
 
 ## Test Database Setup
@@ -126,4 +107,4 @@ When adding new test cases:
 2. Use descriptive test names
 3. Test both success and error scenarios
 4. Include edge cases
-5. Update this README if adding new test files
+
