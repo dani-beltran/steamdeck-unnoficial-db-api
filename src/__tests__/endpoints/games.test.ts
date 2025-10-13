@@ -12,7 +12,7 @@ vi.mock('../../config/database', () => ({
   connectDB: vi.fn(),
 }));
 
-describe('GET /v1/game/:id', () => {
+describe('GET /v1/games/:id', () => {
 
   beforeAll(async () => {
     await connectTestDB();
@@ -57,20 +57,21 @@ describe('GET /v1/game/:id', () => {
 
       // Act
       const response = await request(app)
-        .get('/v1/game/1')
+        .get('/v1/games/1')
         .expect('Content-Type', /json/)
         .expect(200);
 
       // Assert
-      expect(response.body).toMatchObject({
+      expect(response.body.status).toBe('ready');
+      expect(response.body.game).toMatchObject({
         game_id: 1,
         game_name: 'Elden Ring',
         game_performance_summary: 'Runs smoothly on Steam Deck',
         steamdeck_rating: 'gold',
         steamdeck_verified: true,
       });
-      expect(response.body).toHaveProperty('_id');
-      expect(response.body.settings).toBeInstanceOf(Array);
+      expect(response.body.game).toHaveProperty('_id');
+      expect(response.body.game.settings).toBeInstanceOf(Array);
     });
 
     it('should return a game with minimal data', async () => {
@@ -87,12 +88,13 @@ describe('GET /v1/game/:id', () => {
 
       // Act
       const response = await request(app)
-        .get('/v1/game/2')
+        .get('/v1/games/2')
         .expect('Content-Type', /json/)
         .expect(200);
 
       // Assert
-      expect(response.body).toMatchObject({
+      expect(response.body.status).toBe('ready');
+      expect(response.body.game).toMatchObject({
         game_id: 2,
         game_name: 'Cyberpunk 2077',
       });
@@ -126,11 +128,17 @@ describe('GET /v1/game/:id', () => {
 
       // Act
       const response = await request(app)
-        .get('/v1/game/3')
+        .get('/v1/games/3')
         .expect(200);
 
       // Assert
-      expect(response.body.settings).toEqual(testGame.settings);
+      expect(response.body.status).toBe('ready');
+      expect(response.body.game.settings).toHaveLength(1);
+      expect(response.body.game.settings[0]).toMatchObject({
+        game_settings: testGame.settings![0].game_settings,
+        steamdeck_settings: testGame.settings![0].steamdeck_settings,
+        steamdeck_hardware: testGame.settings![0].steamdeck_hardware,
+      });
     });
 
     it('should return the correct game when multiple games exist', async () => {
@@ -146,11 +154,12 @@ describe('GET /v1/game/:id', () => {
 
       // Act
       const response = await request(app)
-        .get('/v1/game/2')
+        .get('/v1/games/2')
         .expect(200);
 
       // Assert
-      expect(response.body).toMatchObject({
+      expect(response.body.status).toBe('ready');
+      expect(response.body.game).toMatchObject({
         game_id: 2,
         game_name: 'Game 2',
       });
@@ -158,61 +167,66 @@ describe('GET /v1/game/:id', () => {
   });
 
   describe('Error scenarios', () => {
-    it('should return 404 when game is not found', async () => {
+    it('should return 200 with queued status when game is not found', async () => {
       // Act
       const response = await request(app)
-        .get('/v1/game/999')
+        .get('/v1/games/999')
         .expect('Content-Type', /json/)
-        .expect(404);
+        .expect(200);
 
       // Assert
       expect(response.body).toEqual({
-        error: 'Game not found',
+        status: 'queued',
+        game: null,
       });
     });
 
     it('should return 400 for invalid ID format (non-numeric)', async () => {
       // Act
       const response = await request(app)
-        .get('/v1/game/abc')
+        .get('/v1/games/abc')
         .expect('Content-Type', /json/)
         .expect(400);
 
       // Assert
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toBe('Invalid request parameters');
     });
 
     it('should return 400 for negative ID', async () => {
       // Act
       const response = await request(app)
-        .get('/v1/game/-1')
+        .get('/v1/games/-1')
         .expect('Content-Type', /json/)
         .expect(400);
 
       // Assert
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toBe('Invalid request parameters');
     });
 
     it('should return 400 for zero ID', async () => {
       // Act
       const response = await request(app)
-        .get('/v1/game/0')
+        .get('/v1/games/0')
         .expect('Content-Type', /json/)
         .expect(400);
 
       // Assert
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toBe('Invalid request parameters');
     });
 
     it('should return 400 for decimal ID', async () => {
       // Act
       const response = await request(app)
-        .get('/v1/game/1.5')
+        .get('/v1/games/1.5')
         .expect('Content-Type', /json/)
         .expect(400);
 
       // Assert
       expect(response.body).toHaveProperty('error');
+      expect(response.body.error).toBe('Invalid request parameters');
     });
 
     it('should return 500 when database query fails', async () => {
@@ -222,7 +236,7 @@ describe('GET /v1/game/:id', () => {
 
       // Act
       const response = await request(app)
-        .get('/v1/game/1')
+        .get('/v1/games/1')
         .expect('Content-Type', /json/)
         .expect(500);
 
@@ -252,11 +266,12 @@ describe('GET /v1/game/:id', () => {
 
       // Act
       const response = await request(app)
-        .get(`/v1/game/${largeId}`)
+        .get(`/v1/games/${largeId}`)
         .expect(200);
 
       // Assert
-      expect(response.body.game_id).toBe(largeId);
+      expect(response.body.status).toBe('ready');
+      expect(response.body.game.game_id).toBe(largeId);
     });
 
     it('should handle games with null settings', async () => {
@@ -274,11 +289,12 @@ describe('GET /v1/game/:id', () => {
 
       // Act
       const response = await request(app)
-        .get('/v1/game/4')
+        .get('/v1/games/4')
         .expect(200);
 
       // Assert
-      expect(response.body.settings).toBeNull();
+      expect(response.body.status).toBe('ready');
+      expect(response.body.game.settings).toBeNull();
     });
   });
 
