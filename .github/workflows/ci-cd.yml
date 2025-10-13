@@ -5,6 +5,8 @@ on:
     branches: [ main ]
     tags:
       - 'v*'
+  pull_request:
+    branches: [ main ]
 
 jobs:
   test:
@@ -18,7 +20,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20.x'
+        node-version: '24.x'
         cache: 'npm'
 
     - name: Install dependencies
@@ -30,6 +32,13 @@ jobs:
 
     - name: Run tests with coverage
       run: npm run test:coverage
+
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v4
+      with:
+        files: ./coverage/lcov.info
+        fail_ci_if_error: false
+        token: ${{ secrets.CODECOV_TOKEN }}
 
     - name: Build TypeScript
       run: npm run build
@@ -78,3 +87,11 @@ jobs:
 
     - name: Image digest
       run: echo "Image pushed with digest ${{ steps.build.outputs.digest }}"
+    
+    - name: Docker Scout CVE Scan
+      uses: docker/scout-action@v1
+      continue-on-error: true
+      with:
+        command: cves
+        image: ${{ steps.meta.outputs.tags }}
+        only-severities: critical,high
