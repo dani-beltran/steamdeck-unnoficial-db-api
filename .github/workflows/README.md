@@ -104,7 +104,7 @@ npm start
 ### Building Docker image locally
 ```bash
 docker build -t decku-api .
-docker run -p 3000:3000 decku-api
+docker run -p 8080:8080 decku-api
 ```
 
 ### Deploying a new version
