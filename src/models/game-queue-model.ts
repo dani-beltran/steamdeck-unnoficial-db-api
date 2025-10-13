@@ -11,6 +11,13 @@ type QueueOptions = {
 export const setGameInQueue = async (id: number, options: QueueOptions) => {
     const db = getDB();
     const utcNow = new Date(Date.now());
-    await db.collection<GameQueue>(collection).insertOne({ game_id: id, queued_at: utcNow, ...options });
+    await db.collection<GameQueue>(collection).updateOne(
+        { game_id: id },
+        { 
+            $set: { ...options },
+            $setOnInsert: { game_id: id, queued_at: utcNow }
+        },
+        { upsert: true }
+    );
     return;
 };
