@@ -2,9 +2,9 @@ import { describe, it, expect, beforeAll, afterAll, afterEach, vi, beforeEach } 
 import request from 'supertest';
 import { Db } from 'mongodb';
 import app from '../../app';
-import { connect, closeDatabase, clearDatabase, getTestDB } from '../setup/testDb';
-import * as gameModel from '../../models/gameModel';
-import { Game } from '../../schemas/gameSchemas';
+import { connectTestDB, closeTestDB, clearTestDB, getTestDB } from '../setup/test-db';
+import * as gameModel from '../../models/game-model';
+import { Game } from '../../schemas/game-schemas';
 
 // Mock the database module
 vi.mock('../../config/database', () => ({
@@ -13,24 +13,23 @@ vi.mock('../../config/database', () => ({
 }));
 
 describe('GET /v1/game/:id', () => {
-  let db: Db;
 
   beforeAll(async () => {
-    db = await connect();
+    await connectTestDB();
   });
 
   beforeEach(async () => {
     // Mock getDB to return our test database before each test
     const { getDB } = await import('../../config/database');
-    vi.mocked(getDB).mockReturnValue(db);
+    vi.mocked(getDB).mockReturnValue(getTestDB());
   });
 
   afterAll(async () => {
-    await closeDatabase();
+    await closeTestDB();
   });
 
   afterEach(async () => {
-    await clearDatabase();
+    await clearTestDB();
   });
 
   describe('Successful scenarios', () => {
@@ -46,7 +45,7 @@ describe('GET /v1/game/:id', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-
+      const db: Db = getTestDB();
       await db.collection('games').insertOne(testGame);
 
       // Act
@@ -74,6 +73,7 @@ describe('GET /v1/game/:id', () => {
         name: 'Cyberpunk 2077',
       };
 
+      const db: Db = getTestDB();
       await db.collection('games').insertOne(testGame);
 
       // Act
@@ -107,6 +107,7 @@ describe('GET /v1/game/:id', () => {
         },
       };
 
+      const db: Db = getTestDB();
       await db.collection('games').insertOne(testGame);
 
       // Act
@@ -126,6 +127,7 @@ describe('GET /v1/game/:id', () => {
         { id: 3, name: 'Game 3' },
       ];
 
+      const db: Db = getTestDB();
       await db.collection('games').insertMany(games);
 
       // Act
@@ -229,6 +231,7 @@ describe('GET /v1/game/:id', () => {
         name: 'Test Game',
       };
 
+      const db: Db = getTestDB();
       await db.collection('games').insertOne(testGame);
 
       // Act
@@ -248,6 +251,7 @@ describe('GET /v1/game/:id', () => {
         settings: null,
       };
 
+      const db: Db = getTestDB();
       await db.collection('games').insertOne(testGame);
 
       // Act

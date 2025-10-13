@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { fetchGameById } from '../models/gameModel';
+import { fetchGameById } from '../models/game-model';
 
 
 export const getGameById = async (req: Request, res: Response): Promise<void> => {

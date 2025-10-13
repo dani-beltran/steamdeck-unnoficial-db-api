@@ -8,7 +8,7 @@ let db: Db;
 /**
  * Connect to the in-memory database
  */
-export const connect = async (): Promise<Db> => {
+export const connectTestDB = async (): Promise<Db> => {
   mongoServer = await MongoMemoryServer.create();
   const uri = mongoServer.getUri();
 
@@ -21,7 +21,7 @@ export const connect = async (): Promise<Db> => {
 /**
  * Drop database, close the connection and stop mongod
  */
-export const closeDatabase = async () => {
+export const closeTestDB = async () => {
   if (connection) {
     await connection.close();
   }
@@ -33,7 +33,7 @@ export const closeDatabase = async () => {
 /**
  * Remove all data from collections
  */
-export const clearDatabase = async () => {
+export const clearTestDB = async () => {
   if (db) {
     const collections = await db.collections();
     for (const collection of collections) {

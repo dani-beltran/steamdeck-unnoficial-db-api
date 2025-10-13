@@ -1,5 +1,5 @@
 import { getDB } from '../config/database';
-import { Game } from '../schemas/gameSchemas';
+import { Game } from '../schemas/game-schemas';
 
 const collection = 'games';
 
