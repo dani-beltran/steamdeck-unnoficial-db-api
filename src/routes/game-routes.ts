@@ -1,10 +1,11 @@
 import { Router } from 'express';
-import { getGameById } from '../controllers/game-controller';
-import { validateParams } from '../middleware/validation';
-import { gameIdParamSchema } from '../schemas/game-schemas';
+import { getGameById, searchSteamGames } from '../controllers/game-controller';
+import { validateParams, validateQuery } from '../middleware/validation';
+import { gameIdParamSchema, steamSearchTermSchema } from '../schemas/game-schemas';
 
 const router = Router();
 
 router.get('/games/:id', validateParams(gameIdParamSchema), getGameById);
+router.get('/steam/games', validateQuery(steamSearchTermSchema), searchSteamGames);
 
 export default router;

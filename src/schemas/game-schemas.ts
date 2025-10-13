@@ -7,6 +7,12 @@ export const gameIdParamSchema = z.object({
   id: gameIdSchema,
 });
 
+// Schema for Steam search term validation
+export const steamSearchTermSchema = z.object({
+  term: z.string().min(1, 'Search term is required'),
+  limit: z.coerce.number().int().min(1).max(100).optional().default(10),
+});
+
 export const gameSchema = z.object({
   game_id: gameIdSchema,
   game_name: z.string().min(1, 'Name is required'),
