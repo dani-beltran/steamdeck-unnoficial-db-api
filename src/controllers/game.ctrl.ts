@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import { fetchGameById } from "../models/game-model";
-import { setGameInQueue } from "../models/game-queue-model";
+import { fetchGameById } from "../models/game.model";
+import { setGameInQueue } from "../models/game-queue.model";
 
-export const getGameById = async (
+export const getGameByIdCtrl = async (
   req: Request,
   res: Response
 ): Promise<void> => {
@@ -11,13 +11,14 @@ export const getGameById = async (
     const game = await fetchGameById(id);
 
     if (!game) {
-      await setGameInQueue(id, {});
+      await setGameInQueue({ game_id: id });
       res.json({ status: "queued", game: null });
       return;
     }
 
     if (game.regenerate_requested || game.rescrape_requested) {
-      await setGameInQueue(id, {
+      await setGameInQueue({
+        game_id: id,
         rescrape: game.rescrape_requested,
         regenerate: game.regenerate_requested,
       });
@@ -30,7 +31,7 @@ export const getGameById = async (
   }
 };
 
-export const searchSteamGames = async (
+export const searchSteamGamesCtrl = async (
   req: Request,
   res: Response
 ): Promise<void> => {

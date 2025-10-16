@@ -3,8 +3,8 @@ import request from 'supertest';
 import { Db } from 'mongodb';
 import app from '../../app';
 import { connectTestDB, closeTestDB, clearTestDB, getTestDB } from '../setup/test-db';
-import * as gameModel from '../../models/game-model';
-import { Game } from '../../schemas/game-schemas';
+import * as gameModel from '../../models/game.model';
+import { Game } from '../../schemas/game.schema';
 
 // Mock the database module
 vi.mock('../../config/database', () => ({

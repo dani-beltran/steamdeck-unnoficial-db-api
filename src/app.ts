@@ -1,6 +1,6 @@
 import express, { Express } from 'express';
 import cors from 'cors';
-import gameRoutes from './routes/game-routes';
+import gameRoutes from './routes/game.router';
 
 const app: Express = express();
 
@@ -9,7 +9,7 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/v1', gameRoutes);
+app.use('/', gameRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
