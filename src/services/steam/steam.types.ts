@@ -1,9 +1,9 @@
-export type SteamGameSearch = {
-    items: SteamGameSearchItem[],
+export type SteamSearch = {
+    items: SteamSearchItem[],
     total: number
 }
 
-export type SteamGameSearchItem = {
+export type SteamSearchItem = {
     type: string;
     name: string;
     id: number;

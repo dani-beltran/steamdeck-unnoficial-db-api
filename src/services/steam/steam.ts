@@ -1,11 +1,11 @@
-import { SteamApp, SteamGameSearch } from "./steam.types";
+import { SteamApp, SteamSearch } from "./steam.types";
 
 const STEAM_STORE_DOMAIN = "store.steampowered.com";
 
 export const searchSteamGames = async (term: string, limit = 100) => {
     const searchUrl = `https://${STEAM_STORE_DOMAIN}/api/storesearch/?term=${encodeURIComponent(term)}&l=english&cc=US&limit=${limit}`;
     const response = await fetch(searchUrl);
-    const data = (await response.json()) as SteamGameSearch;
+    const data = (await response.json()) as SteamSearch;
     return data;
 }
 
