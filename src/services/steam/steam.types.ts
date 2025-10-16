@@ -23,6 +23,8 @@ export type SteamSearchItem = {
     controller_support: string;
 }
 
+export type SteamAppDetailsResponse = Record<string, {success: boolean, data: SteamApp}>
+
 export type SteamApp = {
     type: string;
     name: string;

@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { fetchGameById } from "../models/game.model";
 import { setGameInQueue } from "../models/game-queue.model";
 import { searchSteamGames, getSteamGameDestails } from "../services/steam/steam";
@@ -37,7 +37,7 @@ export const searchSteamGamesCtrl = async (
   res: Response
 ): Promise<void> => {
   try {
-    let term = req.query.term as string;
+    const term = req.query.term as string;
     const limit = Number(req.query.limit);
     const data = await searchSteamGames(term, limit);
     res.json(data);

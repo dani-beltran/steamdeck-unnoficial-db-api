@@ -1,5 +1,5 @@
 import { getDB } from '../config/database';
-import { InputScrape, Scrape, SCRAPE_SOURCES } from '../schemas/scrape.schema';
+import type { InputScrape, Scrape, SCRAPE_SOURCES } from '../schemas/scrape.schema';
 
 const collection = 'scrapes';
 

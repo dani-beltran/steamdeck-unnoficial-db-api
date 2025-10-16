@@ -1,4 +1,4 @@
-import express, { Express } from 'express';
+import express, { type Express } from 'express';
 import cors from 'cors';
 import gameRoutes from './routes/game.router';
 
@@ -12,7 +12,7 @@ app.use(express.json());
 app.use('/', gameRoutes);
 
 // Health check
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.json({ status: 'OK', message: 'API is running' });
 });
 

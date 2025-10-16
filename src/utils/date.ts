@@ -9,7 +9,7 @@ export const parseRelativeDate = (relativeDate: string): Date | null => {
   
   if (!match) return null;
   
-  const amount = parseInt(match[1]);
+  const amount = parseInt(match[1], 10);
   const unit = match[2].toLowerCase();
   
   switch (unit) {

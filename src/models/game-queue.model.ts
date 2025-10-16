@@ -1,5 +1,5 @@
 import { getDB } from '../config/database';
-import { GameQueue, InputGameQueue } from '../schemas/game-queue.schema';
+import type { GameQueue, InputGameQueue } from '../schemas/game-queue.schema';
 
 const collection = 'game_queue';
 

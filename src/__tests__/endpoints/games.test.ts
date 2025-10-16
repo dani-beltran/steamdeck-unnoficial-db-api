@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach, vi, beforeEach } from 'vitest';
 import request from 'supertest';
-import { Db } from 'mongodb';
+import type { Db } from 'mongodb';
 import app from '../../app';
 import { connectTestDB, closeTestDB, clearTestDB, getTestDB } from '../setup/test-db';
 import * as gameModel from '../../models/game.model';
-import { Game } from '../../schemas/game.schema';
+import type { Game } from '../../schemas/game.schema';
 
 // Mock the database module
 vi.mock('../../config/database', () => ({
@@ -135,9 +135,9 @@ describe('GET /v1/games/:id', () => {
       expect(response.body.status).toBe('ready');
       expect(response.body.game.settings).toHaveLength(1);
       expect(response.body.game.settings[0]).toMatchObject({
-        game_settings: testGame.settings![0].game_settings,
-        steamdeck_settings: testGame.settings![0].steamdeck_settings,
-        steamdeck_hardware: testGame.settings![0].steamdeck_hardware,
+        game_settings: testGame.settings?.[0].game_settings,
+        steamdeck_settings: testGame.settings?.[0].steamdeck_settings,
+        steamdeck_hardware: testGame.settings?.[0].steamdeck_hardware,
       });
     });
 

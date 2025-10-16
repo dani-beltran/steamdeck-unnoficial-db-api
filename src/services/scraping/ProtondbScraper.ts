@@ -1,9 +1,9 @@
 import {
-  ScrapeStructuredResult,
+  type ScrapeStructuredResult,
   WebScraper,
 } from "@danilidonbeltran/webscrapper";
 import { parseRelativeDate } from "../../utils/date";
-import { Scraper } from "./Scraper";
+import type { Scraper } from "./Scraper";
 
 type Post = {
   title: string | null;
