@@ -1,7 +1,7 @@
 import { getOneGameFromQueue } from "../models/game-queue.model";
 import { connectDB } from "../config/database";
 import dotenv from "dotenv";
-import { ProtondbScraper } from "../services/ProtondbScraper";
+import { ProtondbScraper } from "../services/scraping/ProtondbScraper";
 import { getScrapeData, saveScrapeData } from "../models/scrape.model";
 import { SCRAPE_SOURCES } from "../schemas/scrape.schema";
 

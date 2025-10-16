@@ -2,7 +2,7 @@ import {
   ScrapeStructuredResult,
   WebScraper,
 } from "@danilidonbeltran/webscrapper";
-import { parseRelativeDate } from "../utils/date";
+import { parseRelativeDate } from "../../utils/date";
 import { Scraper } from "./Scraper";
 
 type Post = {
