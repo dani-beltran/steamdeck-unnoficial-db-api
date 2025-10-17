@@ -1,7 +1,10 @@
 import dotenv from "dotenv";
 import { connectDB } from "../config/database";
 import logger from "../config/logger";
-import { getOneGameFromQueue, removeGameFromQueue } from "../models/game-queue.model";
+import {
+	getOneGameFromQueue,
+	removeGameFromQueue,
+} from "../models/game-queue.model";
 import { saveScrapeData } from "../models/scrape.model";
 import { SCRAPE_SOURCES } from "../schemas/scrape.schema";
 import { ProtondbScraper } from "../services/scraping/ProtondbScraper";
@@ -12,10 +15,10 @@ dotenv.config();
 
 async function run() {
 	try {
-		// Connect to database
+		logger.info("Running job scrape-game...");
+
 		await connectDB();
 
-		// Get one game from the queue
 		const gameInQueue = await getOneGameFromQueue();
 
 		if (!gameInQueue) {
@@ -23,26 +26,19 @@ async function run() {
 			process.exit(0);
 		}
 
+		logger.info(`Scraping game ${gameInQueue.game_id}...`);
+
 		if (gameInQueue.rescrape) {
-			logger.info(`Scraping game ${gameInQueue.game_id} in ProtonDB...`);
 			await runScrapeProcess(
 				new ProtondbScraper(),
 				SCRAPE_SOURCES.PROTONDB,
 				gameInQueue.game_id,
 			);
-
-			logger.info(`Scraping game ${gameInQueue.game_id} in SteamDeckHQ...`);
 			await runScrapeProcess(
 				new SteamdeckhqScraper(),
 				SCRAPE_SOURCES.STEAMDECKHQ,
 				gameInQueue.game_id,
-			).catch((error) => {
-				logger.error(
-					`Error scraping SteamDeckHQ for game ${gameInQueue.game_id}:`,
-					error,
-				);
-			});
-
+			);
 			logger.info(`Finished scraping game ${gameInQueue.game_id}`);
 		} else {
 			logger.info(
@@ -51,7 +47,7 @@ async function run() {
 		}
 
 		await removeGameFromQueue(gameInQueue.game_id);
-		// Exit the process
+
 		process.exit(0);
 	} catch (error) {
 		logger.error("Error scraping game:", error);
@@ -64,14 +60,21 @@ async function runScrapeProcess(
 	source: SCRAPE_SOURCES,
 	gameId: number,
 ) {
-	const result = await scraper.scrape(gameId);
-	await saveScrapeData({
-		game_id: gameId,
-		source,
-		scraped_content: result,
-	});
-	scraper.close();
-	return result;
+	try {
+		const result = await scraper.scrape(gameId);
+		await saveScrapeData({
+			game_id: gameId,
+			source,
+			scraped_content: result,
+		});
+		scraper.close();
+		return result;
+	} catch (error) {
+		logger.error(
+			`Error in scrape process for game ${gameId} from source ${source}:`,
+			error,
+		);
+	}
 }
 
 // Run the scrape

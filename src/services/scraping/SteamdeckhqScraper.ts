@@ -6,7 +6,9 @@ export class SteamdeckhqScraper implements Scraper {
 	private scraper: WebScraper;
 
 	constructor() {
-		this.scraper = new WebScraper({	sectionSelectors: ["#review", "#recommended"] });
+		this.scraper = new WebScraper({
+			sectionSelectors: ["#review", "#recommended"],
+		});
 	}
 
 	async scrape(gameId: number) {
@@ -22,10 +24,10 @@ export class SteamdeckhqScraper implements Scraper {
 		this.scraper.close();
 	}
 
-    private formatGameName(name: string): string {
-        return name
-            .toLowerCase()
-            .replace(/\s+/g, '-')
-            .replace(/[^a-z0-9-]/g, '');
-    }
+	private formatGameName(name: string): string {
+		return name
+			.toLowerCase()
+			.replace(/\s+/g, "-")
+			.replace(/[^a-z0-9-]/g, "");
+	}
 }

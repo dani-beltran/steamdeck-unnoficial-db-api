@@ -28,4 +28,4 @@ export const removeGameFromQueue = async (game_id: number) => {
 	const db = getDB();
 	await db.collection<GameQueue>(collection).deleteOne({ game_id });
 	return;
-}
+};

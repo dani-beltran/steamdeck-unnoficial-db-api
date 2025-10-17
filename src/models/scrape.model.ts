@@ -22,5 +22,7 @@ export const getLastScrapedData = async (
 	source: SCRAPE_SOURCES,
 ) => {
 	const db = getDB();
-	return await db.collection<Scrape>(collection).findOne({ game_id, source }, { sort: { created_at: -1 } });
+	return await db
+		.collection<Scrape>(collection)
+		.findOne({ game_id, source }, { sort: { created_at: -1 } });
 };
