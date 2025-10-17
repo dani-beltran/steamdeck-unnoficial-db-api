@@ -1,4 +1,5 @@
 import winston from "winston";
+import DailyRotateFile from "winston-daily-rotate-file";
 
 // Define log levels
 const levels = {
@@ -28,13 +29,18 @@ const level = () => {
 	return isDevelopment ? "debug" : "info";
 };
 
-// Define format for logs
-const format = winston.format.combine(
-	// Add timestamp
+// Define format for console output (with colors)
+const consoleFormat = winston.format.combine(
 	winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss:ms" }),
-	// Add colors (only for console output)
 	winston.format.colorize({ all: true }),
-	// Define format
+	winston.format.printf(
+		(info) => `${info.timestamp} ${info.level}: ${info.message}`,
+	),
+);
+
+// Define format for file output (no colors)
+const fileFormat = winston.format.combine(
+	winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss:ms" }),
 	winston.format.printf(
 		(info) => `${info.timestamp} ${info.level}: ${info.message}`,
 	),
@@ -42,22 +48,35 @@ const format = winston.format.combine(
 
 // Define transports (where to log)
 const transports = [
-	// Console transport
-	new winston.transports.Console(),
-	// File transport for errors
-	new winston.transports.File({
-		filename: "logs/error.log",
-		level: "error",
+	// Console transport with colors
+	new winston.transports.Console({
+		format: consoleFormat,
 	}),
-	// File transport for all logs
-	new winston.transports.File({ filename: "logs/combined.log" }),
+	// Rotating file transport for errors
+	new DailyRotateFile({
+		filename: "logs/error-%DATE%.log",
+		datePattern: "YYYY-MM-DD",
+		level: "error",
+		format: fileFormat,
+		maxSize: "20m", // Max size per file: 20MB
+		maxFiles: "14d", // Keep logs for 14 days
+		zippedArchive: true, // Compress archived logs
+	}),
+	// Rotating file transport for all logs
+	new DailyRotateFile({
+		filename: "logs/combined-%DATE%.log",
+		datePattern: "YYYY-MM-DD",
+		format: fileFormat,
+		maxSize: "20m", // Max size per file: 20MB
+		maxFiles: "14d", // Keep logs for 14 days
+		zippedArchive: true, // Compress archived logs
+	}),
 ];
 
 // Create the logger
 const logger = winston.createLogger({
 	level: level(),
 	levels,
-	format,
 	transports,
 });
 
