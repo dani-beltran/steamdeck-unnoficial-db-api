@@ -12,6 +12,7 @@ const sectionSchema = z.object({
 	title: z.string().nullable(),
 	headings: z.record(z.string(), z.array(z.string())),
 	paragraphs: z.array(z.string()),
+	otherText: z.array(z.string()),
 	links: z.array(
 		z.object({
 			text: z.string(),

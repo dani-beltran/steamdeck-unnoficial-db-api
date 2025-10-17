@@ -6,6 +6,11 @@ export type Post = {
 	gameReview?: string;
 	// Extracted game settings in key-value format
 	gameSettings?: Record<string, string>;
+	batteryPerformance?: {
+		consumption: string | undefined;
+		temps: string | undefined;
+		lifeSpan: string | undefined;
+	};
 	// Raw text from post that can contain settings and review
 	raw: string;
 	postedAt: Date | null;
