@@ -23,3 +23,9 @@ export const getOneGameFromQueue = async () => {
 		.collection<GameQueue>(collection)
 		.findOne({}, { sort: { queued_at: 1 } });
 };
+
+export const removeGameFromQueue = async (game_id: number) => {
+	const db = getDB();
+	await db.collection<GameQueue>(collection).deleteOne({ game_id });
+	return;
+}

@@ -10,26 +10,17 @@ const collection = "scrapes";
 export const saveScrapeData = async (data: InputScrape) => {
 	const db = getDB();
 	const utcNow = new Date(Date.now());
-	await db.collection<Scrape>(collection).updateOne(
-		{ game_id: data.game_id, source: data.source },
-		{
-			$set: {
-				...data,
-				updated_at: utcNow,
-			},
-			$setOnInsert: {
-				created_at: utcNow,
-			},
-		},
-		{ upsert: true },
-	);
+	await db.collection<Scrape>(collection).insertOne({
+		...data,
+		created_at: utcNow,
+	});
 	return;
 };
 
-export const getScrapeData = async (
+export const getLastScrapedData = async (
 	game_id: number,
 	source: SCRAPE_SOURCES,
 ) => {
 	const db = getDB();
-	return await db.collection<Scrape>(collection).findOne({ game_id, source });
+	return await db.collection<Scrape>(collection).findOne({ game_id, source }, { sort: { created_at: -1 } });
 };

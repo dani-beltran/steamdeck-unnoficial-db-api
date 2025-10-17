@@ -41,12 +41,10 @@ export const scrapeSchema = z.object({
 	source: z.enum(SCRAPE_SOURCES),
 	scraped_content: structuredScrapedContentSchema,
 	created_at: z.date(),
-	updated_at: z.date(),
 });
 
 export const inputScrapeSchema = scrapeSchema.omit({
 	created_at: true,
-	updated_at: true,
 });
 
 export type Scrape = z.infer<typeof scrapeSchema>;

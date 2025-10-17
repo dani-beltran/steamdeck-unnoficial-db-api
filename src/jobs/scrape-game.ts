@@ -1,9 +1,11 @@
 import dotenv from "dotenv";
 import { connectDB } from "../config/database";
-import { getOneGameFromQueue } from "../models/game-queue.model";
-import { getScrapeData, saveScrapeData } from "../models/scrape.model";
+import { getOneGameFromQueue, removeGameFromQueue } from "../models/game-queue.model";
+import { saveScrapeData } from "../models/scrape.model";
 import { SCRAPE_SOURCES } from "../schemas/scrape.schema";
 import { ProtondbScraper } from "../services/scraping/ProtondbScraper";
+import type { Scraper } from "../services/scraping/Scraper";
+import { SteamdeckhqScraper } from "../services/scraping/SteamdeckhqScraper";
 
 dotenv.config();
 
@@ -20,28 +22,35 @@ async function run() {
 			process.exit(0);
 		}
 
-		const results = [];
+		if (gameInQueue.rescrape) {
+			console.log(`Scraping game ${gameInQueue.game_id} in ProtonDB...`);
+			await runScrapeProcess(
+				new ProtondbScraper(),
+				SCRAPE_SOURCES.PROTONDB,
+				gameInQueue.game_id,
+			);
 
-		const protondbScrapeData = await getScrapeData(
-			gameInQueue.game_id,
-			SCRAPE_SOURCES.PROTONDB,
-		);
+			console.log(`Scraping game ${gameInQueue.game_id} in SteamDeckHQ...`);
+			await runScrapeProcess(
+				new SteamdeckhqScraper(),
+				SCRAPE_SOURCES.STEAMDECKHQ,
+				gameInQueue.game_id,
+			).catch((error) => {
+				console.error(
+					`Error scraping SteamDeckHQ for game ${gameInQueue.game_id}:`,
+					error,
+				);
+			});
 
-		if (gameInQueue.rescrape || !protondbScrapeData) {
-			console.log(`Scraping game ${gameInQueue.game_id} in ProtonDB`);
-			results.push(await scrapeProtondb(gameInQueue.game_id));
+			console.log(`Finished scraping game ${gameInQueue.game_id}`);
 		} else {
 			console.log(
-				`Skipping ProtonDB scrape for game ${gameInQueue.game_id}, already have data`,
+				`Skipping scrape for game ${gameInQueue.game_id}. Rescrape not requested.`,
 			);
-			results.push(protondbScrapeData.scraped_content);
 		}
 
-		console.log(
-			"Formated and clean scrape results",
-			ProtondbScraper.extractData(results[0]),
-		);
-
+		await removeGameFromQueue(gameInQueue.game_id);
+		// Exit the process
 		process.exit(0);
 	} catch (error) {
 		console.error("Error scraping game:", error);
@@ -49,12 +58,15 @@ async function run() {
 	}
 }
 
-async function scrapeProtondb(gameId: number) {
-	const scraper = new ProtondbScraper();
+async function runScrapeProcess(
+	scraper: Scraper,
+	source: SCRAPE_SOURCES,
+	gameId: number,
+) {
 	const result = await scraper.scrape(gameId);
 	await saveScrapeData({
 		game_id: gameId,
-		source: SCRAPE_SOURCES.PROTONDB,
+		source,
 		scraped_content: result,
 	});
 	scraper.close();
