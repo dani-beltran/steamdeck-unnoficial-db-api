@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import logger from "../config/logger";
 import { fetchGameById } from "../models/game.model";
 import { setGameInQueue } from "../models/game-queue.model";
 import {
@@ -30,7 +31,7 @@ export const getGameByIdCtrl = async (
 
 		res.json({ status: "ready", game });
 	} catch (error) {
-		console.error("Error fetching game:", error);
+		logger.error("Error fetching game:", error);
 		res.status(500).json({ error: "Internal server error" });
 	}
 };
@@ -45,7 +46,7 @@ export const searchSteamGamesCtrl = async (
 		const data = await searchSteamGames(term, limit);
 		res.json(data);
 	} catch (error) {
-		console.error("Error searching Steam games:", error);
+		logger.error("Error searching Steam games:", error);
 		res.status(500).json({ error: "Internal server error" });
 	}
 };
@@ -59,7 +60,7 @@ export const getSteamGameDetailsCtrl = async (
 		const data = await getSteamGameDestails(gameId);
 		res.json(data);
 	} catch (error) {
-		console.error("Error fetching Steam game details:", error);
+		logger.error("Error fetching Steam game details:", error);
 		res.status(500).json({ error: "Internal server error" });
 	}
 };

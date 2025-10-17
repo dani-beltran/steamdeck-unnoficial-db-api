@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { ZodError, type ZodType } from "zod";
+import logger from "../config/logger";
 
 export const validate = (schema: ZodType) => {
 	return async (req: Request, res: Response, next: NextFunction) => {
@@ -22,6 +23,7 @@ export const validate = (schema: ZodType) => {
 					details: errorMessages,
 				});
 			} else {
+				logger.error("Unexpected error in validation", error);
 				res.status(500).json({ error: "Internal server error" });
 			}
 		}
@@ -48,6 +50,7 @@ export const validateParams = (schema: ZodType) => {
 					details: errorMessages,
 				});
 			} else {
+				logger.error("Unexpected error in validation", error);
 				res.status(500).json({ error: "Internal server error" });
 			}
 		}
@@ -74,6 +77,7 @@ export const validateQuery = (schema: ZodType) => {
 					details: errorMessages,
 				});
 			} else {
+				logger.error("Unexpected error in validation", error);
 				res.status(500).json({ error: "Internal server error" });
 			}
 		}

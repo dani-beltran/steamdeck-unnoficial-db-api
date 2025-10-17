@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import { connectDB } from "../config/database";
+import logger from "../config/logger";
 import { getOneGameFromQueue, removeGameFromQueue } from "../models/game-queue.model";
 import { saveScrapeData } from "../models/scrape.model";
 import { SCRAPE_SOURCES } from "../schemas/scrape.schema";
@@ -18,33 +19,33 @@ async function run() {
 		const gameInQueue = await getOneGameFromQueue();
 
 		if (!gameInQueue) {
-			console.log("No games in queue");
+			logger.info("No games in queue");
 			process.exit(0);
 		}
 
 		if (gameInQueue.rescrape) {
-			console.log(`Scraping game ${gameInQueue.game_id} in ProtonDB...`);
+			logger.info(`Scraping game ${gameInQueue.game_id} in ProtonDB...`);
 			await runScrapeProcess(
 				new ProtondbScraper(),
 				SCRAPE_SOURCES.PROTONDB,
 				gameInQueue.game_id,
 			);
 
-			console.log(`Scraping game ${gameInQueue.game_id} in SteamDeckHQ...`);
+			logger.info(`Scraping game ${gameInQueue.game_id} in SteamDeckHQ...`);
 			await runScrapeProcess(
 				new SteamdeckhqScraper(),
 				SCRAPE_SOURCES.STEAMDECKHQ,
 				gameInQueue.game_id,
 			).catch((error) => {
-				console.error(
+				logger.error(
 					`Error scraping SteamDeckHQ for game ${gameInQueue.game_id}:`,
 					error,
 				);
 			});
 
-			console.log(`Finished scraping game ${gameInQueue.game_id}`);
+			logger.info(`Finished scraping game ${gameInQueue.game_id}`);
 		} else {
-			console.log(
+			logger.info(
 				`Skipping scrape for game ${gameInQueue.game_id}. Rescrape not requested.`,
 			);
 		}
@@ -53,7 +54,7 @@ async function run() {
 		// Exit the process
 		process.exit(0);
 	} catch (error) {
-		console.error("Error scraping game:", error);
+		logger.error("Error scraping game:", error);
 		process.exit(1);
 	}
 }

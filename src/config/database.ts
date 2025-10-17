@@ -1,4 +1,5 @@
 import { type Db, MongoClient } from "mongodb";
+import logger from "./logger";
 
 let db: Db | null = null;
 
@@ -11,11 +12,11 @@ export const connectDB = async (): Promise<Db> => {
 		await client.connect();
 
 		db = client.db(dbName);
-		console.log(`Connected to MongoDB database: ${dbName}`);
+		logger.info(`Connected to MongoDB database: ${dbName}`);
 
 		return db;
 	} catch (error) {
-		console.error("MongoDB connection error:", error);
+		logger.error("MongoDB connection error:", error);
 		throw error;
 	}
 };
