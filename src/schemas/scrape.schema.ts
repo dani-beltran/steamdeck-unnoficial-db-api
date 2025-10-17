@@ -50,3 +50,4 @@ export const inputScrapeSchema = scrapeSchema.omit({
 
 export type Scrape = z.infer<typeof scrapeSchema>;
 export type InputScrape = z.infer<typeof inputScrapeSchema>;
+export type ScrapedContent = z.infer<typeof structuredScrapedContentSchema>;

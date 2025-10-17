@@ -17,11 +17,19 @@ export const setGameInQueue = async (game: InputGameQueue) => {
 	return;
 };
 
-export const getOneGameFromQueue = async () => {
+export const getOneGameFromQueue = async (
+	target: "rescrape" | "regenerate",
+) => {
 	const db = getDB();
 	return await db
 		.collection<GameQueue>(collection)
-		.findOne({}, { sort: { queued_at: 1 } });
+		.findOne({ 
+			// if target is regenerate, rescrape must be false. So we only pick games that were already scraped
+			rescrape: target !== "regenerate", 
+			[target]: true 
+		}, 
+		{ sort: { queued_at: 1 } 
+	});
 };
 
 export const removeGameFromQueue = async (game_id: number) => {

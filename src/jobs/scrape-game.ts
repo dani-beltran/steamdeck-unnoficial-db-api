@@ -1,3 +1,7 @@
+//
+// Job to scrape game data from various sources.
+// It picks one game from the queue, scrapes data if rescrape is requested, and saves the data.
+//
 import dotenv from "dotenv";
 import { connectDB } from "../config/database";
 import logger from "../config/logger";
@@ -21,43 +25,40 @@ async function run() {
 
 		await connectDB();
 
-		const gameInQueue = await getOneGameFromQueue();
+		const gameInQueue = await getOneGameFromQueue("rescrape");
 
 		if (!gameInQueue) {
 			logger.info("No games in queue. Exiting job.");
 			process.exit(0);
 		}
 
-		if (gameInQueue.rescrape) {
-			logger.info(`Scraping game ${gameInQueue.game_id}...`);
-			
-			// Mark as scraped so is not picked again if job fails or there are multiple instances
-			const utcNow = new Date(Date.now());
-			await setGameInQueue(
-				{ game_id: gameInQueue?.game_id, rescrape: false, rescraped_at: utcNow },
-			);
-
-			await runScrapeProcess(
+		logger.info(`Scraping game ${gameInQueue.game_id}...`);
+		await Promise.all([
+			runScrapeProcess(
 				new ProtondbScraper(),
 				SCRAPE_SOURCES.PROTONDB,
 				gameInQueue.game_id,
-			);
-			await runScrapeProcess(
+			),
+			runScrapeProcess(
 				new SteamdeckhqScraper(),
 				SCRAPE_SOURCES.STEAMDECKHQ,
 				gameInQueue.game_id,
-			);
-			await runScrapeProcess(
+			),
+			runScrapeProcess(
 				new SharedeckScraper(),
 				SCRAPE_SOURCES.SHAREDECK,
 				gameInQueue.game_id,
-			);
-			logger.info(`Finished scraping game ${gameInQueue.game_id}`);
-		} else {
-			logger.info(
-				`Skipping scrape for game ${gameInQueue.game_id}. Rescrape not requested.`,
-			);
-		}
+			),
+		]);
+		logger.info(`Finished scraping game ${gameInQueue.game_id}`);
+
+		// Mark as scraped so is not picked again
+		const utcNow = new Date(Date.now());
+		await setGameInQueue({
+			game_id: gameInQueue?.game_id,
+			rescrape: false,
+			rescraped_at: utcNow,
+		});
 
 		logger.info(
 			`Job scrape-game completed in ${
@@ -77,7 +78,7 @@ async function runScrapeProcess(
 	gameId: number,
 ) {
 	try {
-		const {timestamp: _, ...result} = await scraper.scrape(gameId);
+		const { timestamp: _, ...result } = await scraper.scrape(gameId);
 		await saveScrapeData({
 			game_id: gameId,
 			source,
@@ -90,9 +91,7 @@ async function runScrapeProcess(
 			`Error in scrape process for game ${gameId} from source ${source}:`,
 			error,
 		);
-		await setGameInQueue(
-			{ game_id: gameId, rescrape_failed: true },
-		);
+		await setGameInQueue({ game_id: gameId, rescrape_failed: true });
 	}
 }
 
