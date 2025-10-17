@@ -77,7 +77,7 @@ async function runScrapeProcess(
 	gameId: number,
 ) {
 	try {
-		const result = await scraper.scrape(gameId);
+		const {timestamp: _, ...result} = await scraper.scrape(gameId);
 		await saveScrapeData({
 			game_id: gameId,
 			source,

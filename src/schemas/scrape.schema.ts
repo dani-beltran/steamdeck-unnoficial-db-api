@@ -32,7 +32,6 @@ const structuredScrapedContentSchema = sectionSchema
 	.extend({
 		title: z.string(),
 		url: z.url(),
-		timestamp: z.string(),
 		sections: z.array(sectionSchema).optional(),
 	});
 
@@ -41,10 +40,12 @@ export const scrapeSchema = z.object({
 	source: z.enum(SCRAPE_SOURCES),
 	scraped_content: structuredScrapedContentSchema,
 	created_at: z.date(),
+	hash: z.string().optional(),
 });
 
 export const inputScrapeSchema = scrapeSchema.omit({
 	created_at: true,
+	hash: true,
 });
 
 export type Scrape = z.infer<typeof scrapeSchema>;

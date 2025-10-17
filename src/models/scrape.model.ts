@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import { getDB } from "../config/database";
 import type {
 	InputScrape,
@@ -10,10 +11,21 @@ const collection = "scrapes";
 export const saveScrapeData = async (data: InputScrape) => {
 	const db = getDB();
 	const utcNow = new Date(Date.now());
-	await db.collection<Scrape>(collection).insertOne({
-		...data,
-		created_at: utcNow,
-	});
+	
+	// Generate hash from scraped_content to ensure data integrity
+	const contentString = JSON.stringify(data.scraped_content);
+	const hash = createHash("sha256").update(contentString).digest("hex");
+	
+	// If a record with same hash exists, overwrite it to avoid duplicates of same scraped data
+	await db.collection<Scrape>(collection).updateOne(
+		{ game_id: data.game_id, source: data.source, hash },
+		{ $set: {
+			...data,
+			created_at: utcNow,
+			hash,
+		}},
+		{ upsert: true }
+	);
 	return;
 };
 
