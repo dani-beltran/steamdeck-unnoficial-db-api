@@ -10,11 +10,13 @@ import { SCRAPE_SOURCES } from "../schemas/scrape.schema";
 import { ProtondbScraper } from "../services/scraping/ProtondbScraper";
 import type { Scraper } from "../services/scraping/Scraper";
 import { SteamdeckhqScraper } from "../services/scraping/SteamdeckhqScraper";
+import { SharedeckScraper } from "../services/scraping/SharedeckScraper";
 
 dotenv.config();
 
 async function run() {
 	try {
+		const startTime = Date.now();
 		logger.info("Running job scrape-game...");
 
 		await connectDB();
@@ -22,7 +24,7 @@ async function run() {
 		const gameInQueue = await getOneGameFromQueue();
 
 		if (!gameInQueue) {
-			logger.info("No games in queue");
+			logger.info("No games in queue. Exiting job.");
 			process.exit(0);
 		}
 
@@ -39,6 +41,11 @@ async function run() {
 				SCRAPE_SOURCES.STEAMDECKHQ,
 				gameInQueue.game_id,
 			);
+			await runScrapeProcess(
+				new SharedeckScraper(),
+				SCRAPE_SOURCES.SHAREDECK,
+				gameInQueue.game_id,
+			);
 			logger.info(`Finished scraping game ${gameInQueue.game_id}`);
 		} else {
 			logger.info(
@@ -48,6 +55,9 @@ async function run() {
 
 		await removeGameFromQueue(gameInQueue.game_id);
 
+		logger.info(`Job scrape-game completed in ${
+			(Date.now() - startTime) / 1000
+		} seconds.`);
 		process.exit(0);
 	} catch (error) {
 		logger.error("Error scraping game:", error);
