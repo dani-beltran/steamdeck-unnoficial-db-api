@@ -15,7 +15,7 @@ export const getGameByIdCtrl = async (
 		const game = await fetchGameById(id);
 
 		if (!game) {
-			await setGameInQueue({ game_id: id });
+			await setGameInQueue({ game_id: id, rescrape: true, regenerate: true });
 			res.json({ status: "queued", game: null });
 			return;
 		}
