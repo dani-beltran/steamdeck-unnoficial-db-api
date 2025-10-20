@@ -1,5 +1,6 @@
+import { Post } from "../../schemas/post.schema";
 import { SCRAPE_SOURCES, type ScrapedContent } from "../../schemas/scrape.schema";
-import type { Miner, Post } from "./Miner";
+import type { Miner } from "./Miner";
 
 export class SteamdeckhqMiner implements Miner {
 	extractData(result: ScrapedContent) {

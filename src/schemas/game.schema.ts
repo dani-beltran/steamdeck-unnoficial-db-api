@@ -1,6 +1,18 @@
 import { z } from "zod";
 import { gameIdSchema } from "./game-id.schema";
 
+export enum STEAMDECK_RATING {
+	GOLD = "gold",
+	PLATINUM = "platinum",
+	NATIVE = "native",
+	UNSUPPORTED = "unsupported",
+}
+
+export enum STEAMDECK_HARDWARE {
+	OLED = "oled",
+	LCD = "lcd",
+}
+
 // Schema for game ID parameter validation
 export const gameIdParamSchema = z.object({
 	id: gameIdSchema,
@@ -18,7 +30,7 @@ export const gameSchema = z.object({
 	game_performance_summary: z.string().optional(),
 	game_review_summary: z.string().optional(),
 	steamdeck_rating: z
-		.enum(["gold", "platinum", "native", "unsupported"])
+		.enum(STEAMDECK_RATING)
 		.optional(),
 	steamdeck_verified: z.boolean().optional(),
 	settings: z
@@ -26,7 +38,7 @@ export const gameSchema = z.object({
 			z.object({
 				game_settings: z.record(z.string(), z.string()).optional(),
 				steamdeck_settings: z.record(z.string(), z.string()).optional(),
-				steamdeck_hardware: z.enum(["lcd", "oled"]).optional(),
+				steamdeck_hardware: z.enum(STEAMDECK_HARDWARE).optional(),
 				battery_performance: z.record(z.string(), z.string()).optional(),
 				posted_at: z.date().nullable(),
 			}),

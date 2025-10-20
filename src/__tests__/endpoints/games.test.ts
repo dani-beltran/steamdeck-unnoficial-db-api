@@ -12,7 +12,7 @@ import {
 } from "vitest";
 import app from "../../app";
 import * as gameModel from "../../models/game.model";
-import type { Game } from "../../schemas/game.schema";
+import { STEAMDECK_HARDWARE, STEAMDECK_RATING, type Game } from "../../schemas/game.schema";
 import {
 	clearTestDB,
 	closeTestDB,
@@ -52,13 +52,13 @@ describe("GET /v1/games/:id", () => {
 				game_id: 1,
 				game_name: "Elden Ring",
 				game_performance_summary: "Runs smoothly on Steam Deck",
-				steamdeck_rating: "gold",
+				steamdeck_rating: STEAMDECK_RATING.GOLD,
 				steamdeck_verified: true,
 				settings: [
 					{
 						game_settings: { graphics: "High", resolution: "1920x1080" },
 						steamdeck_settings: { tdp: "15W" },
-						steamdeck_hardware: "lcd",
+						steamdeck_hardware: STEAMDECK_HARDWARE.LCD,
 						posted_at: new Date(),
 					},
 				],
@@ -92,6 +92,7 @@ describe("GET /v1/games/:id", () => {
 			const testGame: Game = {
 				game_id: 2,
 				game_name: "Cyberpunk 2077",
+				settings: [],
 				created_at: new Date(),
 				updated_at: new Date(),
 			};
@@ -123,13 +124,14 @@ describe("GET /v1/games/:id", () => {
 						game_settings: {
 							quality: "Ultra",
 							antiAliasing: "TAA",
-							vsync: true,
+							vsync: 'yes',
 						},
 						steamdeck_settings: {
-							fps: 60,
+							fps: '60',
 							resolution: "2560x1440",
 						},
-						steamdeck_hardware: "oled",
+						steamdeck_hardware: STEAMDECK_HARDWARE.OLED,
+						posted_at: new Date(),
 					},
 				],
 				created_at: new Date(),
@@ -281,6 +283,7 @@ describe("GET /v1/games/:id", () => {
 			const testGame: Game = {
 				game_id: largeId,
 				game_name: "Test Game",
+				settings: [],
 				created_at: new Date(),
 				updated_at: new Date(),
 			};
@@ -303,7 +306,7 @@ describe("GET /v1/games/:id", () => {
 			const testGame: Game = {
 				game_id: 4,
 				game_name: "Game with null settings",
-				settings: null,
+				settings: [],	
 				created_at: new Date(),
 				updated_at: new Date(),
 			};

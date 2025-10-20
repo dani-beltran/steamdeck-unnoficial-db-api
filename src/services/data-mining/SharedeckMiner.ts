@@ -1,5 +1,7 @@
+import { STEAMDECK_HARDWARE } from "../../schemas/game.schema";
+import { Post } from "../../schemas/post.schema";
 import { SCRAPE_SOURCES, type ScrapedContent } from "../../schemas/scrape.schema";
-import type { Miner, Post } from "./Miner";
+import type { Miner } from "./Miner";
 
 export class SharedeckMiner implements Miner {
 	extractData(result: ScrapedContent) {
@@ -53,12 +55,12 @@ export class SharedeckMiner implements Miner {
 		return "";
 	}
 
-	private parseSteamdeckHardware(text: string): "oled" | "lcd" | undefined {
+	private parseSteamdeckHardware(text: string): STEAMDECK_HARDWARE | undefined {
 		const lowerText = text.toLowerCase();
 		if (lowerText.includes("oled")) {
-			return "oled";
+			return STEAMDECK_HARDWARE.OLED;
 		} else if (lowerText.includes("lcd")) {
-			return "lcd";
+			return STEAMDECK_HARDWARE.LCD;
 		}
 		return undefined;
 	}

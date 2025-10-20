@@ -1,7 +1,7 @@
 import { getDB } from "../config/database";
 import type { Game, GameInput } from "../schemas/game.schema";
+import { Post } from "../schemas/post.schema";
 import { SCRAPE_SOURCES } from "../schemas/scrape.schema";
-import type { Post } from "../services/data-mining/Miner";
 import { createDateComparator } from "../utils/sort";
 
 const collection = "games";
@@ -72,4 +72,3 @@ const extractSettings = (mined_posts: Post[]) => {
 		posted_at: post.posted_at,
 	})).sort(createDateComparator("posted_at", "desc"));
 };
-

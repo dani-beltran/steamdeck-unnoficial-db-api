@@ -1,7 +1,8 @@
+import { Post } from "../../schemas/post.schema";
 import { SCRAPE_SOURCES, type ScrapedContent } from "../../schemas/scrape.schema";
 import { parseRelativeDate } from "../../utils/date";
 import { createDateComparator } from "../../utils/sort";
-import type { Miner, Post } from "./Miner";
+import type { Miner } from "./Miner";
 
 export class ProtondbMiner implements Miner {
 	extractData(result: ScrapedContent) {
@@ -20,7 +21,11 @@ export class ProtondbMiner implements Miner {
 		const meaningfulPosts = posts
 			.filter((p) => p.raw.trim() !== "")
 			.sort(createDateComparator("posted_at", "desc"));
-		return { posts: meaningfulPosts };
+		return { 
+			posts: meaningfulPosts,
+			steamdeck_rating: this.extractSteamdeckRating(result),
+			steamdeck_verified: this.extractSteamdeckVerified(result),
+		};
 	}
 
 	private findPostedDate(links: { text: string }[]): Date | null {
@@ -30,5 +35,15 @@ export class ProtondbMiner implements Miner {
 			return parseRelativeDate(dateLink.text.trim());
 		}
 		return null;
+	}
+
+	private extractSteamdeckRating(result: ScrapedContent) {
+		// TODO: Implement extraction logic
+		return undefined;
+	}
+
+	private extractSteamdeckVerified(result: ScrapedContent) {
+		// TODO: Implement extraction logic
+		return undefined;
 	}
 }
