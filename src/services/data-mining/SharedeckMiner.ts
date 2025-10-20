@@ -54,7 +54,6 @@ export class SharedeckMiner implements Miner {
 	}
 
 	private parseSteamdeckHardware(text: string): "oled" | "lcd" | undefined {
-		console.log("Parsing hardware from text:", text);
 		const lowerText = text.toLowerCase();
 		if (lowerText.includes("oled")) {
 			return "oled";

@@ -15,9 +15,13 @@ export class SteamdeckhqMiner implements Miner {
 		const recommendedSection = result.sections.find(
 			(section) => section.id === "recommended",
 		);
-		const raw = recommendedSection
-			? (recommendedSection.paragraphs || []).join("\n\n")
-			: "";
+		const timeSection = result.sections.find(
+			(section) => section.id === "entry-time",
+		);
+		const raw = (recommendedSection?.otherText || []).concat(
+			(recommendedSection?.paragraphs || []),
+		).join("\n\n") || "";
+		const rawPostedAt = timeSection?.otherText[0] || null;
 		const gameSettings = this.extractGameSettings(recommendedSection);
 		const batteryPerformance =
 			this.extractBatteryPerformance(recommendedSection);
@@ -25,10 +29,11 @@ export class SteamdeckhqMiner implements Miner {
 		const post: Post = {
 			title: reviewSection?.title ?? null,
 			raw,
-			game_settings: gameSettings,
 			game_review: gameReview,
+			game_settings: gameSettings,
+			steamdeck_settings: this.extractSteamdeckSettings(recommendedSection),
 			battery_performance: batteryPerformance,
-			posted_at: null,
+			posted_at: rawPostedAt ? new Date(Date.parse(`${rawPostedAt} UTC`)) : null,
 		};
 
 		return { posts: [post] };
@@ -41,10 +46,8 @@ export class SteamdeckhqMiner implements Miner {
 			return;
 		}
 
-		const [protonVersion, ...otherSettings] = recommendedSection.paragraphs;
-		const settings: Record<string, string> = {
-			protonVersion: protonVersion.trim(),
-		};
+		const [_protonVersion, ...otherSettings] = recommendedSection.paragraphs;
+		const settings: Record<string, string> = {};
 
 		otherSettings.forEach((p) => {
 			const [key, value] = p.split(":");
@@ -77,5 +80,25 @@ export class SteamdeckhqMiner implements Miner {
 			temps: temps ? temps.trim() : undefined,
 			life_span: lifeSpan ? lifeSpan.trim() : undefined,
 		};
+	}
+
+	private extractSteamdeckSettings(recommendedSection?: {
+		paragraphs: string[];
+		otherText: string[];
+	}): Record<string, string> | undefined {
+		if (!recommendedSection || !Array.isArray(recommendedSection.otherText)) {
+			return;
+		}
+
+		const items = recommendedSection.otherText;
+
+		return {
+			frame_rate_cap: items[0]?.trim(),
+			screen_refresh_rate: items[3]?.trim(),
+			tdp_limit: items[8]?.trim(),
+			scaling_filter: items[10]?.trim(),
+			gpu_clock_speed: items[12]?.trim(),
+			proton_version: recommendedSection.paragraphs[0]?.trim(),
+		}
 	}
 }

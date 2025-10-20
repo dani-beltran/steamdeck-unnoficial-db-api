@@ -7,10 +7,13 @@ export type Post = {
 	steamdeck_hardware?: "oled" | "lcd";
 	steamdeck_settings?: {
 		average_frame_rate?: string;
+		frame_rate_cap?: string;
 		screen_refresh_rate?: string;
 		proton_version?: string;
 		steamos_version?: string;
 		tdp_limit?: string;
+		scaling_filter?: string;
+		gpu_clock_speed?: string;
 	};
 	battery_performance?: {
 		consumption: string | undefined;
