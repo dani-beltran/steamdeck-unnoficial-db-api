@@ -1,7 +1,8 @@
-import type { ScrapedContent } from "../../schemas/scrape.schema";
+import type { SCRAPE_SOURCES, ScrapedContent } from "../../schemas/scrape.schema";
 
 export type Post = {
 	title: string | null;
+	source: SCRAPE_SOURCES;
 	game_review?: string; // A review of the game from the user
 	game_settings?: Record<string, string>; // Extracted game settings in key-value format
 	steamdeck_hardware?: "oled" | "lcd";
@@ -16,9 +17,9 @@ export type Post = {
 		gpu_clock_speed?: string;
 	};
 	battery_performance?: {
-		consumption: string | undefined;
-		temps: string | undefined;
-		life_span: string | undefined;
+		consumption?: string;
+		temps?: string;
+		life_span?: string;
 	};
 	// Raw text from post that can contain settings and review
 	raw: string;

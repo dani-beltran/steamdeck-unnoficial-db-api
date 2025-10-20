@@ -1,4 +1,4 @@
-import type { ScrapedContent } from "../../schemas/scrape.schema";
+import { SCRAPE_SOURCES, type ScrapedContent } from "../../schemas/scrape.schema";
 import type { Miner, Post } from "./Miner";
 
 export class SteamdeckhqMiner implements Miner {
@@ -27,6 +27,7 @@ export class SteamdeckhqMiner implements Miner {
 			this.extractBatteryPerformance(recommendedSection);
 
 		const post: Post = {
+			source: SCRAPE_SOURCES.STEAMDECKHQ,
 			title: reviewSection?.title ?? null,
 			raw,
 			game_review: gameReview,

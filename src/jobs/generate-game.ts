@@ -4,12 +4,10 @@
 // The game data is assumed to be already scraped and available in the scrapes collection.
 //
 import dotenv from "dotenv";
-import { set } from "zod";
 import { connectDB } from "../config/database";
 import logger from "../config/logger";
 import {
 	getOneGameFromQueue,
-	removeGameFromQueue,
 	setGameInQueue,
 } from "../models/game-queue.model";
 import { getLastScrapedData } from "../models/scrape.model";
@@ -17,6 +15,7 @@ import { SCRAPE_SOURCES } from "../schemas/scrape.schema";
 import { ProtondbMiner } from "../services/data-mining/ProtondbMiner";
 import { SharedeckMiner } from "../services/data-mining/SharedeckMiner";
 import { SteamdeckhqMiner } from "../services/data-mining/SteamdeckhqMiner";
+import { composeGame } from "../models/game.model";
 
 dotenv.config();
 
@@ -99,9 +98,21 @@ async function generateGameEntry(
 		sharedeckData.scraped_content,
 	);
 
+	const posts = [
+		...protonMinerData.posts,
+		...steamdeckhqMinerData.posts,
+		...sharedeckMinerData.posts,
+	];
+
+	const game = composeGame({
+		game_id,
+		game_name: protondbData.game_name,
+		mined_posts: posts,
+	});
+
 	console.log(
-		`Generated data for game ${game_id}:`,
-		sharedeckMinerData.posts[0],
+		`Generated for game ${game_id}`,
+		game,
 	);
 }
 

@@ -1,5 +1,6 @@
 /**
- * Creates a comparator function for sorting objects by a specific field
+ * Creates a comparator function for sorting objects by a specific field of type Date.
+ * For null or undefined values, they are considered to be less than any valid Date.
  * @param field - The field name to compare
  * @param order - Sort order: 'asc' for ascending, 'desc' for descending
  * @returns A comparator function that can be used with Array.sort()
@@ -18,9 +19,9 @@ export function createDateComparator<T>(
 				(bValue as Date).getTime() - (aValue as Date).getTime();
 			return order === "desc" ? comparison : -comparison;
 		} else if (aValue) {
-			return -1; // a comes first (has a value)
+			return order === "desc" ? -1 : 1; // a comes first (has a value) when descending order
 		} else if (bValue) {
-			return 1; // b comes first (has a value)
+			return order === "desc" ? 1 : -1; // b comes first (has a value) when descending order
 		} else {
 			return 0; // maintain original order (both null/undefined)
 		}

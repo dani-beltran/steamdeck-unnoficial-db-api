@@ -1,4 +1,4 @@
-import type { ScrapedContent } from "../../schemas/scrape.schema";
+import { SCRAPE_SOURCES, type ScrapedContent } from "../../schemas/scrape.schema";
 import { parseRelativeDate } from "../../utils/date";
 import { createDateComparator } from "../../utils/sort";
 import type { Miner, Post } from "./Miner";
@@ -11,6 +11,7 @@ export class ProtondbMiner implements Miner {
 		const posts: Post[] = result.sections.map((section) => {
 			return {
 				title: section.title,
+				source: SCRAPE_SOURCES.PROTONDB,
 				raw: (section.paragraphs || []).join("\n\n"),
 				game_review: "",
 				posted_at: this.findPostedDate(section.links || []),

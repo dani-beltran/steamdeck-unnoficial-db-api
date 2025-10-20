@@ -1,4 +1,4 @@
-import type { ScrapedContent } from "../../schemas/scrape.schema";
+import { SCRAPE_SOURCES, type ScrapedContent } from "../../schemas/scrape.schema";
 import type { Miner, Post } from "./Miner";
 
 export class SharedeckMiner implements Miner {
@@ -19,13 +19,13 @@ export class SharedeckMiner implements Miner {
 		const items = section.otherText;
 		return {
 			title: null,
+			source: SCRAPE_SOURCES.SHAREDECK,
 			raw: (section.otherText || []).join("\n\n"),
 			game_review: "",
 			posted_at: null,
 			battery_performance: {
 				life_span: items[0],
-				consumption: items[1],
-				temps: undefined,
+				consumption: items[1]
 			},
 			steamdeck_hardware: this.parseSteamdeckHardware(items[4]),
 			steamdeck_settings: {
