@@ -12,7 +12,11 @@ import {
 } from "vitest";
 import app from "../../app";
 import * as gameModel from "../../models/game.model";
-import { STEAMDECK_HARDWARE, STEAMDECK_RATING, type Game } from "../../schemas/game.schema";
+import {
+	type Game,
+	STEAMDECK_HARDWARE,
+	STEAMDECK_RATING,
+} from "../../schemas/game.schema";
 import {
 	clearTestDB,
 	closeTestDB,
@@ -124,10 +128,10 @@ describe("GET /v1/games/:id", () => {
 						game_settings: {
 							quality: "Ultra",
 							antiAliasing: "TAA",
-							vsync: 'yes',
+							vsync: "yes",
 						},
 						steamdeck_settings: {
-							fps: '60',
+							fps: "60",
 							resolution: "2560x1440",
 						},
 						steamdeck_hardware: STEAMDECK_HARDWARE.OLED,
@@ -306,7 +310,7 @@ describe("GET /v1/games/:id", () => {
 			const testGame: Game = {
 				game_id: 4,
 				game_name: "Game with null settings",
-				settings: [],	
+				settings: [],
 				created_at: new Date(),
 				updated_at: new Date(),
 			};

@@ -1,6 +1,9 @@
 import { STEAMDECK_HARDWARE } from "../../schemas/game.schema";
-import { Post } from "../../schemas/post.schema";
-import { SCRAPE_SOURCES, type ScrapedContent } from "../../schemas/scrape.schema";
+import type { Post } from "../../schemas/post.schema";
+import {
+	SCRAPE_SOURCES,
+	type ScrapedContent,
+} from "../../schemas/scrape.schema";
 import type { Miner } from "./Miner";
 
 export class SharedeckMiner implements Miner {
@@ -27,7 +30,7 @@ export class SharedeckMiner implements Miner {
 			posted_at: null,
 			battery_performance: {
 				life_span: items[0].replace(/[\n]/g, "").trim(),
-				consumption: items[1]
+				consumption: items[1],
 			},
 			steamdeck_hardware: this.parseSteamdeckHardware(items[4]),
 			steamdeck_settings: {
@@ -40,7 +43,9 @@ export class SharedeckMiner implements Miner {
 			game_settings: {
 				graphics_preset: this.findValue(items, /graphics preset/i),
 				frame_rate_limit: this.findValue(items, /framerate limit/i),
-				resolution: this.findValue(items, /resolution/i).replace(/[\s\n]/g, "").trim(),
+				resolution: this.findValue(items, /resolution/i)
+					.replace(/[\s\n]/g, "")
+					.trim(),
 			},
 		};
 	}

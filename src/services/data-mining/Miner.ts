@@ -1,7 +1,6 @@
+import type { STEAMDECK_RATING } from "../../schemas/game.schema";
+import type { Post } from "../../schemas/post.schema";
 import type { ScrapedContent } from "../../schemas/scrape.schema";
-import { STEAMDECK_RATING } from "../../schemas/game.schema";
-import { Post } from "../../schemas/post.schema";
-
 
 export type MinedData = {
 	posts: Post[];

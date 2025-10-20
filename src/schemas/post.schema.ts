@@ -1,5 +1,5 @@
-import { STEAMDECK_HARDWARE } from "./game.schema";
-import { SCRAPE_SOURCES } from "./scrape.schema";
+import type { STEAMDECK_HARDWARE } from "./game.schema";
+import type { SCRAPE_SOURCES } from "./scrape.schema";
 
 export type Post = {
 	title: string | null;

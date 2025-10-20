@@ -6,20 +6,20 @@
 import dotenv from "dotenv";
 import { connectDB } from "../config/database";
 import logger from "../config/logger";
+import { composeGame, saveGame } from "../models/game.model";
 import {
 	getOneGameFromQueue,
 	removeGameFromQueue,
 	setGameInQueue,
 } from "../models/game-queue.model";
 import { getLastScrapedData } from "../models/scrape.model";
-import { Scrape, SCRAPE_SOURCES } from "../schemas/scrape.schema";
+import type { STEAMDECK_RATING } from "../schemas/game.schema";
+import type { Post } from "../schemas/post.schema";
+import { SCRAPE_SOURCES, type Scrape } from "../schemas/scrape.schema";
 import { ProtondbMiner } from "../services/data-mining/ProtondbMiner";
 import { SharedeckMiner } from "../services/data-mining/SharedeckMiner";
 import { SteamdeckhqMiner } from "../services/data-mining/SteamdeckhqMiner";
-import { composeGame, saveGame } from "../models/game.model";
 import { getSteamGameDestails } from "../services/steam/steam";
-import { Post } from "../schemas/post.schema";
-import { STEAMDECK_RATING } from "../schemas/game.schema";
 
 dotenv.config();
 
@@ -94,7 +94,9 @@ async function generateGameEntry(
 
 	if (protondbData) {
 		const protonMiner = new ProtondbMiner();
-		const protonMinerData = protonMiner.extractData(protondbData.scraped_content);
+		const protonMinerData = protonMiner.extractData(
+			protondbData.scraped_content,
+		);
 		steamdeck_rating = protonMinerData.steamdeck_rating;
 		steamdeck_verified = protonMinerData.steamdeck_verified;
 		posts.push(...protonMinerData.posts);
@@ -114,15 +116,15 @@ async function generateGameEntry(
 			sharedeckData.scraped_content,
 		);
 		posts.push(...sharedeckMinerData.posts);
-	}	
+	}
 
 	const gameDetails = await getSteamGameDestails(gameId);
 
 	return {
 		...composeGame({
-		gameName: gameDetails.name,
-		minedPosts: posts,
-	}),
+			gameName: gameDetails.name,
+			minedPosts: posts,
+		}),
 		steamdeck_rating,
 		steamdeck_verified,
 	};

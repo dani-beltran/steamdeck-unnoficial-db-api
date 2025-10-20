@@ -1,5 +1,8 @@
-import { Post } from "../../schemas/post.schema";
-import { SCRAPE_SOURCES, type ScrapedContent } from "../../schemas/scrape.schema";
+import type { Post } from "../../schemas/post.schema";
+import {
+	SCRAPE_SOURCES,
+	type ScrapedContent,
+} from "../../schemas/scrape.schema";
 import type { Miner } from "./Miner";
 
 export class SteamdeckhqMiner implements Miner {
@@ -19,9 +22,10 @@ export class SteamdeckhqMiner implements Miner {
 		const timeSection = result.sections.find(
 			(section) => section.id === "entry-time",
 		);
-		const raw = (recommendedSection?.otherText || []).concat(
-			(recommendedSection?.paragraphs || []),
-		).join("\n\n") || "";
+		const raw =
+			(recommendedSection?.otherText || [])
+				.concat(recommendedSection?.paragraphs || [])
+				.join("\n\n") || "";
 		const rawPostedAt = timeSection?.otherText[0] || null;
 		const gameSettings = this.extractGameSettings(recommendedSection);
 		const batteryPerformance =
@@ -35,7 +39,9 @@ export class SteamdeckhqMiner implements Miner {
 			game_settings: gameSettings,
 			steamdeck_settings: this.extractSteamdeckSettings(recommendedSection),
 			battery_performance: batteryPerformance,
-			posted_at: rawPostedAt ? new Date(Date.parse(`${rawPostedAt} UTC`)) : null,
+			posted_at: rawPostedAt
+				? new Date(Date.parse(`${rawPostedAt} UTC`))
+				: null,
 		};
 
 		return { posts: [post] };
@@ -101,6 +107,6 @@ export class SteamdeckhqMiner implements Miner {
 			scaling_filter: items[10]?.trim(),
 			gpu_clock_speed: items[12]?.trim(),
 			proton_version: recommendedSection.paragraphs[0]?.trim(),
-		}
+		};
 	}
 }

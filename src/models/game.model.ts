@@ -1,6 +1,6 @@
 import { getDB } from "../config/database";
 import type { Game, GameInput } from "../schemas/game.schema";
-import { Post } from "../schemas/post.schema";
+import type { Post } from "../schemas/post.schema";
 import { SCRAPE_SOURCES } from "../schemas/scrape.schema";
 import { createDateComparator } from "../utils/sort";
 
@@ -13,20 +13,19 @@ export const fetchGameById = async (id: number) => {
 
 export const saveGame = async (id: number, game: GameInput) => {
 	const db = getDB();
-	await db
-		.collection<Game>(collection)
-		.updateOne(
-			{ game_id: id },
-			{ $set: {
-					...game,
-					updated_at: new Date(),
-				} ,
-				$setOnInsert: {
-					created_at: new Date(),
-				},
+	await db.collection<Game>(collection).updateOne(
+		{ game_id: id },
+		{
+			$set: {
+				...game,
+				updated_at: new Date(),
 			},
-			{ upsert: true },
-		);
+			$setOnInsert: {
+				created_at: new Date(),
+			},
+		},
+		{ upsert: true },
+	);
 };
 
 type ComposeGameParams = {
@@ -48,13 +47,19 @@ export const composeGame = (params: ComposeGameParams): GameInput => {
 
 const extractSettings = (mined_posts: Post[]) => {
 	const posts = [];
-	const steamdeckhqPost = mined_posts
-		.filter((post) => post.source === SCRAPE_SOURCES.STEAMDECKHQ)[0]
-	const sharedeckPosts = mined_posts
-		.filter((post) => post.source === SCRAPE_SOURCES.SHAREDECK);
-	const sharedeckPostOled = sharedeckPosts.find((post) => post.steamdeck_hardware === "oled");
-	const sharedeckPostLcd = sharedeckPosts.find((post) => post.steamdeck_hardware === "lcd");
-		
+	const steamdeckhqPost = mined_posts.filter(
+		(post) => post.source === SCRAPE_SOURCES.STEAMDECKHQ,
+	)[0];
+	const sharedeckPosts = mined_posts.filter(
+		(post) => post.source === SCRAPE_SOURCES.SHAREDECK,
+	);
+	const sharedeckPostOled = sharedeckPosts.find(
+		(post) => post.steamdeck_hardware === "oled",
+	);
+	const sharedeckPostLcd = sharedeckPosts.find(
+		(post) => post.steamdeck_hardware === "lcd",
+	);
+
 	if (steamdeckhqPost) {
 		posts.push(steamdeckhqPost);
 	}
@@ -64,11 +69,13 @@ const extractSettings = (mined_posts: Post[]) => {
 	if (sharedeckPostLcd) {
 		posts.push(sharedeckPostLcd);
 	}
-	return posts.map((post) => ({
-		game_settings: post.game_settings,
-		steamdeck_settings: post.steamdeck_settings,
-		steamdeck_hardware: post.steamdeck_hardware,
-		battery_performance: post.battery_performance,
-		posted_at: post.posted_at,
-	})).sort(createDateComparator("posted_at", "desc"));
+	return posts
+		.map((post) => ({
+			game_settings: post.game_settings,
+			steamdeck_settings: post.steamdeck_settings,
+			steamdeck_hardware: post.steamdeck_hardware,
+			battery_performance: post.battery_performance,
+			posted_at: post.posted_at,
+		}))
+		.sort(createDateComparator("posted_at", "desc"));
 };

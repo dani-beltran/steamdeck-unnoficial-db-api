@@ -1,5 +1,8 @@
-import { Post } from "../../schemas/post.schema";
-import { SCRAPE_SOURCES, type ScrapedContent } from "../../schemas/scrape.schema";
+import type { Post } from "../../schemas/post.schema";
+import {
+	SCRAPE_SOURCES,
+	type ScrapedContent,
+} from "../../schemas/scrape.schema";
 import { parseRelativeDate } from "../../utils/date";
 import { createDateComparator } from "../../utils/sort";
 import type { Miner } from "./Miner";
@@ -21,7 +24,7 @@ export class ProtondbMiner implements Miner {
 		const meaningfulPosts = posts
 			.filter((p) => p.raw.trim() !== "")
 			.sort(createDateComparator("posted_at", "desc"));
-		return { 
+		return {
 			posts: meaningfulPosts,
 			steamdeck_rating: this.extractSteamdeckRating(result),
 			steamdeck_verified: this.extractSteamdeckVerified(result),
