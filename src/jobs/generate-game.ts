@@ -99,7 +99,10 @@ async function generateGameEntry(
 		sharedeckData.scraped_content,
 	);
 
-	console.log(`Generated data for game ${game_id}:`, sharedeckMinerData.posts[0]);
+	console.log(
+		`Generated data for game ${game_id}:`,
+		sharedeckMinerData.posts[0],
+	);
 }
 
 run();

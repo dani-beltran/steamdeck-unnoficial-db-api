@@ -1,6 +1,6 @@
 /**
  * Integration example: Using Claude to analyze game compatibility
- * 
+ *
  * This example demonstrates how to use the Claude service
  * to analyze game data and generate compatibility recommendations
  * for Steam Deck.
@@ -43,7 +43,8 @@ Based on this information, provide:
 Format your response as JSON with keys: compatibility, reasoning, recommendations (array)`;
 
 	const response = await claude.prompt(prompt, {
-		system: "You are a Steam Deck compatibility expert. Analyze games and provide accurate compatibility assessments based on technical specifications and known issues.",
+		system:
+			"You are a Steam Deck compatibility expert. Analyze games and provide accurate compatibility assessments based on technical specifications and known issues.",
 		maxTokens: 1000,
 		temperature: 0.3, // Lower temperature for more consistent analysis
 	});
@@ -85,7 +86,8 @@ The description should:
 - Be engaging but factual`;
 
 	return await claude.prompt(prompt, {
-		system: "You are a game journalist writing database entries. Be accurate, concise, and informative.",
+		system:
+			"You are a game journalist writing database entries. Be accurate, concise, and informative.",
 		maxTokens: 300,
 	});
 }
@@ -146,10 +148,9 @@ async function main() {
 
 		// Example 2: Generate Description
 		console.log("2. Generating game description...");
-		const description = await generateGameDescription(
-			"Stardew Valley",
-			{ genre: "Farming Simulation, RPG" },
-		);
+		const description = await generateGameDescription("Stardew Valley", {
+			genre: "Farming Simulation, RPG",
+		});
 		console.log("Description:", description);
 		console.log("\n---\n");
 

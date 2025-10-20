@@ -2,9 +2,9 @@ import type { ScrapedContent } from "../../schemas/scrape.schema";
 
 export type Post = {
 	title: string | null;
-	game_review?: string;	// A review of the game from the user
+	game_review?: string; // A review of the game from the user
 	game_settings?: Record<string, string>; // Extracted game settings in key-value format
-	steamdeck_hardware?: 'oled' | 'lcd';
+	steamdeck_hardware?: "oled" | "lcd";
 	steamdeck_settings?: {
 		average_frame_rate?: string;
 		screen_refresh_rate?: string;

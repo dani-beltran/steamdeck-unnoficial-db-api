@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ClaudeService, createClaudeService } from "./claude";
 import type { ClaudeResponse } from "./claude.types";
 
@@ -96,8 +96,7 @@ describe("ClaudeService", () => {
 				system: "You are helpful",
 			});
 
-			const callArgs = (global.fetch as ReturnType<typeof vi.fn>).mock
-				.calls[0];
+			const callArgs = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
 			const body = JSON.parse(callArgs[1].body);
 
 			expect(body.model).toBe("claude-3-opus-20240229");
@@ -134,8 +133,7 @@ describe("ClaudeService", () => {
 
 			expect(response).toBe("Sure, I can help!");
 
-			const callArgs = (global.fetch as ReturnType<typeof vi.fn>).mock
-				.calls[0];
+			const callArgs = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
 			const body = JSON.parse(callArgs[1].body);
 
 			expect(body.messages).toHaveLength(3);

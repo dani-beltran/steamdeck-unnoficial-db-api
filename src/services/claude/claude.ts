@@ -95,7 +95,9 @@ export class ClaudeService {
 		});
 
 		if (!response.ok) {
-			const errorData = (await response.json()) as { error?: { message?: string } };
+			const errorData = (await response.json()) as {
+				error?: { message?: string };
+			};
 			throw new Error(
 				`Claude API error: ${errorData.error?.message || response.statusText}`,
 			);
@@ -112,9 +114,7 @@ export const createClaudeService = (apiKey?: string): ClaudeService => {
 	const key = apiKey || process.env.ANTHROPIC_API_KEY;
 
 	if (!key) {
-		throw new Error(
-			"ANTHROPIC_API_KEY is not set. Please provide an API key.",
-		);
+		throw new Error("ANTHROPIC_API_KEY is not set. Please provide an API key.");
 	}
 
 	return new ClaudeService({ apiKey: key });

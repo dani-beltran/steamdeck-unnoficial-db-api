@@ -6,7 +6,9 @@ export class SharedeckMiner implements Miner {
 		if (!result.sections) {
 			return { posts: [] };
 		}
-		const filteredSections = result.sections.filter((section) => section.otherText && section.otherText.length > 0);
+		const filteredSections = result.sections.filter(
+			(section) => section.otherText && section.otherText.length > 0,
+		);
 		const posts: Post[] = filteredSections.map((section) => {
 			return this.getGamePost(section);
 		});
@@ -33,31 +35,31 @@ export class SharedeckMiner implements Miner {
 				proton_version: this.findValue(items, /proton version/i),
 				steamos_version: this.findValue(items, /steamos version/i),
 			},
-		 	game_settings: {
+			game_settings: {
 				graphics_preset: this.findValue(items, /graphics preset/i),
 				frame_rate_limit: this.findValue(items, /framerate limit/i),
 				resolution: this.findValue(items, /resolution/i),
-			}
-		}
+			},
+		};
 	}
 
 	private findValue(texts: string[], match: RegExp): string {
 		for (let i = 0; i < texts.length; i++) {
 			const matchResult = texts[i].match(match);
 			if (matchResult) {
-				return texts[i+1] || "";
+				return texts[i + 1] || "";
 			}
 		}
 		return "";
 	}
 
-	private parseSteamdeckHardware(text: string): 'oled' | 'lcd' | undefined {
-		console.log('Parsing hardware from text:', text);
+	private parseSteamdeckHardware(text: string): "oled" | "lcd" | undefined {
+		console.log("Parsing hardware from text:", text);
 		const lowerText = text.toLowerCase();
-		if (lowerText.includes('oled')) {
-			return 'oled';
-		} else if (lowerText.includes('lcd')) {
-			return 'lcd';
+		if (lowerText.includes("oled")) {
+			return "oled";
+		} else if (lowerText.includes("lcd")) {
+			return "lcd";
 		}
 		return undefined;
 	}

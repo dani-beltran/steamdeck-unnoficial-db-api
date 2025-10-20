@@ -1,8 +1,8 @@
 export { ClaudeService, createClaudeService } from "./claude";
 export type {
+	ClaudeError,
 	ClaudeMessage,
 	ClaudeRequest,
 	ClaudeResponse,
-	ClaudeError,
 	ClaudeServiceConfig,
 } from "./claude.types";
