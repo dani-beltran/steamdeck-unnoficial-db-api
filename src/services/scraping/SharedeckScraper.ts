@@ -7,9 +7,10 @@ export class SharedeckScraper implements Scraper {
 	constructor() {
 		this.scraper = new WebScraper({
 			sectionSelectors: ["#reports article"],
-			waitForSelector: "#reports article",
+			waitForSelector: "#reports",
 			browser: "chromium",
 			headless: true,
+			timeout: 10_000
 		});
 	}
 

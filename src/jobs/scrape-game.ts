@@ -15,6 +15,7 @@ import { ProtondbScraper } from "../services/scraping/ProtondbScraper";
 import type { Scraper } from "../services/scraping/Scraper";
 import { SharedeckScraper } from "../services/scraping/SharedeckScraper";
 import { SteamdeckhqScraper } from "../services/scraping/SteamdeckhqScraper";
+import { RedirectError } from "@danilidonbeltran/webscrapper/src/scraper";
 
 dotenv.config();
 
@@ -84,14 +85,19 @@ async function runScrapeProcess(
 			source,
 			scraped_content: result,
 		});
-		scraper.close();
 		return result;
 	} catch (error) {
+		if ( error instanceof RedirectError) {
+			logger.warn(`Redirection prevented while scraping game ${gameId} from source ${source}`)
+			return;
+		}
 		logger.error(
 			`Error in scrape process for game ${gameId} from source ${source}:`,
 			error,
 		);
 		await setGameInQueue({ game_id: gameId, rescrape_failed: true });
+	} finally {
+		scraper.close();
 	}
 }
 

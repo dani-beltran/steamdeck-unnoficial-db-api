@@ -11,6 +11,8 @@ export class SteamdeckhqScraper implements Scraper {
 			waitForSelector: "#review",
 			browser: "chromium",
 			headless: true,
+			followRedirects: false,
+			timeout: 10_000
 		});
 	}
 
