@@ -8,14 +8,17 @@ import { connectDB } from "../config/database";
 import logger from "../config/logger";
 import {
 	getOneGameFromQueue,
+	removeGameFromQueue,
 	setGameInQueue,
 } from "../models/game-queue.model";
 import { getLastScrapedData } from "../models/scrape.model";
-import { SCRAPE_SOURCES } from "../schemas/scrape.schema";
+import { Scrape, SCRAPE_SOURCES } from "../schemas/scrape.schema";
 import { ProtondbMiner } from "../services/data-mining/ProtondbMiner";
 import { SharedeckMiner } from "../services/data-mining/SharedeckMiner";
 import { SteamdeckhqMiner } from "../services/data-mining/SteamdeckhqMiner";
-import { composeGame } from "../models/game.model";
+import { composeGame, saveGame } from "../models/game.model";
+import { getSteamGameDestails } from "../services/steam/steam";
+import { Post } from "../services/data-mining/Miner";
 
 dotenv.config();
 
@@ -55,16 +58,15 @@ async function run() {
 			process.exit(0);
 		}
 
-		// Generate the game entry using the scraped data
-		await generateGameEntry(
+		const game = await generateGameEntry(
 			gameInQueue.game_id,
 			protondbData,
 			steamdeckhqData,
 			sharedeckData,
 		);
+		await saveGame(gameInQueue.game_id, game);
 
-		// TODO restore
-		// await removeGameFromQueue(gameInQueue.game_id);
+		await removeGameFromQueue(gameInQueue.game_id);
 
 		const endTime = Date.now();
 		logger.info(
@@ -80,40 +82,41 @@ async function run() {
 }
 
 async function generateGameEntry(
-	game_id: number,
-	protondbData: any,
-	steamdeckhqData: any,
-	sharedeckData: any,
+	gameId: number,
+	protondbData: Scrape | null,
+	steamdeckhqData: Scrape | null,
+	sharedeckData: Scrape | null,
 ) {
-	const protonMiner = new ProtondbMiner();
-	const protonMinerData = protonMiner.extractData(protondbData.scraped_content);
+	const posts: Post[] = [];
 
-	const steamdeckhqMiner = new SteamdeckhqMiner();
-	const steamdeckhqMinerData = steamdeckhqMiner.extractData(
-		steamdeckhqData.scraped_content,
-	);
+	if (protondbData) {
+		const protonMiner = new ProtondbMiner();
+		const protonMinerData = protonMiner.extractData(protondbData.scraped_content);
+		posts.push(...protonMinerData.posts);
+	}
 
-	const sharedeckMiner = new SharedeckMiner();
-	const sharedeckMinerData = sharedeckMiner.extractData(
-		sharedeckData.scraped_content,
-	);
+	if (steamdeckhqData) {
+		const steamdeckhqMiner = new SteamdeckhqMiner();
+		const steamdeckhqMinerData = steamdeckhqMiner.extractData(
+			steamdeckhqData.scraped_content,
+		);
+		posts.push(...steamdeckhqMinerData.posts);
+	}
 
-	const posts = [
-		...protonMinerData.posts,
-		...steamdeckhqMinerData.posts,
-		...sharedeckMinerData.posts,
-	];
+	if (sharedeckData) {
+		const sharedeckMiner = new SharedeckMiner();
+		const sharedeckMinerData = sharedeckMiner.extractData(
+			sharedeckData.scraped_content,
+		);
+		posts.push(...sharedeckMinerData.posts);
+	}	
 
-	const game = composeGame({
-		game_id,
-		game_name: protondbData.game_name,
-		mined_posts: posts,
+	const gameDetails = await getSteamGameDestails(gameId);
+
+	return composeGame({
+		gameName: gameDetails.name,
+		minedPosts: posts,
 	});
-
-	console.log(
-		`Generated for game ${game_id}`,
-		game,
-	);
 }
 
 run();

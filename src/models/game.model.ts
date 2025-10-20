@@ -1,5 +1,5 @@
 import { getDB } from "../config/database";
-import type { Game } from "../schemas/game.schema";
+import type { Game, GameInput } from "../schemas/game.schema";
 import { SCRAPE_SOURCES } from "../schemas/scrape.schema";
 import type { Post } from "../services/data-mining/Miner";
 import { createDateComparator } from "../utils/sort";
@@ -11,18 +11,34 @@ export const fetchGameById = async (id: number) => {
 	return await db.collection<Game>(collection).findOne({ game_id: id });
 };
 
-type ComposeGameParams = {
-	game_id: number;
-	game_name: string;
-	mined_posts: Post[];
+export const saveGame = async (id: number, game: GameInput) => {
+	const db = getDB();
+	await db
+		.collection<Game>(collection)
+		.updateOne(
+			{ game_id: id },
+			{ $set: {
+					...game,
+					updated_at: new Date(),
+				} ,
+				$setOnInsert: {
+					created_at: new Date(),
+				},
+			},
+			{ upsert: true },
+		);
 };
 
-export const composeGame = (params: ComposeGameParams): Partial<Game> => {
-	const { game_id, game_name, mined_posts } = params;
+type ComposeGameParams = {
+	gameName: string;
+	minedPosts: Post[];
+};
+
+export const composeGame = (params: ComposeGameParams): GameInput => {
+	const { gameName, minedPosts } = params;
 	return {
-		game_id,
-		game_name,
-		settings: extractSettings(mined_posts),
+		game_name: gameName,
+		settings: extractSettings(minedPosts),
 		game_performance_summary: "",
 		game_review_summary: "",
 		steamdeck_rating: undefined,

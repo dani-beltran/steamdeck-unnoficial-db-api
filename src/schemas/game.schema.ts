@@ -39,6 +39,13 @@ export const gameSchema = z.object({
 	created_at: z.date(),
 });
 
+export const gameInputSchema = gameSchema.omit({
+	game_id: true,
+	updated_at: true,
+	created_at: true,
+});
+
 // Type exports
 export type GameIdParams = z.infer<typeof gameIdParamSchema>;
 export type Game = z.infer<typeof gameSchema>;
+export type GameInput = z.infer<typeof gameInputSchema>;
