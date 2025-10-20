@@ -8,7 +8,9 @@ export class SteamdeckhqScraper implements Scraper {
 	constructor() {
 		this.scraper = new WebScraper({
 			sectionSelectors: ["#review", "#recommended", "#entry-time"],
+			waitForSelector: "#review",
 			browser: "chromium",
+			headless: true,
 		});
 	}
 

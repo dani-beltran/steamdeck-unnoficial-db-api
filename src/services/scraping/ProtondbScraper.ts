@@ -5,7 +5,12 @@ export class ProtondbScraper implements Scraper {
 	private scraper: WebScraper;
 
 	constructor() {
-		this.scraper = new WebScraper({ sectionSelectors: [".for-anchor-tags"], browser: "chromium" });
+		this.scraper = new WebScraper({ 
+			sectionSelectors: [".for-anchor-tags"], 
+			waitForSelector: ".for-anchor-tags",
+			browser: "chromium",
+			headless: true,
+		});
 	}
 
 	async scrape(gameId: number) {
