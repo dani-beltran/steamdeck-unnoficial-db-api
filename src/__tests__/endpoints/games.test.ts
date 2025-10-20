@@ -30,7 +30,7 @@ vi.mock("../../config/database", () => ({
 	connectDB: vi.fn(),
 }));
 
-describe("GET /v1/games/:id", () => {
+describe("GET /games/:id", () => {
 	beforeAll(async () => {
 		await connectTestDB();
 	});
@@ -74,7 +74,7 @@ describe("GET /v1/games/:id", () => {
 
 			// Act
 			const response = await request(app)
-				.get("/v1/games/1")
+				.get("/games/1")
 				.expect("Content-Type", /json/)
 				.expect(200);
 
@@ -106,7 +106,7 @@ describe("GET /v1/games/:id", () => {
 
 			// Act
 			const response = await request(app)
-				.get("/v1/games/2")
+				.get("/games/2")
 				.expect("Content-Type", /json/)
 				.expect(200);
 
@@ -146,7 +146,7 @@ describe("GET /v1/games/:id", () => {
 			await db.collection("games").insertOne(testGame);
 
 			// Act
-			const response = await request(app).get("/v1/games/3").expect(200);
+			const response = await request(app).get("/games/3").expect(200);
 
 			// Assert
 			expect(response.body.status).toBe("ready");
@@ -185,7 +185,7 @@ describe("GET /v1/games/:id", () => {
 			await db.collection("games").insertMany(games);
 
 			// Act
-			const response = await request(app).get("/v1/games/2").expect(200);
+			const response = await request(app).get("/games/2").expect(200);
 
 			// Assert
 			expect(response.body.status).toBe("ready");
@@ -200,7 +200,7 @@ describe("GET /v1/games/:id", () => {
 		it("should return 200 with queued status when game is not found", async () => {
 			// Act
 			const response = await request(app)
-				.get("/v1/games/999")
+				.get("/games/999")
 				.expect("Content-Type", /json/)
 				.expect(200);
 
@@ -214,7 +214,7 @@ describe("GET /v1/games/:id", () => {
 		it("should return 400 for invalid ID format (non-numeric)", async () => {
 			// Act
 			const response = await request(app)
-				.get("/v1/games/abc")
+				.get("/games/abc")
 				.expect("Content-Type", /json/)
 				.expect(400);
 
@@ -226,7 +226,7 @@ describe("GET /v1/games/:id", () => {
 		it("should return 400 for negative ID", async () => {
 			// Act
 			const response = await request(app)
-				.get("/v1/games/-1")
+				.get("/games/-1")
 				.expect("Content-Type", /json/)
 				.expect(400);
 
@@ -238,7 +238,7 @@ describe("GET /v1/games/:id", () => {
 		it("should return 400 for zero ID", async () => {
 			// Act
 			const response = await request(app)
-				.get("/v1/games/0")
+				.get("/games/0")
 				.expect("Content-Type", /json/)
 				.expect(400);
 
@@ -250,7 +250,7 @@ describe("GET /v1/games/:id", () => {
 		it("should return 400 for decimal ID", async () => {
 			// Act
 			const response = await request(app)
-				.get("/v1/games/1.5")
+				.get("/games/1.5")
 				.expect("Content-Type", /json/)
 				.expect(400);
 
@@ -266,7 +266,7 @@ describe("GET /v1/games/:id", () => {
 
 			// Act
 			const response = await request(app)
-				.get("/v1/games/1")
+				.get("/games/1")
 				.expect("Content-Type", /json/)
 				.expect(500);
 
@@ -297,7 +297,7 @@ describe("GET /v1/games/:id", () => {
 
 			// Act
 			const response = await request(app)
-				.get(`/v1/games/${largeId}`)
+				.get(`/games/${largeId}`)
 				.expect(200);
 
 			// Assert
@@ -305,11 +305,11 @@ describe("GET /v1/games/:id", () => {
 			expect(response.body.game.game_id).toBe(largeId);
 		});
 
-		it("should handle games with null settings", async () => {
+		it("should handle games with no settings", async () => {
 			// Arrange
 			const testGame: Game = {
 				game_id: 4,
-				game_name: "Game with null settings",
+				game_name: "Game with no settings",
 				settings: [],
 				created_at: new Date(),
 				updated_at: new Date(),
@@ -319,11 +319,11 @@ describe("GET /v1/games/:id", () => {
 			await db.collection("games").insertOne(testGame);
 
 			// Act
-			const response = await request(app).get("/v1/games/4").expect(200);
+			const response = await request(app).get("/games/4").expect(200);
 
 			// Assert
 			expect(response.body.status).toBe("ready");
-			expect(response.body.game.settings).toBeNull();
+			expect(response.body.game.settings).toEqual([]);
 		});
 	});
 });
