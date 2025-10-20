@@ -1,5 +1,5 @@
-# Use Node.js LTS version as base image
-FROM node:24-alpine
+# Use Node.js LTS version as base image (Debian-based for Playwright compatibility)
+FROM node:24-slim
 
 # Set working directory
 WORKDIR /app
@@ -11,7 +11,7 @@ COPY package*.json ./
 RUN npm ci --only=production=false
 
 # Install Playwright browser for scraping jobs
-RUN npx playwright install --with-deps --no-shell chromium
+RUN npx playwright install --with-deps chromium
 
 # Copy source code and configuration
 COPY . .
