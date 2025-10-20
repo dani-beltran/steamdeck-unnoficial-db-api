@@ -18,7 +18,8 @@ import { SharedeckMiner } from "../services/data-mining/SharedeckMiner";
 import { SteamdeckhqMiner } from "../services/data-mining/SteamdeckhqMiner";
 import { composeGame, saveGame } from "../models/game.model";
 import { getSteamGameDestails } from "../services/steam/steam";
-import { Post } from "../services/data-mining/Miner";
+import { Post } from "../schemas/post.schema";
+import { STEAMDECK_RATING } from "../schemas/game.schema";
 
 dotenv.config();
 
@@ -88,10 +89,14 @@ async function generateGameEntry(
 	sharedeckData: Scrape | null,
 ) {
 	const posts: Post[] = [];
+	let steamdeck_rating: STEAMDECK_RATING | undefined;
+	let steamdeck_verified: boolean | undefined;
 
 	if (protondbData) {
 		const protonMiner = new ProtondbMiner();
 		const protonMinerData = protonMiner.extractData(protondbData.scraped_content);
+		steamdeck_rating = protonMinerData.steamdeck_rating;
+		steamdeck_verified = protonMinerData.steamdeck_verified;
 		posts.push(...protonMinerData.posts);
 	}
 
@@ -113,10 +118,14 @@ async function generateGameEntry(
 
 	const gameDetails = await getSteamGameDestails(gameId);
 
-	return composeGame({
+	return {
+		...composeGame({
 		gameName: gameDetails.name,
 		minedPosts: posts,
-	});
+	}),
+		steamdeck_rating,
+		steamdeck_verified,
+	};
 }
 
 run();
