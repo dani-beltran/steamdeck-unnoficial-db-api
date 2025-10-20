@@ -12,13 +12,13 @@ export class ProtondbMiner implements Miner {
 			return {
 				title: section.title,
 				raw: (section.paragraphs || []).join("\n\n"),
-				gameReview: "",
-				postedAt: this.findPostedDate(section.links || []),
+				game_review: "",
+				posted_at: this.findPostedDate(section.links || []),
 			};
 		});
 		const meaningfulPosts = posts
 			.filter((p) => p.raw.trim() !== "")
-			.sort(createDateComparator("postedAt", "desc"));
+			.sort(createDateComparator("posted_at", "desc"));
 		return { posts: meaningfulPosts };
 	}
 

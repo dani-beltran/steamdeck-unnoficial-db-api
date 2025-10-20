@@ -24,10 +24,10 @@ export class SteamdeckhqMiner implements Miner {
 		const post: Post = {
 			title: reviewSection?.title ?? null,
 			raw,
-            gameSettings,
-			gameReview,
-            batteryPerformance,
-			postedAt: null,
+            game_settings: gameSettings,
+			game_review: gameReview,
+            battery_performance: batteryPerformance,
+			posted_at: null,
 		};
 
 		return { posts: [post] };
@@ -64,7 +64,7 @@ export class SteamdeckhqMiner implements Miner {
         return {
             consumption: batteryConsumption ? batteryConsumption.trim() : undefined,
             temps: temps ? temps.trim() : undefined,
-            lifeSpan: lifeSpan ? lifeSpan.trim() : undefined,
+            life_span: lifeSpan ? lifeSpan.trim() : undefined,
         };
     }
 }
