@@ -7,6 +7,7 @@ export class SharedeckScraper implements Scraper {
 	constructor() {
 		this.scraper = new WebScraper({
 			sectionSelectors: ["#reports article"],
+			browser: "chromium",
 		});
 	}
 

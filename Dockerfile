@@ -10,6 +10,9 @@ COPY package*.json ./
 # Install dependencies
 RUN npm ci --only=production=false
 
+# Install Playwright browser for scraping jobs
+RUN npx playwright install --with-deps --no-shell chromium
+
 # Copy source code and configuration
 COPY . .
 

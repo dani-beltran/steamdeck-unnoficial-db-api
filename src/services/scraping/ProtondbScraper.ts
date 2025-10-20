@@ -5,7 +5,7 @@ export class ProtondbScraper implements Scraper {
 	private scraper: WebScraper;
 
 	constructor() {
-		this.scraper = new WebScraper({ sectionSelectors: [".for-anchor-tags"] });
+		this.scraper = new WebScraper({ sectionSelectors: [".for-anchor-tags"], browser: "chromium" });
 	}
 
 	async scrape(gameId: number) {
