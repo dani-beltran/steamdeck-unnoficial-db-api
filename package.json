@@ -13,8 +13,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "prepare-scraper": "playwright install",
-    "scrape": "ts-node-dev src/jobs/scrape-game.ts",
-    "generate": "ts-node-dev src/jobs/generate-game.ts"
+    "scrape": "node dist/jobs/scrape-game.js",
+    "generate": "node dist/jobs/generate-game.js"
   },
   "keywords": [
     "api",
