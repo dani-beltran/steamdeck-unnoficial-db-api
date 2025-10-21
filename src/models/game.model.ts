@@ -106,6 +106,7 @@ const extractSettings = (mined_posts: Post[]) => {
 			steamdeck_settings: post.steamdeck_settings,
 			steamdeck_hardware: post.steamdeck_hardware,
 			battery_performance: post.battery_performance,
+			steamdeck_experience: post.steamdeck_experience,
 			posted_at: post.posted_at,
 		}))
 		.sort(createDateComparator("posted_at", "desc"));

@@ -8,7 +8,6 @@ export type Post = {
 	game_settings?: Record<string, string>; // Extracted game settings in key-value format
 	steamdeck_hardware?: STEAMDECK_HARDWARE;
 	steamdeck_settings?: {
-		average_frame_rate?: string;
 		frame_rate_cap?: string;
 		screen_refresh_rate?: string;
 		proton_version?: string;
@@ -21,6 +20,9 @@ export type Post = {
 		consumption?: string;
 		temps?: string;
 		life_span?: string;
+	};
+	steamdeck_experience?: {
+		average_frame_rate?: string;
 	};
 	// Raw text from post that can contain settings and review
 	raw: string;

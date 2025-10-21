@@ -38,6 +38,7 @@ export const gameSchema = z.object({
 				steamdeck_settings: z.record(z.string(), z.string()).optional(),
 				steamdeck_hardware: z.enum(STEAMDECK_HARDWARE).optional(),
 				battery_performance: z.record(z.string(), z.string()).optional(),
+				steamdeck_experience: z.record(z.string(), z.string()).optional(),
 				posted_at: z.date().nullable(),
 			}),
 		)

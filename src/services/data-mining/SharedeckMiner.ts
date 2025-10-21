@@ -34,7 +34,6 @@ export class SharedeckMiner implements Miner {
 			},
 			steamdeck_hardware: this.parseSteamdeckHardware(items[4]),
 			steamdeck_settings: {
-				average_frame_rate: items[2],
 				screen_refresh_rate: this.findValue(items, /screen refresh rate/i),
 				tdp_limit: this.findValue(items, /tdp limit/i),
 				proton_version: this.findValue(items, /proton version/i),
@@ -46,6 +45,9 @@ export class SharedeckMiner implements Miner {
 				resolution: this.findValue(items, /resolution/i)
 					.replace(/[\s\n]/g, "")
 					.trim(),
+			},
+			steamdeck_experience: {
+				average_frame_rate: items[2],
 			},
 		};
 	}
