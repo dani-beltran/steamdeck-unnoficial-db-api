@@ -196,7 +196,7 @@ const extractPostData = async (mined_posts: Post[]) => {
 
 async function generateGameReviewSummary(raw?: string) {
 	if (!raw) return "";
-	const prompt = `Generate a concise summary (2-3 sentences) of the following Steam Deck game review, focusing on key points about what is the game about, genre, gameplay, story and graphics. Avoid performance and technical aspects, aswell as personal opinions or extraneous details.
+	const prompt = `Generate a concise summary (2-3 sentences) of the following Steam Deck game review, focusing on key points about what is the game about, genre, gameplay, story and graphics. Avoid performance and technical aspects, aswell as personal opinions or extraneous details. Don't include the title of the game in the summary.
 
 Review:
 ${raw}
@@ -206,6 +206,7 @@ Summary:`;
 	// Clean up the summary
 	const cleanedSummary = rawSummary
 		.replace(/^Summary:\s*/i, "")
+		.replace(/Summary\s/i, "")
 		.replace(/\s+/g, " ")
 		.replace(/^#/i, "")
 		.trim();
@@ -214,7 +215,7 @@ Summary:`;
 
 async function generateGamePerformanceSummary(raw?: string) {
 	if (!raw) return "";
-	const prompt = `Generate a concise summary (2-3 sentences) of the following Steam Deck game performance review, focusing on key points about performance and technical aspects. Avoid personal opinions or extraneous details.
+	const prompt = `Generate a concise summary (2-3 sentences) of the following Steam Deck game performance review, focusing on key points about performance and technical aspects. Avoid personal opinions or extraneous details. Don't include the title of the game in the summary.
 
 Performance Review:
 ${raw}
@@ -224,6 +225,7 @@ Summary:`;
 	// Clean up the summary
 	const cleanedSummary = rawSummary
 		.replace(/^Summary:\s*/i, "")
+		.replace(/Summary\s/i, "")
 		.replace(/\s+/g, " ")
 		.replace(/^#/i, "")
 		.trim();
