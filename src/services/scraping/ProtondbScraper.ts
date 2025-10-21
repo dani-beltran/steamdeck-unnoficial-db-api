@@ -6,7 +6,7 @@ export class ProtondbScraper implements Scraper {
 
 	constructor() {
 		this.scraper = new WebScraper({ 
-			sectionSelectors: [".for-anchor-tags"], 
+			sectionSelectors: [".GameInfo__SummaryContainer-sc-19o71ac-1", ".DeckVerifiedInfo__AlignedRowWidthUnset-sc-acfn33-0", ".for-anchor-tags"], 
 			waitForSelector: ".for-anchor-tags",
 			browser: "chromium",
 			headless: true,

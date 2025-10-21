@@ -1,5 +1,5 @@
 import { getDB } from "../config/database";
-import type { Game, GameInput } from "../schemas/game.schema";
+import { gameInputSchema, type Game, type GameInput } from "../schemas/game.schema";
 import type { Post } from "../schemas/post.schema";
 import { SCRAPE_SOURCES } from "../schemas/scrape.schema";
 import { createDateComparator } from "../utils/sort";
@@ -12,12 +12,13 @@ export const fetchGameById = async (id: number) => {
 };
 
 export const saveGame = async (id: number, game: GameInput) => {
+	const validatedGame: GameInput = gameInputSchema.parse(game);
 	const db = getDB();
 	await db.collection<Game>(collection).updateOne(
 		{ game_id: id },
 		{
 			$set: {
-				...game,
+				...validatedGame,
 				updated_at: new Date(),
 			},
 			$setOnInsert: {

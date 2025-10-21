@@ -1,3 +1,4 @@
+import type { SectionData } from "@danilidonbeltran/webscrapper";
 import type { Post } from "../../schemas/post.schema";
 import {
 	SCRAPE_SOURCES,
@@ -6,13 +7,15 @@ import {
 import { parseRelativeDate } from "../../utils/date";
 import { createDateComparator } from "../../utils/sort";
 import type { Miner } from "./Miner";
+import { STEAMDECK_RATING } from "../../schemas/game.schema";
 
 export class ProtondbMiner implements Miner {
 	extractData(result: ScrapedContent) {
 		if (!result.sections) {
 			return { posts: [] };
 		}
-		const posts: Post[] = result.sections.map((section) => {
+		const [firstSection, secondSection, ...articles] = result.sections;
+		const posts: Post[] = articles.map((section) => {
 			return {
 				title: section.title,
 				source: SCRAPE_SOURCES.PROTONDB,
@@ -26,8 +29,8 @@ export class ProtondbMiner implements Miner {
 			.sort(createDateComparator("posted_at", "desc"));
 		return {
 			posts: meaningfulPosts,
-			steamdeck_rating: this.extractSteamdeckRating(result),
-			steamdeck_verified: this.extractSteamdeckVerified(result),
+			steamdeck_rating: this.extractSteamdeckRating(firstSection),
+			steamdeck_verified: this.extractSteamdeckVerified(secondSection),
 		};
 	}
 
@@ -40,13 +43,22 @@ export class ProtondbMiner implements Miner {
 		return null;
 	}
 
-	private extractSteamdeckRating(result: ScrapedContent) {
-		// TODO: Implement extraction logic
-		return undefined;
+	private extractSteamdeckRating(section: SectionData) {
+		switch (section.otherText[0].toLowerCase()) {
+			case "platinum":
+				return STEAMDECK_RATING.PLATINUM;
+			case "gold":
+				return STEAMDECK_RATING.GOLD;
+			case "native":
+				return STEAMDECK_RATING.NATIVE;
+			case "unsupported":
+				return STEAMDECK_RATING.UNSUPPORTED;
+			default:
+				return undefined;
+		}
 	}
 
-	private extractSteamdeckVerified(result: ScrapedContent) {
-		// TODO: Implement extraction logic
-		return undefined;
+	private extractSteamdeckVerified(section: SectionData) {
+		return section.otherText[1].toLowerCase() === "verified";
 	}
 }
