@@ -98,3 +98,7 @@ jobs:
         command: cves
         image: ${{ secrets.DOCKERHUB_USERNAME }}/steamdeck-unnoficial-db-api:${{ steps.meta.outputs.version || 'latest' }}
         only-severities: critical,high
+
+    - name: Trigger Kinsta's Sevalla deployment
+      run: |
+        curl -X POST https://hook.kinsta.com/apps/4e4ec9b2-14d5-4b32-882b-0b19b7e85596/deploy/fdozsewwwnzz
