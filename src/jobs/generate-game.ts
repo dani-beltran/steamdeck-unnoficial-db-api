@@ -1,8 +1,3 @@
-//
-// Job to generate a game entry in the database.
-// It picks one game from the queue, generates the entry, and marks it as processed.
-// The game data is assumed to be already scraped and available in the scrapes collection.
-//
 import dotenv from "dotenv";
 import { connectDB } from "../config/database";
 import logger from "../config/logger";
@@ -25,18 +20,25 @@ import { ClaudeService } from "../services/claude";
 
 dotenv.config();
 
-async function run() {
-	try {
-		const startTime = Date.now();
-		logger.info("Running job generate-game...");
+///////////////////////////////////////////////////////////////////////////////
+// Run the generate game job
+// Job to generate a game entry in the database.
+// It picks one game from the queue, generates the entry, and removes it from the queue.
+// The game data is assumed to be already scraped and available in the scrapes collection.
+///////////////////////////////////////////////////////////////////////////////
+run();
 
+async function run() {
+	const startTime = Date.now();
+	try {
+		logger.info("Running job generate-game...");
 		await connectDB();
 
 		const gameInQueue = await getOneGameFromQueue("regenerate");
 
 		if (!gameInQueue) {
 			logger.info("No games in queue. Exiting job.");
-			process.exit(0);
+			return;
 		}
 
 		logger.info(`Generating game entry for game ${gameInQueue.game_id}...`);
@@ -58,7 +60,7 @@ async function run() {
 				regenerated_at: new Date(Date.now()),
 				regenerate_failed: true,
 			});
-			process.exit(0);
+			return;
 		}
 
 		const game = await generateGameEntry(
@@ -68,19 +70,14 @@ async function run() {
 			sharedeckData,
 		);
 		await saveGame(gameInQueue.game_id, game);
-
 		await removeGameFromQueue(gameInQueue.game_id);
 
-		const endTime = Date.now();
-		logger.info(
-			`Finished generating game entry for game ${gameInQueue.game_id} in ${
-				(endTime - startTime) / 1000
-			} seconds.`,
-		);
-		process.exit(0);
+		logger.info(`Game entry for ${gameInQueue.game_id} generated successfully`);
 	} catch (error) {
 		logger.error("Error in job generate-game:", error);
-		process.exit(1);
+	} finally {
+	  logger.info(`Job generate-game has ended. It took ${(Date.now() - startTime) / 1000} seconds.`);
+	  process.exit(0);
 	}
 }
 
@@ -154,17 +151,22 @@ const extractPostData = async (mined_posts: Post[]) => {
 	);
 
 	if (steamdeckhqPost) {
+		logger.info("Processing SteamDeckHQ post for data extraction...");
+		logger.info("Generating game review and performance summary using AI...");
 		game_review_summary = await generateGameReviewSummary(steamdeckhqPost.game_review);
 		game_performance_summary = await generateGamePerformanceSummary(steamdeckhqPost.game_review);
 		posts.push(steamdeckhqPost);
 	}
 	if (sharedeckPostOled) {
+		logger.info("Processing Sharedeck OLED post for data extraction...");
 		posts.push(sharedeckPostOled);
 	}
 	if (sharedeckPostLcd) {
+		logger.info("Processing Sharedeck LCD post for data extraction...");
 		posts.push(sharedeckPostLcd);
 	}
 	if (posts.length === 0 && protonbPosts.length > 0) {
+		logger.warn("No SteamDeckHQ or Sharedeck posts found, falling back to ProtonDB posts and AI to extract data.");
 		// drop really old posts beyond the most recent 5
 		const recentPosts = protonbPosts.slice(0, 5);
 		const text = recentPosts.map((p) => p.raw).join("\n\n");
@@ -287,5 +289,3 @@ JSON:`;
 	}
 }
 
-
-run();

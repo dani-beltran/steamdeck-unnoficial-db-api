@@ -1,7 +1,3 @@
-//
-// Job to scrape game data from various sources.
-// It picks one game from the queue, scrapes data if rescrape is requested, and saves the data.
-//
 import dotenv from "dotenv";
 import { connectDB } from "../config/database";
 import logger from "../config/logger";
@@ -19,9 +15,18 @@ import { RedirectError } from "@danilidonbeltran/webscrapper/src/scraper";
 
 dotenv.config();
 
+///////////////////////////////////////////////////////////////////////////////
+// Run the scrape job
+//
+// Job to scrape game data from various sources.
+// It picks one game from the queue, scrapes data if rescrape is requested, 
+// and saves the data.
+///////////////////////////////////////////////////////////////////////////////
+run();
+
 async function run() {
+	const startTime = Date.now();
 	try {
-		const startTime = Date.now();
 		logger.info("Running job scrape-game...");
 
 		await connectDB();
@@ -30,7 +35,7 @@ async function run() {
 
 		if (!gameInQueue) {
 			logger.info("No games in queue. Exiting job.");
-			process.exit(0);
+			return;
 		}
 
 		logger.info(`Scraping game ${gameInQueue.game_id}...`);
@@ -51,7 +56,6 @@ async function run() {
 				gameInQueue.game_id,
 			),
 		]);
-		logger.info(`Finished scraping game ${gameInQueue.game_id}`);
 
 		// Mark as scraped so is not picked again
 		const utcNow = new Date(Date.now());
@@ -61,15 +65,12 @@ async function run() {
 			rescraped_at: utcNow,
 		});
 
-		logger.info(
-			`Job scrape-game completed in ${
-				(Date.now() - startTime) / 1000
-			} seconds.`,
-		);
-		process.exit(0);
+		logger.info(`Finished scraping game ${gameInQueue.game_id}`);
 	} catch (error) {
 		logger.error("Error scraping game:", error);
-		process.exit(1);
+	} finally {
+	  logger.info(`Job scrape-game has ended. It took ${(Date.now() - startTime) / 1000} seconds.`);
+	  process.exit(0);
 	}
 }
 
@@ -80,6 +81,7 @@ async function runScrapeProcess(
 ) {
 	try {
 		const { timestamp: _, ...result } = await scraper.scrape(gameId);
+		logger.info(`Scraped url ${result.url}`);
 		await saveScrapeData({
 			game_id: gameId,
 			source,
@@ -101,5 +103,3 @@ async function runScrapeProcess(
 	}
 }
 
-// Run the scrape
-run();
