@@ -17,6 +17,25 @@ export const setGameInQueue = async (game: InputGameQueue) => {
 	return;
 };
 
+export const setMultipleGamesInQueue = async (games: InputGameQueue[]) => {
+	const db = getDB();
+	const utcNow = new Date(Date.now());
+	const bulkOps = games.map((game) => ({
+		updateOne: {
+			filter: { game_id: game.game_id },
+			update: {
+				$set: { ...game },
+				$setOnInsert: { queued_at: utcNow },
+			},
+			upsert: true,
+		},
+	}));
+	if (bulkOps.length > 0) {
+		await db.collection<GameQueue>(collection).bulkWrite(bulkOps);
+	}
+	return;
+}
+
 export const getOneGameFromQueue = async (
 	target: "rescrape" | "regenerate",
 ) => {

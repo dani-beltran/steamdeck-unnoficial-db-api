@@ -11,6 +11,11 @@ export const fetchGameById = async (id: number) => {
 	return await db.collection<Game>(collection).findOne({ game_id: id });
 };
 
+export const findGames = async (filter: Partial<Game>) => {
+	const db = getDB();
+	return await db.collection<Game>(collection).find(filter).toArray();
+};
+
 export const saveGame = async (id: number, game: GameInput) => {
 	const validatedGame: GameInput = gameInputSchema.parse(game);
 	const db = getDB();
@@ -27,6 +32,31 @@ export const saveGame = async (id: number, game: GameInput) => {
 		},
 		{ upsert: true },
 	);
+};
+
+export const saveGamesBulk = async (games: { id: number; data: GameInput }[]) => {
+	const db = getDB();
+	const bulkOps = games.map(({ id, data }) => {
+		const validatedGame: GameInput = gameInputSchema.parse(data);
+		return {
+			updateOne: {
+				filter: { game_id: id },
+				update: {
+					$set: {
+						...validatedGame,
+						updated_at: new Date(),
+					},
+					$setOnInsert: {
+						created_at: new Date(),
+					},
+				},
+				upsert: true,
+			},
+		};
+	});
+	if (bulkOps.length > 0) {
+		await db.collection<Game>(collection).bulkWrite(bulkOps);
+	}
 };
 
 type ComposeGameParams = {

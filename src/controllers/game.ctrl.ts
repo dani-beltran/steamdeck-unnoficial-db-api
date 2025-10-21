@@ -21,20 +21,6 @@ export const getGameByIdCtrl = async (
 			return;
 		}
 
-		if (game.regenerate_requested || game.rescrape_requested) {
-			// TODO: move to a specific job
-			await setGameInQueue({
-				game_id: id,
-				rescrape: game.rescrape_requested ?? false,
-				regenerate: game.regenerate_requested ?? false,
-			});
-			await saveGame(id, {
-				...game,
-				rescrape_requested: false,
-				regenerate_requested: false,
-			});
-		}
-
 		res.json({ status: "ready", game });
 	} catch (error) {
 		logger.error("Error fetching game:", error);

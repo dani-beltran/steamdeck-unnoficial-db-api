@@ -13,6 +13,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "prepare-scraper": "playwright install",
+    "queue": "node dist/jobs/queue-games.js",
     "scrape": "node dist/jobs/scrape-game.js",
     "generate": "node dist/jobs/generate-game.js"
   },
