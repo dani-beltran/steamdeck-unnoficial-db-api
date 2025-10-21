@@ -44,7 +44,7 @@ export const getOneGameFromQueue = async (
 		{
 			// if target is regenerate, rescrape must be false or undefined. So we only pick games that were already scraped
 			rescrape: target === "regenerate" ? { $ne: true } : true,
-			regenerate: target === "regenerate"
+			[target]: true,
 		},
 		{ sort: { queued_at: 1 } },
 	);

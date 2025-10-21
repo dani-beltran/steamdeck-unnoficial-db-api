@@ -34,11 +34,11 @@ export const gameSchema = z.object({
 	settings: z
 		.array(
 			z.object({
-				game_settings: z.record(z.string(), z.string()).optional(),
-				steamdeck_settings: z.record(z.string(), z.string()).optional(),
-				steamdeck_hardware: z.enum(STEAMDECK_HARDWARE).optional(),
-				battery_performance: z.record(z.string(), z.string()).optional(),
-				steamdeck_experience: z.record(z.string(), z.string()).optional(),
+				game_settings: z.record(z.string(), z.string().optional().nullable()).optional().nullable(),
+				steamdeck_settings: z.record(z.string(), z.string().optional().nullable()).optional().nullable(),
+				steamdeck_hardware: z.enum(STEAMDECK_HARDWARE).optional().nullable(),
+				battery_performance: z.record(z.string(), z.string().optional().nullable()).optional().nullable(),
+				steamdeck_experience: z.record(z.string(), z.string().optional().nullable()).optional().nullable(),
 				posted_at: z.date().nullable(),
 			}),
 		)

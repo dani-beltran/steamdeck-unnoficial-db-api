@@ -6,20 +6,22 @@
 import dotenv from "dotenv";
 import { connectDB } from "../config/database";
 import logger from "../config/logger";
-import { composeGame, saveGame } from "../models/game.model";
+import { saveGame } from "../models/game.model";
 import {
 	getOneGameFromQueue,
 	removeGameFromQueue,
 	setGameInQueue,
 } from "../models/game-queue.model";
 import { getLastScrapedData } from "../models/scrape.model";
-import type { STEAMDECK_RATING } from "../schemas/game.schema";
+import type { GameInput, STEAMDECK_RATING } from "../schemas/game.schema";
 import type { Post } from "../schemas/post.schema";
 import { SCRAPE_SOURCES, type Scrape } from "../schemas/scrape.schema";
 import { ProtondbMiner } from "../services/data-mining/ProtondbMiner";
 import { SharedeckMiner } from "../services/data-mining/SharedeckMiner";
 import { SteamdeckhqMiner } from "../services/data-mining/SteamdeckhqMiner";
 import { getSteamGameDestails } from "../services/steam/steam";
+import { createDateComparator } from "../utils/sort";
+import { ClaudeService } from "../services/claude";
 
 dotenv.config();
 
@@ -87,7 +89,7 @@ async function generateGameEntry(
 	protondbData: Scrape | null,
 	steamdeckhqData: Scrape | null,
 	sharedeckData: Scrape | null,
-) {
+): Promise<GameInput> {
 	const posts: Post[] = [];
 	let steamdeck_rating: STEAMDECK_RATING | undefined;
 	let steamdeck_verified: boolean | undefined;
@@ -119,15 +121,171 @@ async function generateGameEntry(
 	}
 
 	const gameDetails = await getSteamGameDestails(gameId);
+	const { settings, game_review_summary, game_performance_summary } = await extractPostData(posts);
 
 	return {
-		...composeGame({
-			gameName: gameDetails.name,
-			minedPosts: posts,
-		}),
+		game_name: gameDetails.name,
+		game_performance_summary,
+		game_review_summary,
+		settings,
 		steamdeck_rating,
 		steamdeck_verified,
 	};
 }
+
+const extractPostData = async (mined_posts: Post[]) => {
+	const posts = [];
+	let game_review_summary = "";
+	let game_performance_summary = "";
+	const protonbPosts = mined_posts.filter(
+		(post) => post.source === SCRAPE_SOURCES.PROTONDB,
+	);
+	const steamdeckhqPost = mined_posts.filter(
+		(post) => post.source === SCRAPE_SOURCES.STEAMDECKHQ,
+	)[0];
+	const sharedeckPosts = mined_posts.filter(
+		(post) => post.source === SCRAPE_SOURCES.SHAREDECK,
+	);
+	const sharedeckPostOled = sharedeckPosts.find(
+		(post) => post.steamdeck_hardware === "oled",
+	);
+	const sharedeckPostLcd = sharedeckPosts.find(
+		(post) => post.steamdeck_hardware === "lcd",
+	);
+
+	if (steamdeckhqPost) {
+		game_review_summary = await generateGameReviewSummary(steamdeckhqPost.game_review);
+		game_performance_summary = await generateGamePerformanceSummary(steamdeckhqPost.game_review);
+		posts.push(steamdeckhqPost);
+	}
+	if (sharedeckPostOled) {
+		posts.push(sharedeckPostOled);
+	}
+	if (sharedeckPostLcd) {
+		posts.push(sharedeckPostLcd);
+	}
+	if (posts.length === 0 && protonbPosts.length > 0) {
+		// drop really old posts beyond the most recent 5
+		const recentPosts = protonbPosts.slice(0, 5);
+		const text = recentPosts.map((p) => p.raw).join("\n\n");
+		posts.push({
+			game_settings: await generateGameSettingsJson(text),
+			steamdeck_settings: await generateSteamDeckSettings(text),
+			battery_performance: await generateSteamDeckBatteryPerformance(text),
+			steamdeck_hardware: undefined,
+			steamdeck_experience: undefined,
+			posted_at: recentPosts[0].posted_at,
+		});
+	}
+	return {
+		game_review_summary,
+		game_performance_summary,
+		settings: posts.map((post) => ({
+			game_settings: post.game_settings,
+			steamdeck_settings: post.steamdeck_settings,
+			steamdeck_hardware: post.steamdeck_hardware,
+			battery_performance: post.battery_performance,
+			steamdeck_experience: post.steamdeck_experience,
+			posted_at: post.posted_at,
+		}))
+		.sort(createDateComparator("posted_at", "desc"))
+	}
+};
+
+async function generateGameReviewSummary(raw?: string) {
+	if (!raw) return "";
+	const prompt = `Generate a concise summary (2-3 sentences) of the following Steam Deck game review, focusing on key points about what is the game about, genre, gameplay, story and graphics. Avoid performance and technical aspects, aswell as personal opinions or extraneous details.
+
+Review:
+${raw}
+
+Summary:`;
+	const rawSummary = await askClaudeAI(prompt);
+	// Clean up the summary
+	const cleanedSummary = rawSummary
+		.replace(/^Summary:\s*/i, "")
+		.replace(/\s+/g, " ")
+		.replace(/^#/i, "")
+		.trim();
+	return cleanedSummary;
+}
+
+async function generateGamePerformanceSummary(raw?: string) {
+	if (!raw) return "";
+	const prompt = `Generate a concise summary (2-3 sentences) of the following Steam Deck game performance review, focusing on key points about performance and technical aspects. Avoid personal opinions or extraneous details.
+
+Performance Review:
+${raw}
+
+Summary:`;
+	const rawSummary = await askClaudeAI(prompt);
+	// Clean up the summary
+	const cleanedSummary = rawSummary
+		.replace(/^Summary:\s*/i, "")
+		.replace(/\s+/g, " ")
+		.replace(/^#/i, "")
+		.trim();
+	return cleanedSummary;
+}
+
+async function askClaudeAI(msg: string) {
+	if (!msg) return "";
+	const claudeService = new ClaudeService({
+		apiKey: process.env.CLAUDE_API_KEY || "",
+	});
+	return claudeService.prompt(msg, {
+		model: process.env.CLAUDE_AI_MODEL,
+		maxTokens: 300,
+		temperature: 0.3,
+	});
+}
+
+async function generateGameSettingsJson(raw?: string) {
+	return JsonExtractionAI(raw || "", `all mentioned game settings in key-value format. Only include game settings that are explicitly mentioned and prioritize settings from the most recent posts.`);
+}
+
+async function generateSteamDeckSettings(raw?: string) {
+	return JsonExtractionAI(raw || "", `the following Steam Deck specific settings and no other settings, only if they are mentioned:
+- frame_rate_cap
+- screen_refresh_rate
+- proton_version
+- steamos_version
+- tdp_limit
+- scaling_filter
+- gpu_clock_speed`);
+}
+
+async function generateSteamDeckBatteryPerformance(raw?: string) {
+	return JsonExtractionAI(raw || "", `the following Steam Deck battery performance details and no other information, only if they are mentioned:
+- consumption
+- temps
+- life_span`);
+}
+
+async function JsonExtractionAI(raw: string, promptFor: string) {
+	const claudeService = new ClaudeService({
+		apiKey: process.env.CLAUDE_API_KEY || "",
+	});
+	const prompt = `Extract the following information from the text and format it as a JSON object: ${promptFor}
+
+Text:
+${raw}
+
+JSON:`;
+	const rawJson = await claudeService.prompt(prompt, {
+		model: process.env.CLAUDE_AI_MODEL,
+		maxTokens: 500,
+		temperature: 0.3,
+	});
+	// Parse the JSON
+	try {
+		const settings = JSON.parse(rawJson);
+		return settings;
+	} catch (error) {
+		logger.warn("Failed to parse JSON:", error);
+		return {};
+	}
+}
+
 
 run();
