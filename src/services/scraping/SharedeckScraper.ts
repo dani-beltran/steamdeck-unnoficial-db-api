@@ -10,7 +10,7 @@ export class SharedeckScraper implements Scraper {
 			waitForSelector: "#reports",
 			browser: "chromium",
 			headless: true,
-			timeout: 10_000
+			timeout: 15_000
 		});
 	}
 

@@ -10,7 +10,7 @@ export class ProtondbScraper implements Scraper {
 			waitForSelector: ".for-anchor-tags",
 			browser: "chromium",
 			headless: true,
-			timeout: 10_000
+			timeout: 15_000
 		});
 	}
 
