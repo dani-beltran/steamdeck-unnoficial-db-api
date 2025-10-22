@@ -222,11 +222,12 @@ async function askClaudeAI(msg: string) {
 }
 
 async function generateGameSettingsJson(raw?: string) {
-	return jsonExtractionAI(raw || "", `all mentioned game settings in key-value format. Only include game settings that are explicitly mentioned and prioritize settings from the most recent posts.`);
+	const json = await jsonExtractionAI(raw || "", `all mentioned game settings in key-value format. Only include game settings that are explicitly mentioned and prioritize settings from the most recent posts.`);
+	return stringifyValues(json);
 }
 
 async function generateSteamDeckSettings(raw?: string) {
-	return jsonExtractionAI(raw || "", `the following Steam Deck specific settings and no other settings, only if they are mentioned:
+	const json = await jsonExtractionAI(raw || "", `the following Steam Deck specific settings and no other settings, only if they are mentioned:
 - frame_rate_cap
 - screen_refresh_rate
 - proton_version
@@ -234,13 +235,30 @@ async function generateSteamDeckSettings(raw?: string) {
 - tdp_limit
 - scaling_filter
 - gpu_clock_speed`);
+	return stringifyValues(json);
+	
 }
 
 async function generateSteamDeckBatteryPerformance(raw?: string) {
-	return jsonExtractionAI(raw || "", `the following Steam Deck battery performance details and no other information, only if they are mentioned:
+	const json = await jsonExtractionAI(raw || "", `the following Steam Deck battery performance details and no other information, only if they are mentioned:
 - consumption
 - temps
 - life_span`);
+	return stringifyValues(json);
+}
+
+function stringifyValues(obj: Record<string, any>) {
+	const res: Record<string, string> = {};
+	Object.entries(obj).forEach(([key, value]) => {
+		if (value !== null && value !== undefined) {
+			if (Array.isArray(value)) {
+				res[key] = value.join(", ");
+			} else {
+				res[key] = String(value);
+			}
+		}
+	});
+	return res;
 }
 
 async function jsonExtractionAI(raw: string, promptFor: string) {
