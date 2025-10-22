@@ -26,7 +26,6 @@ Fetches a game by its ID from the database. If the game is not found, it will be
     "game_id": 123,
     "game_name": "Example Game",
     "game_performance_summary": "Runs well on Steam Deck",
-    "game_review_summary": "Mostly positive reviews",
     "steamdeck_rating": "gold",
     "steamdeck_verified": true,
     "settings": [],

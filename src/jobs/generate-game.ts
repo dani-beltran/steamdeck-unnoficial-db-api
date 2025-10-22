@@ -118,12 +118,11 @@ async function generateGameEntry(
 	}
 
 	const gameDetails = await getSteamGameDestails(gameId);
-	const { settings, game_review_summary, game_performance_summary } = await extractPostData(posts);
+	const { settings, game_performance_summary } = await extractPostData(posts);
 
 	return {
 		game_name: gameDetails.name,
 		game_performance_summary,
-		game_review_summary,
 		settings,
 		steamdeck_rating,
 		steamdeck_verified,
@@ -132,7 +131,6 @@ async function generateGameEntry(
 
 const extractPostData = async (mined_posts: Post[]) => {
 	const posts = [];
-	let game_review_summary = "";
 	let game_performance_summary = "";
 	const protonbPosts = mined_posts.filter(
 		(post) => post.source === SCRAPE_SOURCES.PROTONDB,
@@ -152,8 +150,7 @@ const extractPostData = async (mined_posts: Post[]) => {
 
 	if (steamdeckhqPost) {
 		logger.info("Processing SteamDeckHQ post for data extraction...");
-		logger.info("Generating game review and performance summary using AI...");
-		game_review_summary = await generateGameReviewSummary(steamdeckhqPost.game_review);
+		logger.info("Generating game performance summary using AI...");
 		game_performance_summary = await generateGamePerformanceSummary(steamdeckhqPost.game_review);
 		posts.push(steamdeckhqPost);
 	}
@@ -180,7 +177,6 @@ const extractPostData = async (mined_posts: Post[]) => {
 		});
 	}
 	return {
-		game_review_summary,
 		game_performance_summary,
 		settings: posts.map((post) => ({
 			game_settings: post.game_settings,
@@ -194,28 +190,9 @@ const extractPostData = async (mined_posts: Post[]) => {
 	}
 };
 
-async function generateGameReviewSummary(raw?: string) {
-	if (!raw) return "";
-	const prompt = `Generate a concise summary (2-3 sentences) of the following Steam Deck game review, focusing on key points about what is the game about, genre, gameplay, story and graphics. Avoid performance and technical aspects, aswell as personal opinions or extraneous details. Don't include the title of the game in the summary.
-
-Review:
-${raw}
-
-Summary:`;
-	const rawSummary = await askClaudeAI(prompt);
-	// Clean up the summary
-	const cleanedSummary = rawSummary
-		.replace(/^Summary:\s*/i, "")
-		.replace(/Summary\s/i, "")
-		.replace(/\s+/g, " ")
-		.replace(/^#/i, "")
-		.trim();
-	return cleanedSummary;
-}
-
 async function generateGamePerformanceSummary(raw?: string) {
 	if (!raw) return "";
-	const prompt = `Generate a concise summary (2-3 sentences) of the following Steam Deck game performance review, focusing on key points about performance and technical aspects. Avoid personal opinions or extraneous details. Don't include the title of the game in the summary.
+	const prompt = `Generate a concise summary (2-3 sentences) of the following Steam Deck game performance review, focusing on key points about performance and technical aspects. Avoid personal opinions or extraneous details. Don't include the name of the game in the summary and don't provide a title for the summary.
 
 Performance Review:
 ${raw}
@@ -245,11 +222,11 @@ async function askClaudeAI(msg: string) {
 }
 
 async function generateGameSettingsJson(raw?: string) {
-	return JsonExtractionAI(raw || "", `all mentioned game settings in key-value format. Only include game settings that are explicitly mentioned and prioritize settings from the most recent posts.`);
+	return jsonExtractionAI(raw || "", `all mentioned game settings in key-value format. Only include game settings that are explicitly mentioned and prioritize settings from the most recent posts.`);
 }
 
 async function generateSteamDeckSettings(raw?: string) {
-	return JsonExtractionAI(raw || "", `the following Steam Deck specific settings and no other settings, only if they are mentioned:
+	return jsonExtractionAI(raw || "", `the following Steam Deck specific settings and no other settings, only if they are mentioned:
 - frame_rate_cap
 - screen_refresh_rate
 - proton_version
@@ -260,13 +237,13 @@ async function generateSteamDeckSettings(raw?: string) {
 }
 
 async function generateSteamDeckBatteryPerformance(raw?: string) {
-	return JsonExtractionAI(raw || "", `the following Steam Deck battery performance details and no other information, only if they are mentioned:
+	return jsonExtractionAI(raw || "", `the following Steam Deck battery performance details and no other information, only if they are mentioned:
 - consumption
 - temps
 - life_span`);
 }
 
-async function JsonExtractionAI(raw: string, promptFor: string) {
+async function jsonExtractionAI(raw: string, promptFor: string) {
 	const claudeService = new ClaudeService({
 		apiKey: process.env.CLAUDE_API_KEY || "",
 	});
@@ -276,11 +253,12 @@ Text:
 ${raw}
 
 JSON:`;
-	const rawJson = await claudeService.prompt(prompt, {
+	const res = await claudeService.prompt(prompt, {
 		model: process.env.CLAUDE_AI_MODEL,
 		maxTokens: 500,
 		temperature: 0.3,
 	});
+	const rawJson = res.substring(res.indexOf("{"), res.lastIndexOf("}") + 1);
 	// Parse the JSON
 	try {
 		const settings = JSON.parse(rawJson);

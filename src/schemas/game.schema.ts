@@ -28,7 +28,6 @@ export const gameSchema = z.object({
 	game_id: gameIdSchema,
 	game_name: z.string().min(1, "Name is required"),
 	game_performance_summary: z.string().optional(),
-	game_review_summary: z.string().optional(),
 	steamdeck_rating: z.enum(STEAMDECK_RATING).optional(),
 	steamdeck_verified: z.boolean().optional(),
 	settings: z
