@@ -1,14 +1,13 @@
 import { Router } from "express";
 import {
 	getGameByIdCtrl,
-	getSteamGameDetailsCtrl,
-	searchSteamGamesCtrl,
 } from "../controllers/game.ctrl";
 import { validateParams, validateQuery } from "../middleware/validation";
 import {
 	gameIdParamSchema,
 	steamSearchTermSchema,
 } from "../schemas/game.schema";
+import { searchSteamGamesCtrl, getSteamGameDetailsCtrl, getMostPlayedSteamDeckGamesCtrl } from "../controllers/steam-game.ctrl";
 
 const router = Router();
 
@@ -22,6 +21,10 @@ router.get(
 	"/steam/games/:id",
 	validateParams(gameIdParamSchema),
 	getSteamGameDetailsCtrl,
+);
+router.get(
+	"/steam/most-played-steam-deck-games",
+	getMostPlayedSteamDeckGamesCtrl,
 );
 
 export default router;
