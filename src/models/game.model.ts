@@ -12,14 +12,21 @@ export const fetchGameById = async (id: number) => {
 	return await db.collection<Game>(collection).findOne({ game_id: id });
 };
 
-type FindGamesArgs = {regenerateRequested?: boolean, rescrapeRequested?: boolean}
+type FindGamesArgs = {
+	regenerateRequested?: boolean;
+	rescrapeRequested?: boolean;
+};
 
 export const findGames = async (filter: FindGamesArgs) => {
 	const db = getDB();
-	return await db.collection<Game>(collection).find({
-		regenerate_requested: filter.regenerateRequested,
-		rescrape_requested: filter.rescrapeRequested
-	}).sort('updated_at', 'asc').toArray();
+	return await db
+		.collection<Game>(collection)
+		.find({
+			regenerate_requested: filter.regenerateRequested,
+			rescrape_requested: filter.rescrapeRequested,
+		})
+		.sort("updated_at", "asc")
+		.toArray();
 };
 
 export const saveGame = async (id: number, game: GameInput) => {
@@ -81,10 +88,7 @@ export const createGameIndexes = async () => {
 		.createIndex({ regenerate_requested: 1 });
 
 	// Create index for rescrape_requested queries
-	await db
-		.collection<Game>(collection)
-		.createIndex({ rescrape_requested: 1 });
-
+	await db.collection<Game>(collection).createIndex({ rescrape_requested: 1 });
 
 	// Create index for updated_at (useful for sorting)
 	await db.collection<Game>(collection).createIndex({ updated_at: -1 });

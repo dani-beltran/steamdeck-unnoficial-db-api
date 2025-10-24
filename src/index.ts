@@ -2,7 +2,9 @@ import dotenv from "dotenv";
 import app from "./app";
 import { connectDB } from "./config/database";
 import logger from "./config/logger";
+import { createGameIndexes } from "./models/game.model";
 import { createGameQueueIndexes } from "./models/game-queue.model";
+import { createScrapeIndexes } from "./models/scrape.model";
 import { createCacheIndexes } from "./models/steam-cache.model";
 
 dotenv.config();
@@ -13,15 +15,7 @@ const PORT = process.env.PORT || 3000;
 const startServer = async () => {
 	try {
 		await connectDB();
-
-		// Create indexes
-		logger.info("Creating cache indexes...");
-		await createCacheIndexes();
-		logger.info("Cache indexes created successfully");
-
-		logger.info("Creating game queue indexes...");
-		await createGameQueueIndexes();
-		logger.info("Game queue indexes created successfully");
+		await createIndexes();
 
 		app.listen(PORT, () => {
 			logger.info(`Server is running on port ${PORT}`);
@@ -30,6 +24,24 @@ const startServer = async () => {
 		logger.error("Failed to start server:", error);
 		process.exit(1);
 	}
+};
+
+const createIndexes = async () => {
+	logger.info("Creating cache indexes...");
+	await createCacheIndexes();
+	logger.info("Cache indexes created successfully");
+
+	logger.info("Creating game queue indexes...");
+	await createGameQueueIndexes();
+	logger.info("Game queue indexes created successfully");
+
+	logger.info("Creating game indexes...");
+	await createGameIndexes();
+	logger.info("Game indexes created successfully");
+
+	logger.info("Creating scrape indexes...");
+	await createScrapeIndexes();
+	logger.info("Scrape indexes created successfully");
 };
 
 startServer();

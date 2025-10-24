@@ -40,3 +40,18 @@ export const getLastScrapedData = async (
 		.collection<Scrape>(collection)
 		.findOne({ game_id, source }, { sort: { created_at: -1 } });
 };
+
+export const createScrapeIndexes = async () => {
+	const db = getDB();
+
+	// Create compound index for game_id, source, and hash (used in updateOne upsert)
+	await db
+		.collection<Scrape>(collection)
+		.createIndex({ game_id: 1, source: 1, hash: 1 }, { unique: true });
+
+	// Create compound index for game_id and source with created_at for sorting
+	// This supports the getLastScrapedData query efficiently
+	await db
+		.collection<Scrape>(collection)
+		.createIndex({ game_id: 1, source: 1, created_at: -1 });
+};
