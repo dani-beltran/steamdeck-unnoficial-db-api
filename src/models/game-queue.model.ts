@@ -55,3 +55,22 @@ export const removeGameFromQueue = async (game_id: number) => {
 	await db.collection<GameQueue>(collection).deleteOne({ game_id });
 	return;
 };
+
+export const createGameQueueIndexes = async () => {
+	const db = getDB();
+
+	// Create unique index on game_id (primary key)
+	await db
+		.collection<GameQueue>(collection)
+		.createIndex({ game_id: 1 }, { unique: true });
+
+	// Create compound index for rescrape queries sorted by queued_at
+	await db
+		.collection<GameQueue>(collection)
+		.createIndex({ rescrape: 1, queued_at: 1 });
+
+	// Create compound index for regenerate queries sorted by queued_at
+	await db
+		.collection<GameQueue>(collection)
+		.createIndex({ regenerate: 1, queued_at: 1 });
+};
