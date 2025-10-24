@@ -19,10 +19,11 @@ async function run() {
 		logger.info("Running job queue games...");
 
 		await connectDB();
-		const gamesToRegenerate = await findGames({ regenerate_requested: true });
-		const gamesToRescrape = await findGames({ rescrape_requested: true });
-		logger.info(`Found ${gamesToRegenerate.length} games to regenerate.`);
+		const gamesToRescrape = await findGames({ rescrapeRequested: true });
+		const gamesToRegenerate = await findGames({ regenerateRequested: true });
+
 		logger.info(`Found ${gamesToRescrape.length} games to rescrape.`);
+		logger.info(`Found ${gamesToRegenerate.length} games to regenerate.`);
 
 		const queueItemRegenerate = gamesToRegenerate.map((game) => ({
 			game_id: game.game_id,

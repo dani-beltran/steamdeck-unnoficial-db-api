@@ -12,9 +12,14 @@ export const fetchGameById = async (id: number) => {
 	return await db.collection<Game>(collection).findOne({ game_id: id });
 };
 
-export const findGames = async (filter: Partial<Game>) => {
+type FindGamesArgs = {regenerateRequested?: boolean, rescrapeRequested?: boolean}
+
+export const findGames = async (filter: FindGamesArgs) => {
 	const db = getDB();
-	return await db.collection<Game>(collection).find(filter).toArray();
+	return await db.collection<Game>(collection).find({
+		regenerate_requested: filter.regenerateRequested,
+		rescrape_requested: filter.rescrapeRequested
+	}).sort('updated_at', 'asc').toArray();
 };
 
 export const saveGame = async (id: number, game: GameInput) => {
@@ -60,4 +65,27 @@ export const saveGamesBulk = async (
 	if (bulkOps.length > 0) {
 		await db.collection<Game>(collection).bulkWrite(bulkOps);
 	}
+};
+
+export const createGameIndexes = async () => {
+	const db = getDB();
+
+	// Create unique index on game_id (primary key)
+	await db
+		.collection<Game>(collection)
+		.createIndex({ game_id: 1 }, { unique: true });
+
+	// Create index for regenerate_requested queries
+	await db
+		.collection<Game>(collection)
+		.createIndex({ regenerate_requested: 1 });
+
+	// Create index for rescrape_requested queries
+	await db
+		.collection<Game>(collection)
+		.createIndex({ rescrape_requested: 1 });
+
+
+	// Create index for updated_at (useful for sorting)
+	await db.collection<Game>(collection).createIndex({ updated_at: -1 });
 };
