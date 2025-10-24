@@ -1,4 +1,5 @@
 import type { SectionData } from "@danilidonbeltran/webscrapper";
+import { STEAMDECK_RATING } from "../../schemas/game.schema";
 import type { Post } from "../../schemas/post.schema";
 import {
 	SCRAPE_SOURCES,
@@ -7,7 +8,6 @@ import {
 import { parseRelativeDate } from "../../utils/date";
 import { createDateComparator } from "../../utils/sort";
 import type { Miner } from "./Miner";
-import { STEAMDECK_RATING } from "../../schemas/game.schema";
 
 export class ProtondbMiner implements Miner {
 	extractData(result: ScrapedContent) {

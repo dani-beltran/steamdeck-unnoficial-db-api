@@ -34,7 +34,7 @@ export const setMultipleGamesInQueue = async (games: InputGameQueue[]) => {
 		await db.collection<GameQueue>(collection).bulkWrite(bulkOps);
 	}
 	return;
-}
+};
 
 export const getOneGameFromQueue = async (
 	target: "rescrape" | "regenerate",

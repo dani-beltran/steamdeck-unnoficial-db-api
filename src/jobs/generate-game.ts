@@ -11,12 +11,12 @@ import { getLastScrapedData } from "../models/scrape.model";
 import type { GameInput, STEAMDECK_RATING } from "../schemas/game.schema";
 import type { Post } from "../schemas/post.schema";
 import { SCRAPE_SOURCES, type Scrape } from "../schemas/scrape.schema";
+import { ClaudeService } from "../services/claude";
 import { ProtondbMiner } from "../services/data-mining/ProtondbMiner";
 import { SharedeckMiner } from "../services/data-mining/SharedeckMiner";
 import { SteamdeckhqMiner } from "../services/data-mining/SteamdeckhqMiner";
 import { getSteamGameDestails } from "../services/steam/steam";
 import { createDateComparator } from "../utils/sort";
-import { ClaudeService } from "../services/claude";
 
 dotenv.config();
 
@@ -76,8 +76,10 @@ async function run() {
 	} catch (error) {
 		logger.error("Error in job generate-game:", error);
 	} finally {
-	  logger.info(`Job generate-game has ended. It took ${(Date.now() - startTime) / 1000} seconds.`);
-	  process.exit(0);
+		logger.info(
+			`Job generate-game has ended. It took ${(Date.now() - startTime) / 1000} seconds.`,
+		);
+		process.exit(0);
 	}
 }
 
@@ -151,7 +153,9 @@ const extractPostData = async (mined_posts: Post[]) => {
 	if (steamdeckhqPost) {
 		logger.info("Processing SteamDeckHQ post for data extraction...");
 		logger.info("Generating game performance summary using AI...");
-		game_performance_summary = await generateGamePerformanceSummary(steamdeckhqPost.game_review);
+		game_performance_summary = await generateGamePerformanceSummary(
+			steamdeckhqPost.game_review,
+		);
 		posts.push(steamdeckhqPost);
 	}
 	if (sharedeckPostOled) {
@@ -163,7 +167,9 @@ const extractPostData = async (mined_posts: Post[]) => {
 		posts.push(sharedeckPostLcd);
 	}
 	if (posts.length === 0 && protonbPosts.length > 0) {
-		logger.warn("No SteamDeckHQ or Sharedeck posts found, falling back to ProtonDB posts and AI to extract data.");
+		logger.warn(
+			"No SteamDeckHQ or Sharedeck posts found, falling back to ProtonDB posts and AI to extract data.",
+		);
 		// drop really old posts beyond the most recent 5
 		const recentPosts = protonbPosts.slice(0, 5);
 		const text = recentPosts.map((p) => p.raw).join("\n\n");
@@ -178,16 +184,17 @@ const extractPostData = async (mined_posts: Post[]) => {
 	}
 	return {
 		game_performance_summary,
-		settings: posts.map((post) => ({
-			game_settings: post.game_settings,
-			steamdeck_settings: post.steamdeck_settings,
-			steamdeck_hardware: post.steamdeck_hardware,
-			battery_performance: post.battery_performance,
-			steamdeck_experience: post.steamdeck_experience,
-			posted_at: post.posted_at,
-		}))
-		.sort(createDateComparator("posted_at", "desc"))
-	}
+		settings: posts
+			.map((post) => ({
+				game_settings: post.game_settings,
+				steamdeck_settings: post.steamdeck_settings,
+				steamdeck_hardware: post.steamdeck_hardware,
+				battery_performance: post.battery_performance,
+				steamdeck_experience: post.steamdeck_experience,
+				posted_at: post.posted_at,
+			}))
+			.sort(createDateComparator("posted_at", "desc")),
+	};
 };
 
 async function generateGamePerformanceSummary(raw?: string) {
@@ -222,28 +229,36 @@ async function askClaudeAI(msg: string) {
 }
 
 async function generateGameSettingsJson(raw?: string) {
-	const json = await jsonExtractionAI(raw || "", `all mentioned game settings in key-value format. Only include game settings that are explicitly mentioned and prioritize settings from the most recent posts.`);
+	const json = await jsonExtractionAI(
+		raw || "",
+		`all mentioned game settings in key-value format. Only include game settings that are explicitly mentioned and prioritize settings from the most recent posts.`,
+	);
 	return stringifyValues(json);
 }
 
 async function generateSteamDeckSettings(raw?: string) {
-	const json = await jsonExtractionAI(raw || "", `the following Steam Deck specific settings and no other settings, only if they are mentioned:
+	const json = await jsonExtractionAI(
+		raw || "",
+		`the following Steam Deck specific settings and no other settings, only if they are mentioned:
 - frame_rate_cap
 - screen_refresh_rate
 - proton_version
 - steamos_version
 - tdp_limit
 - scaling_filter
-- gpu_clock_speed`);
+- gpu_clock_speed`,
+	);
 	return stringifyValues(json);
-	
 }
 
 async function generateSteamDeckBatteryPerformance(raw?: string) {
-	const json = await jsonExtractionAI(raw || "", `the following Steam Deck battery performance details and no other information, only if they are mentioned:
+	const json = await jsonExtractionAI(
+		raw || "",
+		`the following Steam Deck battery performance details and no other information, only if they are mentioned:
 - consumption
 - temps
-- life_span`);
+- life_span`,
+	);
 	return stringifyValues(json);
 }
 
@@ -286,4 +301,3 @@ JSON:`;
 		return {};
 	}
 }
-

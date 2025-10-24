@@ -296,9 +296,7 @@ describe("GET /games/:id", () => {
 			await db.collection("games").insertOne(testGame);
 
 			// Act
-			const response = await request(app)
-				.get(`/games/${largeId}`)
-				.expect(200);
+			const response = await request(app).get(`/games/${largeId}`).expect(200);
 
 			// Assert
 			expect(response.body.status).toBe("ready");

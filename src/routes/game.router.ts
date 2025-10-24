@@ -1,13 +1,15 @@
 import { Router } from "express";
+import { getGameByIdCtrl } from "../controllers/game.ctrl";
 import {
-	getGameByIdCtrl,
-} from "../controllers/game.ctrl";
+	getMostPlayedSteamDeckGamesCtrl,
+	getSteamGameDetailsCtrl,
+	searchSteamGamesCtrl,
+} from "../controllers/steam-game.ctrl";
 import { validateParams, validateQuery } from "../middleware/validation";
 import {
 	gameIdParamSchema,
 	steamSearchTermSchema,
 } from "../schemas/game.schema";
-import { searchSteamGamesCtrl, getSteamGameDetailsCtrl, getMostPlayedSteamDeckGamesCtrl } from "../controllers/steam-game.ctrl";
 
 const router = Router();
 

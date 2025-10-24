@@ -1,3 +1,4 @@
+import { RedirectError } from "@danilidonbeltran/webscrapper/src/scraper";
 import dotenv from "dotenv";
 import { connectDB } from "../config/database";
 import logger from "../config/logger";
@@ -11,7 +12,6 @@ import { ProtondbScraper } from "../services/scraping/ProtondbScraper";
 import type { Scraper } from "../services/scraping/Scraper";
 import { SharedeckScraper } from "../services/scraping/SharedeckScraper";
 import { SteamdeckhqScraper } from "../services/scraping/SteamdeckhqScraper";
-import { RedirectError } from "@danilidonbeltran/webscrapper/src/scraper";
 
 dotenv.config();
 
@@ -19,7 +19,7 @@ dotenv.config();
 // Run the scrape job
 //
 // Job to scrape game data from various sources.
-// It picks one game from the queue, scrapes data if rescrape is requested, 
+// It picks one game from the queue, scrapes data if rescrape is requested,
 // and saves the data.
 ///////////////////////////////////////////////////////////////////////////////
 run();
@@ -69,8 +69,10 @@ async function run() {
 	} catch (error) {
 		logger.error("Error scraping game:", error);
 	} finally {
-	  logger.info(`Job scrape-game has ended. It took ${(Date.now() - startTime) / 1000} seconds.`);
-	  process.exit(0);
+		logger.info(
+			`Job scrape-game has ended. It took ${(Date.now() - startTime) / 1000} seconds.`,
+		);
+		process.exit(0);
 	}
 }
 
@@ -89,8 +91,10 @@ async function runScrapeProcess(
 		});
 		return result;
 	} catch (error) {
-		if ( error instanceof RedirectError) {
-			logger.warn(`Redirection prevented while scraping game ${gameId} from source ${source}`)
+		if (error instanceof RedirectError) {
+			logger.warn(
+				`Redirection prevented while scraping game ${gameId} from source ${source}`,
+			);
 			return;
 		}
 		logger.error(
@@ -102,4 +106,3 @@ async function runScrapeProcess(
 		scraper.close();
 	}
 }
-

@@ -1,5 +1,9 @@
 import { getDB } from "../config/database";
-import { gameInputSchema, type Game, type GameInput } from "../schemas/game.schema";
+import {
+	type Game,
+	type GameInput,
+	gameInputSchema,
+} from "../schemas/game.schema";
 
 const collection = "games";
 
@@ -31,7 +35,9 @@ export const saveGame = async (id: number, game: GameInput) => {
 	);
 };
 
-export const saveGamesBulk = async (games: { id: number; data: GameInput }[]) => {
+export const saveGamesBulk = async (
+	games: { id: number; data: GameInput }[],
+) => {
 	const db = getDB();
 	const bulkOps = games.map(({ id, data }) => {
 		const validatedGame: GameInput = gameInputSchema.parse(data);

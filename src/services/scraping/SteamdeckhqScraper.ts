@@ -12,7 +12,7 @@ export class SteamdeckhqScraper implements Scraper {
 			browser: "chromium",
 			headless: true,
 			followRedirects: false,
-			timeout: 15_000
+			timeout: 15_000,
 		});
 	}
 

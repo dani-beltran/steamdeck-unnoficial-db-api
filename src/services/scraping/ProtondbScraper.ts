@@ -5,12 +5,16 @@ export class ProtondbScraper implements Scraper {
 	private scraper: WebScraper;
 
 	constructor() {
-		this.scraper = new WebScraper({ 
-			sectionSelectors: [".GameInfo__SummaryContainer-sc-19o71ac-1", ".DeckVerifiedInfo__AlignedRowWidthUnset-sc-acfn33-0", ".for-anchor-tags"], 
+		this.scraper = new WebScraper({
+			sectionSelectors: [
+				".GameInfo__SummaryContainer-sc-19o71ac-1",
+				".DeckVerifiedInfo__AlignedRowWidthUnset-sc-acfn33-0",
+				".for-anchor-tags",
+			],
 			waitForSelector: ".for-anchor-tags",
 			browser: "chromium",
 			headless: true,
-			timeout: 15_000
+			timeout: 15_000,
 		});
 	}
 
