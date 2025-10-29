@@ -55,6 +55,7 @@ export const gameSchema = z.object({
 		)
 		.nullable()
 		.optional(),
+	data_sources: z.array(z.string()).optional(),
 	rescrape_requested: z.boolean().optional(),
 	regenerate_requested: z.boolean().optional(),
 	updated_at: z.date(),

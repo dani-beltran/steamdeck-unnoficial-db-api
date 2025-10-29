@@ -120,7 +120,7 @@ async function generateGameEntry(
 	}
 
 	const gameDetails = await getSteamGameDestails(gameId);
-	const { settings, game_performance_summary } = await extractPostData(posts);
+	const { settings, game_performance_summary, data_sources } = await extractPostData(posts);
 
 	return {
 		game_name: gameDetails.name,
@@ -128,11 +128,13 @@ async function generateGameEntry(
 		settings,
 		steamdeck_rating,
 		steamdeck_verified,
+		data_sources: [...data_sources, 'steam']
 	};
 }
 
 const extractPostData = async (mined_posts: Post[]) => {
 	const posts = [];
+	const uniqueSources = Array.from(new Set(mined_posts.map((post) => post.source)));
 	let game_performance_summary = "";
 	const protonbPosts = mined_posts.filter(
 		(post) => post.source === SCRAPE_SOURCES.PROTONDB,
@@ -184,6 +186,7 @@ const extractPostData = async (mined_posts: Post[]) => {
 	}
 	return {
 		game_performance_summary,
+		data_sources: uniqueSources,
 		settings: posts
 			.map((post) => ({
 				game_settings: post.game_settings,
