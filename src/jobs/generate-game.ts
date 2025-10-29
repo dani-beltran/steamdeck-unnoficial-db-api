@@ -3,7 +3,7 @@ import { connectDB } from "../config/database";
 import logger from "../config/logger";
 import { saveGame } from "../models/game.model";
 import {
-	getOneGameFromQueue,
+	getGameToGenerateFromQueue,
 	removeGameFromQueue,
 	setGameInQueue,
 } from "../models/game-queue.model";
@@ -34,7 +34,7 @@ async function run() {
 		logger.info("Running job generate-game...");
 		await connectDB();
 
-		const gameInQueue = await getOneGameFromQueue("regenerate");
+		const gameInQueue = await getGameToGenerateFromQueue();
 
 		if (!gameInQueue) {
 			logger.info("No games in queue. Exiting job.");

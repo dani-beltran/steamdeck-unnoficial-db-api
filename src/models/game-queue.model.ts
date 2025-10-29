@@ -36,19 +36,28 @@ export const setMultipleGamesInQueue = async (games: InputGameQueue[]) => {
 	return;
 };
 
-export const getOneGameFromQueue = async (
-	target: "rescrape" | "regenerate",
-) => {
+export const getGameToScrapeFromQueue = async () => {
 	const db = getDB();
-	return await db.collection<GameQueue>(collection).findOne(
-		{
-			// if target is regenerate, rescrape must be false or undefined. So we only pick games that were already scraped
-			rescrape: target === "regenerate" ? { $ne: true } : true,
-			[target]: true,
+	return await db
+		.collection<GameQueue>(collection)
+		.findOne({ 
+			rescrape: true,
+			rescrape_failed: { $ne: true },
 		},
-		{ sort: { queued_at: 1 } },
-	);
-};
+		{ sort: { queued_at: 1 } },);
+}
+
+export const getGameToGenerateFromQueue = async () => {
+	const db = getDB();
+	return await db
+		.collection<GameQueue>(collection)
+		.findOne({ 
+			rescrape: { $ne: true },
+			regenerate: true,
+			regenerate_failed: { $ne: true },
+		},
+		{ sort: { queued_at: 1 } },);
+}
 
 export const removeGameFromQueue = async (game_id: number) => {
 	const db = getDB();

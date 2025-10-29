@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import { connectDB } from "../config/database";
 import logger from "../config/logger";
 import {
-	getOneGameFromQueue,
+	getGameToScrapeFromQueue,
 	setGameInQueue,
 } from "../models/game-queue.model";
 import { saveScrapeData } from "../models/scrape.model";
@@ -31,7 +31,7 @@ async function run() {
 
 		await connectDB();
 
-		const gameInQueue = await getOneGameFromQueue("rescrape");
+		const gameInQueue = await getGameToScrapeFromQueue();
 
 		if (!gameInQueue) {
 			logger.info("No games in queue. Exiting job.");
