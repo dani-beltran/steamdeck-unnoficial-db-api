@@ -16,5 +16,12 @@ export const steamGameDetailsCacheSchema = z.object({
 	expires_at: z.date(),
 });
 
+export const steamDeckMostPlayedCacheSchema = z.object({
+	game_ids: z.array(z.number()),
+	created_at: z.date(),
+	expires_at: z.date(),
+});
+
 export type SteamSearchCache = z.infer<typeof steamSearchCacheSchema>;
 export type SteamGameDetailsCache = z.infer<typeof steamGameDetailsCacheSchema>;
+export type SteamDeckMostPlayedCache = z.infer<typeof steamDeckMostPlayedCacheSchema>;

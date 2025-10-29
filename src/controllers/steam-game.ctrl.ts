@@ -3,8 +3,11 @@ import logger from "../config/logger";
 import {
 	getCachedGameDetails,
 	getCachedSearchResults,
+	getCachedMostPlayedGames,
 	saveGameDetailsCache,
 	saveSearchResultsCache,
+	saveMostPlayedGamesCache,
+	getCachedGamesDetails,
 } from "../models/steam-cache.model";
 import {
 	getMostPlayedSteamDeckGameIds,
@@ -55,12 +58,7 @@ export const getSteamGameDetailsCtrl = async (
 			return;
 		}
 
-		// Fetch from Steam API
-		const data = await getSteamGameDestails(gameId);
-
-		// Save to cache
-		await saveGameDetailsCache(gameId, data);
-		logger.info(`Cached game details for game ID: ${gameId}`);
+		const data = await fetchAndCacheSteamGameDetails(gameId);
 
 		res.json(data);
 	} catch (error) {
@@ -74,12 +72,46 @@ export const getMostPlayedSteamDeckGamesCtrl = async (
 	res: Response,
 ): Promise<void> => {
 	try {
+		const LIMIT = 32;
+
+		// Check cache first
+		const cachedIds = await getCachedMostPlayedGames();
+		if (cachedIds) {
+			const games = await getManySteamGamesDetails(cachedIds.slice(0, LIMIT));
+			res.json(games);
+			return;
+		}
+
+		// Fetch from Steam API
 		const ids = await getMostPlayedSteamDeckGameIds();
-		// TODO: fetch game details for these ids
-		// but first cache the results to avoid hitting Steam API limits
-		res.json({ games: "TODO" });
+
+		// Save to cache
+		await saveMostPlayedGamesCache(ids);
+		logger.info(`Cached most played Steam Deck games: ${ids.length} games`);
+
+		const games = await getManySteamGamesDetails(ids.slice(0, LIMIT));
+		res.json(games);
 	} catch (error) {
 		logger.error("Error fetching most played Steam Deck games:", error);
 		res.status(500).json({ error: "Internal server error" });
 	}
+};
+
+const getManySteamGamesDetails = async (gameIds: number[]) => {
+	const cachedGames = await getCachedGamesDetails(gameIds);
+	const cachedGameIds = cachedGames.map((game) => game.steam_appid);
+	const missingGameIds = gameIds.filter((id) => !cachedGameIds.includes(id));
+	for (const gameId of missingGameIds) {
+		const gameDetails = await fetchAndCacheSteamGameDetails(gameId);
+		cachedGames.push(gameDetails);
+	}
+	// keep original order
+	return gameIds.map((id) => cachedGames.find((game) => game.steam_appid === id)!);
+}
+
+const fetchAndCacheSteamGameDetails = async (gameId: number) => {
+	const data = await getSteamGameDestails(gameId);
+	await saveGameDetailsCache(gameId, data);
+	logger.info(`Cached game details for game ID: ${gameId}`);
+	return data;
 };
