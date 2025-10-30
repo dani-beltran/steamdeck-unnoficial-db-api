@@ -1,14 +1,16 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 import passport from "passport";
 import { Strategy as SteamStrategy } from "passport-steam";
 import session from "express-session";
 import dotenv from "dotenv";
 import { SESSION_SECRET, STEAM_API_KEY, STEAM_REALM, WEB_HOST } from "../config/env";
+import { getCookie } from "../utils/express-utils";
 
 // Load environment variables
 dotenv.config();
 
 const router = Router();
+export default router;
 
 // Session middleware (required for passport)
 router.use(session({
@@ -42,8 +44,14 @@ router.get("/auth/steam", passport.authenticate("steam", { failureRedirect: "/" 
 
 // Steam auth callback
 router.get("/auth/steam/return", passport.authenticate("steam", { failureRedirect: "/" }), (req, res) => {
-  // On success, redirect to frontend with user info (or set session/cookie)
-  res.redirect(`${WEB_HOST}?steamid=${(req.user as any)?.id}`);
+  const ref = getCookie(req, "login_referer");
+  // On success, redirect to referrer if valid, else to home page
+  if (ref?.startsWith(WEB_HOST)) {
+    const url = new URL(ref);
+    res.redirect(url.toString());
+  } else {
+    res.redirect(`${WEB_HOST}`);
+  }
 });
 
 // Get current user info
@@ -54,8 +62,6 @@ router.get("/auth/user", (req, res) => {
     res.status(401).json({ error: "Not authenticated" });
   }
 });
-
-export default router;
 
 // Logout endpoint
 router.get("/auth/logout", (req, res, next) => {
@@ -69,10 +75,20 @@ router.get("/auth/logout", (req, res, next) => {
           return res.status(500).json({ error: "Logout failed" });
         }
         res.clearCookie("connect.sid");
-        res.redirect(`${WEB_HOST}`);
+        redirectToRefererOrHome(req, res);
       });
     } else {
-      res.redirect(`${WEB_HOST}`);
+      redirectToRefererOrHome(req, res);
     }
   });
 });
+
+const redirectToRefererOrHome = (req: Request, res: Response) => {
+  const ref = req.get("Referer") || req.get("Referrer");
+  console.log("Logout referer:", ref);
+  if (ref?.startsWith(WEB_HOST)) {
+    res.redirect(ref);
+  } else {
+    res.redirect(`${WEB_HOST}`);
+  }
+}
