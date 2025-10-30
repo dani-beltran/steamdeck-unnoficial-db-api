@@ -68,6 +68,8 @@ describe("GET /games/:id", () => {
 				],
 				created_at: new Date(),
 				updated_at: new Date(),
+				thumbs_down: 0,
+				thumbs_up: 0,
 			};
 			const db: Db = getTestDB();
 			await db.collection("games").insertOne(testGame);
@@ -99,6 +101,8 @@ describe("GET /games/:id", () => {
 				settings: [],
 				created_at: new Date(),
 				updated_at: new Date(),
+				thumbs_up: 0,
+				thumbs_down: 0,
 			};
 
 			const db: Db = getTestDB();
@@ -140,6 +144,8 @@ describe("GET /games/:id", () => {
 				],
 				created_at: new Date(),
 				updated_at: new Date(),
+				thumbs_up: 0,
+				thumbs_down: 0,
 			};
 
 			const db: Db = getTestDB();
@@ -290,6 +296,8 @@ describe("GET /games/:id", () => {
 				settings: [],
 				created_at: new Date(),
 				updated_at: new Date(),
+				thumbs_up: 0,
+				thumbs_down: 0,
 			};
 
 			const db: Db = getTestDB();
@@ -311,6 +319,8 @@ describe("GET /games/:id", () => {
 				settings: [],
 				created_at: new Date(),
 				updated_at: new Date(),
+				thumbs_up: 0,
+				thumbs_down: 0,
 			};
 
 			const db: Db = getTestDB();
