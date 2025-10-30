@@ -20,6 +20,8 @@ if (!process.env.SESSION_SECRET) {
 // Export env variables
 export const NODE_ENV = process.env.NODE_ENV || "development";
 export const PORT = process.env.PORT || "3000";
+export const HOST = process.env.HOST || "http://localhost:3000";
+export const WEB_HOST = process.env.WEB_HOST || "http://localhost:3001";
 
 export const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/steamdeckdb";
 export const DB_NAME = process.env.DB_NAME || "steamdeckdb";
