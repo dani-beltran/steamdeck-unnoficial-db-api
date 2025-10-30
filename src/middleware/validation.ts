@@ -83,3 +83,29 @@ export const validateQuery = (schema: ZodType) => {
 		}
 	};
 };
+
+export const validateBody = (schema: ZodType) => {
+	return async (req: Request, res: Response, next: NextFunction) => {
+		try {
+			const validated = await schema.parseAsync(req.body);
+			// biome-ignore lint/suspicious/noExplicitAny: too complex to solve for the scope of this project
+			req.body = validated as any;
+			next();
+		} catch (error) {
+			if (error instanceof ZodError) {
+				const errorMessages = error.issues.map((issue) => ({
+					field: issue.path.join("."),
+					message: issue.message,
+				}));
+
+				res.status(400).json({
+					error: "Invalid request body",
+					details: errorMessages,
+				});
+			} else {
+				logger.error("Unexpected error in validation", error);
+				res.status(500).json({ error: "Internal server error" });
+			}
+		}
+	};
+};

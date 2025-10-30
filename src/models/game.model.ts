@@ -9,7 +9,7 @@ const collection = "games";
 
 export const fetchGameById = async (id: number) => {
 	const db = getDB();
-	return await db.collection<Game>(collection).findOne({ game_id: id });
+	return db.collection<Game>(collection).findOne({ game_id: id });
 };
 
 type FindGamesArgs = {
@@ -19,7 +19,7 @@ type FindGamesArgs = {
 
 export const findGames = async (filter: FindGamesArgs) => {
 	const db = getDB();
-	return await db
+	return db
 		.collection<Game>(collection)
 		.find({
 			regenerate_requested: filter.regenerateRequested,
@@ -32,7 +32,7 @@ export const findGames = async (filter: FindGamesArgs) => {
 export const saveGame = async (id: number, game: GameInput) => {
 	const validatedGame: GameInput = gameInputSchema.parse(game);
 	const db = getDB();
-	await db.collection<Game>(collection).updateOne(
+	return db.collection<Game>(collection).updateOne(
 		{ game_id: id },
 		{
 			$set: {
@@ -46,6 +46,40 @@ export const saveGame = async (id: number, game: GameInput) => {
 		{ upsert: true },
 	);
 };
+
+export const addVoteToGame = async (id: number, vote: "up" | "down") => {
+	const db = getDB();
+	const updateField = vote === "up" ? "thumbs_up" : "thumbs_down";
+	
+	return db.collection<Game>(collection).updateOne(
+		{ game_id: id },
+		{
+			$inc: {
+				[updateField]: 1,
+			},
+			$set: {
+				updated_at: new Date(),
+			}
+		}
+	);
+}
+
+export const removeVoteToGame = async (id: number, vote: "up" | "down") => {
+	const db = getDB();
+	const updateField = vote === "up" ? "thumbs_up" : "thumbs_down";
+	
+	return db.collection<Game>(collection).updateOne(
+		{ game_id: id },
+		{
+			$inc: {
+				[updateField]: -1,
+			},
+			$set: {
+				updated_at: new Date(),
+			}
+		}
+	);
+}
 
 export const saveGamesBulk = async (
 	games: { id: number; data: GameInput }[],

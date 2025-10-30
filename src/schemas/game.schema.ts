@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { gameIdSchema } from "./game-id.schema";
+import { VOTE_TYPE } from "./vote.schema";
 
 export enum STEAMDECK_RATING {
 	GOLD = "gold",
@@ -56,6 +57,8 @@ export const gameSchema = z.object({
 		.nullable()
 		.optional(),
 	data_sources: z.array(z.string()).optional(),
+	thumbs_up: z.number().int().nonnegative().default(0),
+	thumbs_down: z.number().int().nonnegative().default(0),
 	rescrape_requested: z.boolean().optional(),
 	regenerate_requested: z.boolean().optional(),
 	updated_at: z.date(),
@@ -66,6 +69,10 @@ export const gameInputSchema = gameSchema.omit({
 	game_id: true,
 	updated_at: true,
 	created_at: true,
+});
+
+export const gameVoteSchema = z.object({
+	vote: z.enum(VOTE_TYPE),
 });
 
 // Type exports

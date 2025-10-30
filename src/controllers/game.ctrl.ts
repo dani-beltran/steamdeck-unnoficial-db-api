@@ -1,7 +1,11 @@
 import type { Request, Response } from "express";
 import logger from "../config/logger";
-import { fetchGameById } from "../models/game.model";
+import { fetchGameById, addVoteToGame, removeVoteToGame } from "../models/game.model";
 import { setGameInQueue } from "../models/game-queue.model";
+import { setUserVote, fetchUserById } from "../models/user.model";
+import { SteamProfile } from "../services/steam/steam.types";
+import { getDB } from "../config/database";
+import { VoteBody } from "../schemas/vote.schema";
 
 export const getGameByIdCtrl = async (
 	req: Request,
@@ -21,5 +25,40 @@ export const getGameByIdCtrl = async (
 	} catch (error) {
 		logger.error("Error fetching game:", error);
 		res.status(500).json({ error: "Internal server error" });
+	}
+};
+
+export const voteGameCtrl = async (req: Request, res: Response) => {
+	const session = getDB().client.startSession();
+	try {
+		if (!req.isAuthenticated() && !req.user) {
+			return res.status(401).json({ error: "Authentication required to vote" });
+		}
+
+		const gameId = Number(req.params.id);
+		const { vote } = req.body as VoteBody;
+
+		const user = await fetchUserById(Number((req.user as SteamProfile).id));
+
+		if (!user) {
+			return res.status(401).json({ error: "User not found" });
+		}
+		
+		await session.withTransaction(async () => {
+			const res = await setUserVote(user.steam_user_id, gameId, vote);
+			if (res.voteCreated) {
+				await addVoteToGame(gameId, vote);
+			} else if (res.voteChanged) {
+				const oppositeVote = vote === "up" ? "down" : "up";
+				await addVoteToGame(gameId, vote);
+				await removeVoteToGame(gameId, oppositeVote);
+			}
+		});
+		res.json({ message: `Vote '${vote}' recorded for game ID ${gameId}` });
+	} catch (error) {
+		logger.error("Error processing vote:", error);
+		res.status(500).json({ error: "Internal server error" });
+	} finally {
+		session.endSession();
 	}
 };

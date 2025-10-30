@@ -14,16 +14,19 @@ import {
 const router = Router();
 
 router.get("/games/:id", validateParams(gameIdParamSchema), getGameByIdCtrl);
+
 router.get(
 	"/steam/games",
 	validateQuery(steamSearchTermSchema),
 	searchSteamGamesCtrl,
 );
+
 router.get(
 	"/steam/games/:id",
 	validateParams(gameIdParamSchema),
 	getSteamGameDetailsCtrl,
 );
+
 router.get(
 	"/steam/most-played-steam-deck-games",
 	getMostPlayedSteamDeckGamesCtrl,

@@ -1,3 +1,36 @@
+export type SteamPhoto = {
+	value: string;
+};
+
+export type SteamJsonProfile = {
+	steamid: string;
+	communityvisibilitystate: number;
+	profilestate: number;
+	personaname: string;
+	profileurl: string;
+	avatar: string;
+	avatarmedium: string;
+	avatarfull: string;
+	avatarhash: string;
+	lastlogoff: number;
+	personastate: number;
+	realname: string;
+	primaryclanid: string;
+	timecreated: number;
+	personastateflags: number;
+	loccountrycode: string;
+	locstatecode: string;
+	loccityid: number;
+};
+
+export type SteamProfile = {
+	provider: 'steam';
+	_json: SteamJsonProfile;
+	id: string;
+	displayName: string;
+	photos: SteamPhoto[];
+};
+
 export type SteamSearch = {
 	items: SteamSearchItem[];
 	total: number;
@@ -205,3 +238,6 @@ export type SteamApp = {
 		};
 	};
 };
+
+
+

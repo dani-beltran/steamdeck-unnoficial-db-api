@@ -5,6 +5,11 @@ import session from "express-session";
 import dotenv from "dotenv";
 import { SESSION_SECRET, STEAM_API_KEY, STEAM_REALM, WEB_HOST } from "../config/env";
 import { getCookie } from "../utils/express-utils";
+import { fetchUserById, saveUser } from "../models/user.model";
+import { SteamProfile } from "../services/steam/steam.types";
+import { voteGameCtrl } from "../controllers/game.ctrl";
+import { validateParams, validateBody } from "../middleware/validation";
+import { gameIdParamSchema, gameVoteSchema } from "../schemas/game.schema";
 
 // Load environment variables
 dotenv.config();
@@ -43,9 +48,19 @@ router.get("/auth/steam", passport.authenticate("steam", { failureRedirect: "/" 
 });
 
 // Steam auth callback
-router.get("/auth/steam/return", passport.authenticate("steam", { failureRedirect: "/" }), (req, res) => {
-  const ref = getCookie(req, "login_referer");
+router.get("/auth/steam/return", passport.authenticate("steam", { failureRedirect: "/" }), async (req, res) => {
+  // Save or update user in DB
+  const user = req.user as SteamProfile;
+  if (user) {
+    await saveUser({
+      steam_user_id: Number(user.id),
+    }).catch((err) => {
+      console.error("Error saving user:", err);
+    });
+  }
+
   // On success, redirect to referrer if valid, else to home page
+  const ref = getCookie(req, "login_referer");
   if (ref?.startsWith(WEB_HOST)) {
     const url = new URL(ref);
     res.redirect(url.toString());
@@ -55,9 +70,14 @@ router.get("/auth/steam/return", passport.authenticate("steam", { failureRedirec
 });
 
 // Get current user info
-router.get("/auth/user", (req, res) => {
+router.get("/auth/user", async (req, res) => {
   if (req.isAuthenticated()) {
-    res.json(req.user);
+    const steamUser = req.user as SteamProfile;
+    const deckuUser = await fetchUserById(Number(steamUser.id));
+    res.json({
+      steamProfile: steamUser,
+      deckuProfile: deckuUser,
+    });
   } else {
     res.status(401).json({ error: "Not authenticated" });
   }
@@ -92,3 +112,10 @@ const redirectToRefererOrHome = (req: Request, res: Response) => {
     res.redirect(`${WEB_HOST}`);
   }
 }
+
+router.post(
+  "/games/:id/vote",
+  validateParams(gameIdParamSchema),
+  validateBody(gameVoteSchema),
+  voteGameCtrl
+);
