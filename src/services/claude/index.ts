@@ -1,4 +1,4 @@
-export { ClaudeService, createClaudeService } from "./claude";
+export { ClaudeService } from "./claude";
 export type {
 	ClaudeError,
 	ClaudeMessage,
