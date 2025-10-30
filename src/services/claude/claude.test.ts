@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ClaudeService, createClaudeService } from "./claude";
+import { ClaudeService } from "./claude";
 import type { ClaudeResponse } from "./claude.types";
 
 // Mock fetch
@@ -183,27 +183,6 @@ describe("ClaudeService", () => {
 
 			await expect(service.prompt("Hello")).rejects.toThrow(
 				"No content in Claude response",
-			);
-		});
-	});
-
-	describe("createClaudeService", () => {
-		it("should create service with environment variable", () => {
-			process.env.ANTHROPIC_API_KEY = "env-test-key";
-			const service = createClaudeService();
-			expect(service).toBeInstanceOf(ClaudeService);
-			delete process.env.ANTHROPIC_API_KEY;
-		});
-
-		it("should create service with provided API key", () => {
-			const service = createClaudeService("provided-key");
-			expect(service).toBeInstanceOf(ClaudeService);
-		});
-
-		it("should throw error when no API key is available", () => {
-			delete process.env.ANTHROPIC_API_KEY;
-			expect(() => createClaudeService()).toThrow(
-				"ANTHROPIC_API_KEY is not set",
 			);
 		});
 	});

@@ -106,16 +106,3 @@ export class ClaudeService {
 		return response.json() as Promise<T>;
 	}
 }
-
-/**
- * Create a Claude service instance with API key from environment
- */
-export const createClaudeService = (apiKey?: string): ClaudeService => {
-	const key = apiKey || process.env.ANTHROPIC_API_KEY;
-
-	if (!key) {
-		throw new Error("ANTHROPIC_API_KEY is not set. Please provide an API key.");
-	}
-
-	return new ClaudeService({ apiKey: key });
-};

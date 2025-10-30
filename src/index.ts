@@ -1,4 +1,3 @@
-import dotenv from "dotenv";
 import app from "./app";
 import { connectDB } from "./config/database";
 import logger from "./config/logger";
@@ -6,10 +5,7 @@ import { createGameIndexes } from "./models/game.model";
 import { createGameQueueIndexes } from "./models/game-queue.model";
 import { createScrapeIndexes } from "./models/scrape.model";
 import { createCacheIndexes } from "./models/steam-cache.model";
-
-dotenv.config();
-
-const PORT = process.env.PORT || 3000;
+import { PORT } from "./config/env";
 
 // Start server
 const startServer = async () => {

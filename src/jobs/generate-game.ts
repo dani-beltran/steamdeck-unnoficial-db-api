@@ -17,6 +17,7 @@ import { SharedeckMiner } from "../services/data-mining/SharedeckMiner";
 import { SteamdeckhqMiner } from "../services/data-mining/SteamdeckhqMiner";
 import { getSteamGameDestails } from "../services/steam/steam";
 import { createDateComparator } from "../utils/sort";
+import { CLAUDE_AI_MODEL, CLAUDE_API_KEY } from "../config/env";
 
 dotenv.config();
 
@@ -222,10 +223,10 @@ Summary:`;
 async function askClaudeAI(msg: string) {
 	if (!msg) return "";
 	const claudeService = new ClaudeService({
-		apiKey: process.env.CLAUDE_API_KEY || "",
+		apiKey: CLAUDE_API_KEY,
 	});
 	return claudeService.prompt(msg, {
-		model: process.env.CLAUDE_AI_MODEL,
+		model: CLAUDE_AI_MODEL,
 		maxTokens: 300,
 		temperature: 0.3,
 	});
@@ -281,7 +282,7 @@ function stringifyValues(obj: Record<string, any>) {
 
 async function jsonExtractionAI(raw: string, promptFor: string) {
 	const claudeService = new ClaudeService({
-		apiKey: process.env.CLAUDE_API_KEY || "",
+		apiKey: CLAUDE_API_KEY,
 	});
 	const prompt = `Extract the following information from the text and format it as a JSON object: ${promptFor}
 
@@ -290,7 +291,7 @@ ${raw}
 
 JSON:`;
 	const res = await claudeService.prompt(prompt, {
-		model: process.env.CLAUDE_AI_MODEL,
+		model: CLAUDE_AI_MODEL,
 		maxTokens: 500,
 		temperature: 0.3,
 	});
