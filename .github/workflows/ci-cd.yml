@@ -14,6 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
 
+    env:
+      STEAM_API_KEY: steam_api_key_placeholder
+      CLAUDE_API_KEY: claude_api_key_placeholder
+      SESSION_SECRET: session_secret_placeholder
+      # Add more environment variables as needed
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
