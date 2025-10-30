@@ -69,6 +69,8 @@ export const gameInputSchema = gameSchema.omit({
 	game_id: true,
 	updated_at: true,
 	created_at: true,
+	thumbs_down: true,
+	thumbs_up: true,
 });
 
 export const gameVoteSchema = z.object({
