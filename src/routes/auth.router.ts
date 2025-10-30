@@ -56,3 +56,23 @@ router.get("/auth/user", (req, res) => {
 });
 
 export default router;
+
+// Logout endpoint
+router.get("/auth/logout", (req, res, next) => {
+  req.logout((err) => {
+    if (err) {
+      return next(err);
+    }
+    if (req.session) {
+      req.session.destroy((err: unknown) => {
+        if (err) {
+          return res.status(500).json({ error: "Logout failed" });
+        }
+        res.clearCookie("connect.sid");
+        res.redirect(`${WEB_HOST}`);
+      });
+    } else {
+      res.redirect(`${WEB_HOST}`);
+    }
+  });
+});
