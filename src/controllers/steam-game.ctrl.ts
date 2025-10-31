@@ -2,12 +2,12 @@ import type { Request, Response } from "express";
 import logger from "../config/logger";
 import {
 	getCachedGameDetails,
-	getCachedSearchResults,
-	getCachedMostPlayedGames,
-	saveGameDetailsCache,
-	saveSearchResultsCache,
-	saveMostPlayedGamesCache,
 	getCachedGamesDetails,
+	getCachedMostPlayedGames,
+	getCachedSearchResults,
+	saveGameDetailsCache,
+	saveMostPlayedGamesCache,
+	saveSearchResultsCache,
 } from "../models/steam-cache.model";
 import {
 	getMostPlayedSteamDeckGameIds,
@@ -98,16 +98,26 @@ export const getMostPlayedSteamDeckGamesCtrl = async (
 };
 
 const getManySteamGamesDetails = async (gameIds: number[]) => {
-	const cachedGames = await getCachedGamesDetails(gameIds);
+	const uniqueGameIds = Array.from(new Set(gameIds));
+	const cachedGames = await getCachedGamesDetails(uniqueGameIds);
 	const cachedGameIds = cachedGames.map((game) => game.steam_appid);
-	const missingGameIds = gameIds.filter((id) => !cachedGameIds.includes(id));
+	const missingGameIds = uniqueGameIds.filter((id) => !cachedGameIds.includes(id));
 	for (const gameId of missingGameIds) {
-		const gameDetails = await fetchAndCacheSteamGameDetails(gameId);
+		const gameDetails = await fetchAndCacheSteamGameDetails(gameId).catch((err) => {
+			logger.error(
+				`Error fetching details for game ID ${gameId}:`,
+				err,
+			);
+			return null;
+		});
+		if (!gameDetails) continue;
 		cachedGames.push(gameDetails);
 	}
 	// keep original order
-	return gameIds.map((id) => cachedGames.find((game) => game.steam_appid === id)!);
-}
+	return uniqueGameIds.map(
+		(id) => cachedGames.find((game) => game.steam_appid === id),
+	).filter((game) => game !== undefined)
+};
 
 const fetchAndCacheSteamGameDetails = async (gameId: number) => {
 	const data = await getSteamGameDestails(gameId);
