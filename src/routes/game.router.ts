@@ -15,9 +15,10 @@ import {
 
 const router = Router();
 
-router.get("/steam/games/batch",
+router.get(
+	"/steam/games/batch",
 	validateQuery(gameIdsQuerySchema),
-	getManySteamGamesDetailsCtrl
+	getManySteamGamesDetailsCtrl,
 );
 
 router.get("/games/:id", validateParams(gameIdParamSchema), getGameByIdCtrl);

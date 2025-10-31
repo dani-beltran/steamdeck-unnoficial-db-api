@@ -7,7 +7,11 @@ import {
 	removeVoteFromGame,
 } from "../models/game.model";
 import { setGameInQueue } from "../models/game-queue.model";
-import { fetchUserById, removeUserVote, setUserVote } from "../models/user.model";
+import {
+	fetchUserById,
+	removeUserVote,
+	setUserVote,
+} from "../models/user.model";
 import type { VoteBody } from "../schemas/vote.schema";
 import type { SteamProfile } from "../services/steam/steam.types";
 
@@ -92,10 +96,7 @@ export const removeVoteFromGameCtrl = async (req: Request, res: Response) => {
 		}
 
 		await session.withTransaction(async () => {
-			const { voteRemoved } = await removeUserVote(
-				user.steam_user_id,
-				gameId,
-			);
+			const { voteRemoved } = await removeUserVote(user.steam_user_id, gameId);
 			if (voteRemoved) {
 				// biome-ignore lint/style/noNonNullAssertion: it is already checked that is not null above
 				await removeVoteFromGame(gameId, existingVote.vote_type!);

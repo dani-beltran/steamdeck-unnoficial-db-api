@@ -62,15 +62,12 @@ export const setUserVote = async (
 	}
 	return {
 		voteCreated,
-		voteChanged: !voteCreated && updateResult.modifiedCount > 0
+		voteChanged: !voteCreated && updateResult.modifiedCount > 0,
 	};
 };
 
-export const removeUserVote = async (
-    steamUserId: number,
-    gameId: number
-) => {
-    const db = getDB();
+export const removeUserVote = async (steamUserId: number, gameId: number) => {
+	const db = getDB();
 	const updateResult = await db.collection<User>(collection).updateOne(
 		{ steam_user_id: steamUserId },
 		{
