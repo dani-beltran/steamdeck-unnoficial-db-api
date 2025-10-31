@@ -5,7 +5,7 @@ import session from "express-session";
 import dotenv from "dotenv";
 import { SESSION_SECRET, STEAM_API_KEY, STEAM_REALM, WEB_HOST } from "../config/env";
 import { getCookie } from "../utils/express-utils";
-import { fetchUserById, saveUser } from "../models/user.model";
+import { fetchUserById, saveUserSession } from "../models/user.model";
 import { SteamProfile } from "../services/steam/steam.types";
 import { removeVoteFromGameCtrl, voteGameCtrl } from "../controllers/game.ctrl";
 import { validateParams, validateBody } from "../middleware/validation";
@@ -52,7 +52,7 @@ router.get("/auth/steam/return", passport.authenticate("steam", { failureRedirec
   // Save or update user in DB
   const user = req.user as SteamProfile;
   if (user) {
-    await saveUser({
+    await saveUserSession({
       steam_user_id: Number(user.id),
     }).catch((err) => {
       console.error("Error saving user:", err);

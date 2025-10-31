@@ -10,13 +10,18 @@ export const fetchUserById = async (id: number) => {
     return await db.collection<User>(collection).findOne({ steam_user_id: id });
 };
 
-export const saveUser = async (user: InputUser) => {
+// Save the user and its session info
+export const saveUserSession = async (user: InputUser) => {
     const db = getDB();
     return db.collection<User>(collection).updateOne(
         { steam_user_id: user.steam_user_id },
         { 
             $set: {
-                updated_at: new Date()
+                updated_at: new Date(),
+                lastSessionAt: new Date()
+            },
+            $inc: {
+                nSessions: 1
             },
             $setOnInsert: {
                 steam_user_id: user.steam_user_id,

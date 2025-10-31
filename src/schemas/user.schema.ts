@@ -7,7 +7,9 @@ export const userSchema = z.object({
   votes: z.array(z.object({
     game_id: gameIdSchema,
     vote_type: z.enum(VOTE_TYPE).nullable(),
-})),
+  })),
+  lastSessionAt: z.date(),
+  nSessions: z.number().int().nonnegative(),
   created_at: z.date(),
   updated_at: z.date(),
 });
@@ -16,7 +18,10 @@ export const inputUserSchema = userSchema.omit({
     created_at: true,
     updated_at: true,
     votes: true,
+    lastSessionAt: true,
+    nSessions: true,
 });
+
 
 export type User = z.infer<typeof userSchema>;
 
