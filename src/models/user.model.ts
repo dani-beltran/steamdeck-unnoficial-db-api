@@ -35,7 +35,7 @@ export const saveUserSession = async (user: InputUser) => {
 export const setUserVote = async (
 	steamUserId: number,
 	gameId: number,
-	voteType: VOTE_TYPE | null,
+	voteType: VOTE_TYPE,
 ) => {
 	const db = getDB();
 	let voteCreated = false;
@@ -62,7 +62,23 @@ export const setUserVote = async (
 	}
 	return {
 		voteCreated,
-		voteChanged: !voteCreated && updateResult.modifiedCount > 0,
-		voteRemoved: voteType === null && updateResult.modifiedCount > 0,
+		voteChanged: !voteCreated && updateResult.modifiedCount > 0
+	};
+};
+
+export const removeUserVote = async (
+    steamUserId: number,
+    gameId: number
+) => {
+    const db = getDB();
+	const updateResult = await db.collection<User>(collection).updateOne(
+		{ steam_user_id: steamUserId },
+		{
+			$pull: { votes: { game_id: gameId } },
+			$set: { updated_at: new Date() },
+		},
+	);
+	return {
+		voteRemoved: updateResult.modifiedCount > 0,
 	};
 };
