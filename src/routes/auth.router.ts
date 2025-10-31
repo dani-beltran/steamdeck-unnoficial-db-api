@@ -7,7 +7,7 @@ import { SESSION_SECRET, STEAM_API_KEY, STEAM_REALM, WEB_HOST } from "../config/
 import { getCookie } from "../utils/express-utils";
 import { fetchUserById, saveUser } from "../models/user.model";
 import { SteamProfile } from "../services/steam/steam.types";
-import { voteGameCtrl } from "../controllers/game.ctrl";
+import { removeVoteFromGameCtrl, voteGameCtrl } from "../controllers/game.ctrl";
 import { validateParams, validateBody } from "../middleware/validation";
 import { gameIdParamSchema, gameVoteSchema } from "../schemas/game.schema";
 
@@ -113,9 +113,17 @@ const redirectToRefererOrHome = (req: Request, res: Response) => {
   }
 }
 
+// Endpoints that need authentication
+////////////////////////////////////////////////
 router.post(
   "/games/:id/vote",
   validateParams(gameIdParamSchema),
   validateBody(gameVoteSchema),
   voteGameCtrl
+);
+
+router.delete(
+  "/games/:id/vote",
+  validateParams(gameIdParamSchema),
+  removeVoteFromGameCtrl
 );

@@ -64,7 +64,7 @@ export const addVoteToGame = async (id: number, vote: "up" | "down") => {
 	);
 }
 
-export const removeVoteToGame = async (id: number, vote: "up" | "down") => {
+export const removeVoteFromGame = async (id: number, vote: "up" | "down") => {
 	const db = getDB();
 	const updateField = vote === "up" ? "thumbs_up" : "thumbs_down";
 	

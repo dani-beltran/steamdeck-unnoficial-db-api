@@ -28,7 +28,7 @@ export const saveUser = async (user: InputUser) => {
     );
 };
 
-export const setUserVote = async (steamUserId: number, gameId: number, voteType: VOTE_TYPE) => {
+export const setUserVote = async (steamUserId: number, gameId: number, voteType: VOTE_TYPE | null) => {
     const db = getDB();
     let voteCreated = false;
     // Update existing vote if present
@@ -55,5 +55,6 @@ export const setUserVote = async (steamUserId: number, gameId: number, voteType:
     return {
         voteCreated,
         voteChanged: !voteCreated && updateResult.modifiedCount > 0,
+        voteRemoved: voteType === null && updateResult.modifiedCount > 0
     };
 };

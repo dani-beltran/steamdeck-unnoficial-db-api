@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import logger from "../config/logger";
-import { fetchGameById, addVoteToGame, removeVoteToGame } from "../models/game.model";
+import { fetchGameById, addVoteToGame, removeVoteFromGame } from "../models/game.model";
 import { setGameInQueue } from "../models/game-queue.model";
 import { setUserVote, fetchUserById } from "../models/user.model";
 import { SteamProfile } from "../services/steam/steam.types";
@@ -51,7 +51,7 @@ export const voteGameCtrl = async (req: Request, res: Response) => {
 			} else if (res.voteChanged) {
 				const oppositeVote = vote === "up" ? "down" : "up";
 				await addVoteToGame(gameId, vote);
-				await removeVoteToGame(gameId, oppositeVote);
+				await removeVoteFromGame(gameId, oppositeVote);
 			}
 		});
 		res.json({ message: `Vote '${vote}' recorded for game ID ${gameId}` });
@@ -62,3 +62,38 @@ export const voteGameCtrl = async (req: Request, res: Response) => {
 		session.endSession();
 	}
 };
+
+export const removeVoteFromGameCtrl = async (req: Request, res: Response) => {
+	const session = getDB().client.startSession();
+	try {
+		if (!req.isAuthenticated() && !req.user) {
+			return res.status(401).json({ error: "Authentication required to remove vote" });
+		}
+
+		const gameId = Number(req.params.id);
+
+		const user = await fetchUserById(Number((req.user as SteamProfile).id));
+
+		if (!user) {
+			return res.status(401).json({ error: "User not found" });
+		}
+
+		const existingVote = user.votes.find(v => v.game_id === gameId);
+		if (!existingVote || existingVote.vote_type === null) {
+			return res.status(400).json({ error: "No existing vote to remove for this game" });
+		}
+		
+		await session.withTransaction(async () => {
+			const { voteRemoved } = await setUserVote(user.steam_user_id, gameId, null);
+			if (voteRemoved) {
+				await removeVoteFromGame(gameId, existingVote.vote_type!);
+			}
+		});
+		res.json({ message: `Vote removed for game ID ${gameId}` });
+	} catch (error) {
+		logger.error("Error removing vote:", error);
+		res.status(500).json({ error: "Internal server error" });
+	} finally {
+		session.endSession();
+	}
+}

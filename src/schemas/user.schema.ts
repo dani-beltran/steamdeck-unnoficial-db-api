@@ -6,7 +6,7 @@ export const userSchema = z.object({
   steam_user_id: z.number().int().nonnegative(),
   votes: z.array(z.object({
     game_id: gameIdSchema,
-    vote_type: z.enum(VOTE_TYPE),
+    vote_type: z.enum(VOTE_TYPE).nullable(),
 })),
   created_at: z.date(),
   updated_at: z.date(),
