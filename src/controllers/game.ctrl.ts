@@ -1,11 +1,15 @@
 import type { Request, Response } from "express";
-import logger from "../config/logger";
-import { fetchGameById, addVoteToGame, removeVoteFromGame } from "../models/game.model";
-import { setGameInQueue } from "../models/game-queue.model";
-import { setUserVote, fetchUserById } from "../models/user.model";
-import { SteamProfile } from "../services/steam/steam.types";
 import { getDB } from "../config/database";
-import { VoteBody } from "../schemas/vote.schema";
+import logger from "../config/logger";
+import {
+	addVoteToGame,
+	fetchGameById,
+	removeVoteFromGame,
+} from "../models/game.model";
+import { setGameInQueue } from "../models/game-queue.model";
+import { fetchUserById, setUserVote } from "../models/user.model";
+import type { VoteBody } from "../schemas/vote.schema";
+import type { SteamProfile } from "../services/steam/steam.types";
 
 export const getGameByIdCtrl = async (
 	req: Request,
@@ -43,7 +47,7 @@ export const voteGameCtrl = async (req: Request, res: Response) => {
 		if (!user) {
 			return res.status(401).json({ error: "User not found" });
 		}
-		
+
 		await session.withTransaction(async () => {
 			const res = await setUserVote(user.steam_user_id, gameId, vote);
 			if (res.voteCreated) {
@@ -67,7 +71,9 @@ export const removeVoteFromGameCtrl = async (req: Request, res: Response) => {
 	const session = getDB().client.startSession();
 	try {
 		if (!req.isAuthenticated() && !req.user) {
-			return res.status(401).json({ error: "Authentication required to remove vote" });
+			return res
+				.status(401)
+				.json({ error: "Authentication required to remove vote" });
 		}
 
 		const gameId = Number(req.params.id);
@@ -78,14 +84,21 @@ export const removeVoteFromGameCtrl = async (req: Request, res: Response) => {
 			return res.status(401).json({ error: "User not found" });
 		}
 
-		const existingVote = user.votes.find(v => v.game_id === gameId);
-		if (!existingVote || existingVote.vote_type === null) {
-			return res.status(400).json({ error: "No existing vote to remove for this game" });
+		const existingVote = user.votes.find((v) => v.game_id === gameId);
+		if (!existingVote || existingVote?.vote_type === null) {
+			return res
+				.status(400)
+				.json({ error: "No existing vote to remove for this game" });
 		}
-		
+
 		await session.withTransaction(async () => {
-			const { voteRemoved } = await setUserVote(user.steam_user_id, gameId, null);
+			const { voteRemoved } = await setUserVote(
+				user.steam_user_id,
+				gameId,
+				null,
+			);
 			if (voteRemoved) {
+				// biome-ignore lint/style/noNonNullAssertion: it is already checked that is not null above
 				await removeVoteFromGame(gameId, existingVote.vote_type!);
 			}
 		});
@@ -96,4 +109,4 @@ export const removeVoteFromGameCtrl = async (req: Request, res: Response) => {
 	} finally {
 		session.endSession();
 	}
-}
+};

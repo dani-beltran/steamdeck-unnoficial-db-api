@@ -24,4 +24,6 @@ export const steamDeckMostPlayedCacheSchema = z.object({
 
 export type SteamSearchCache = z.infer<typeof steamSearchCacheSchema>;
 export type SteamGameDetailsCache = z.infer<typeof steamGameDetailsCacheSchema>;
-export type SteamDeckMostPlayedCache = z.infer<typeof steamDeckMostPlayedCacheSchema>;
+export type SteamDeckMostPlayedCache = z.infer<
+	typeof steamDeckMostPlayedCacheSchema
+>;

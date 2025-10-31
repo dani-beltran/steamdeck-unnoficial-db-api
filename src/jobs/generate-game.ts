@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import { connectDB } from "../config/database";
+import { CLAUDE_AI_MODEL, CLAUDE_API_KEY } from "../config/env";
 import logger from "../config/logger";
 import { saveGame } from "../models/game.model";
 import {
@@ -17,7 +18,6 @@ import { SharedeckMiner } from "../services/data-mining/SharedeckMiner";
 import { SteamdeckhqMiner } from "../services/data-mining/SteamdeckhqMiner";
 import { getSteamGameDestails } from "../services/steam/steam";
 import { createDateComparator } from "../utils/sort";
-import { CLAUDE_AI_MODEL, CLAUDE_API_KEY } from "../config/env";
 
 dotenv.config();
 
@@ -121,7 +121,8 @@ async function generateGameEntry(
 	}
 
 	const gameDetails = await getSteamGameDestails(gameId);
-	const { settings, game_performance_summary, data_sources } = await extractPostData(posts);
+	const { settings, game_performance_summary, data_sources } =
+		await extractPostData(posts);
 
 	return {
 		game_name: gameDetails.name,
@@ -129,13 +130,15 @@ async function generateGameEntry(
 		settings,
 		steamdeck_rating,
 		steamdeck_verified,
-		data_sources: [...data_sources, 'steam']
+		data_sources: [...data_sources, "steam"],
 	};
 }
 
 const extractPostData = async (mined_posts: Post[]) => {
 	const posts = [];
-	const uniqueSources = Array.from(new Set(mined_posts.map((post) => post.source)));
+	const uniqueSources = Array.from(
+		new Set(mined_posts.map((post) => post.source)),
+	);
 	let game_performance_summary = "";
 	const protonbPosts = mined_posts.filter(
 		(post) => post.source === SCRAPE_SOURCES.PROTONDB,
@@ -266,6 +269,7 @@ async function generateSteamDeckBatteryPerformance(raw?: string) {
 	return stringifyValues(json);
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: values could be anything
 function stringifyValues(obj: Record<string, any>) {
 	const res: Record<string, string> = {};
 	Object.entries(obj).forEach(([key, value]) => {

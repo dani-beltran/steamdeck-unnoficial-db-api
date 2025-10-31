@@ -1,6 +1,6 @@
 import { type Db, MongoClient } from "mongodb";
-import logger from "./logger";
 import { DB_NAME, MONGODB_URI } from "./env";
+import logger from "./logger";
 
 let db: Db | null = null;
 

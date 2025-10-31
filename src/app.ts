@@ -1,16 +1,18 @@
 import cors from "cors";
 import express, { type Express } from "express";
-import gameRoutes from "./routes/game.router";
-import authRoutes from "./routes/auth.router";
 import { WEB_HOST } from "./config/env";
+import authRoutes from "./routes/auth.router";
+import gameRoutes from "./routes/game.router";
 
 const app: Express = express();
 
 // Middleware
-app.use(cors({
-	origin: WEB_HOST,
-	credentials: true,
-}));
+app.use(
+	cors({
+		origin: WEB_HOST,
+		credentials: true,
+	}),
+);
 app.use(express.json());
 
 // Routes

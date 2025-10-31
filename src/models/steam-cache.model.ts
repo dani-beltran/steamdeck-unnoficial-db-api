@@ -1,8 +1,8 @@
 import { getDB } from "../config/database";
 import type {
+	SteamDeckMostPlayedCache,
 	SteamGameDetailsCache,
 	SteamSearchCache,
-	SteamDeckMostPlayedCache,
 } from "../schemas/steam-cache.schema";
 import type { SteamApp, SteamSearch } from "../services/steam/steam.types";
 
@@ -84,7 +84,7 @@ export const getCachedGamesDetails = async (gameIds: number[]) => {
 			expires_at: { $gt: now },
 		});
 	return (await cachedCursor.toArray()).map((doc) => doc.data);
-}
+};
 
 /**
  * Save game details to cache

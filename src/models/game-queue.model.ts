@@ -38,26 +38,26 @@ export const setMultipleGamesInQueue = async (games: InputGameQueue[]) => {
 
 export const getGameToScrapeFromQueue = async () => {
 	const db = getDB();
-	return await db
-		.collection<GameQueue>(collection)
-		.findOne({ 
+	return await db.collection<GameQueue>(collection).findOne(
+		{
 			rescrape: true,
 			rescrape_failed: { $ne: true },
 		},
-		{ sort: { queued_at: 1 } },);
-}
+		{ sort: { queued_at: 1 } },
+	);
+};
 
 export const getGameToGenerateFromQueue = async () => {
 	const db = getDB();
-	return await db
-		.collection<GameQueue>(collection)
-		.findOne({ 
+	return await db.collection<GameQueue>(collection).findOne(
+		{
 			rescrape: { $ne: true },
 			regenerate: true,
 			regenerate_failed: { $ne: true },
 		},
-		{ sort: { queued_at: 1 } },);
-}
+		{ sort: { queued_at: 1 } },
+	);
+};
 
 export const removeGameFromQueue = async (game_id: number) => {
 	const db = getDB();

@@ -101,22 +101,23 @@ const getManySteamGamesDetails = async (gameIds: number[]) => {
 	const uniqueGameIds = Array.from(new Set(gameIds));
 	const cachedGames = await getCachedGamesDetails(uniqueGameIds);
 	const cachedGameIds = cachedGames.map((game) => game.steam_appid);
-	const missingGameIds = uniqueGameIds.filter((id) => !cachedGameIds.includes(id));
+	const missingGameIds = uniqueGameIds.filter(
+		(id) => !cachedGameIds.includes(id),
+	);
 	for (const gameId of missingGameIds) {
-		const gameDetails = await fetchAndCacheSteamGameDetails(gameId).catch((err) => {
-			logger.error(
-				`Error fetching details for game ID ${gameId}:`,
-				err,
-			);
-			return null;
-		});
+		const gameDetails = await fetchAndCacheSteamGameDetails(gameId).catch(
+			(err) => {
+				logger.error(`Error fetching details for game ID ${gameId}:`, err);
+				return null;
+			},
+		);
 		if (!gameDetails) continue;
 		cachedGames.push(gameDetails);
 	}
 	// keep original order
-	return uniqueGameIds.map(
-		(id) => cachedGames.find((game) => game.steam_appid === id),
-	).filter((game) => game !== undefined)
+	return uniqueGameIds
+		.map((id) => cachedGames.find((game) => game.steam_appid === id))
+		.filter((game) => game !== undefined);
 };
 
 const fetchAndCacheSteamGameDetails = async (gameId: number) => {

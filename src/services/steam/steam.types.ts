@@ -24,7 +24,7 @@ export type SteamJsonProfile = {
 };
 
 export type SteamProfile = {
-	provider: 'steam';
+	provider: "steam";
 	_json: SteamJsonProfile;
 	id: string;
 	displayName: string;
@@ -238,6 +238,3 @@ export type SteamApp = {
 		};
 	};
 };
-
-
-
