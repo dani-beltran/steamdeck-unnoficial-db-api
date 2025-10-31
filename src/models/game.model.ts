@@ -37,6 +37,7 @@ export const saveGame = async (id: number, game: GameInput) => {
 		{
 			$set: {
 				...validatedGame,
+				generated_at: new Date(),
 				updated_at: new Date(),
 			},
 			$setOnInsert: {

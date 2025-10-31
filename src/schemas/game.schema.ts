@@ -61,12 +61,14 @@ export const gameSchema = z.object({
 	thumbs_down: z.number().int().nonnegative().default(0),
 	rescrape_requested: z.boolean().optional(),
 	regenerate_requested: z.boolean().optional(),
+	generated_at: z.date().optional(),
 	updated_at: z.date(),
 	created_at: z.date(),
 });
 
 export const gameInputSchema = gameSchema.omit({
 	game_id: true,
+	generated_at: true,
 	updated_at: true,
 	created_at: true,
 	thumbs_down: true,
