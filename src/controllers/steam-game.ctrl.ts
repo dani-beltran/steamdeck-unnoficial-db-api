@@ -14,6 +14,7 @@ import {
 	getSteamGameDestails,
 	searchSteamGames,
 } from "../services/steam/steam";
+import { SteamSearch } from "../services/steam/steam.types";
 
 export const searchSteamGamesCtrl = async (
 	req: Request,
@@ -126,3 +127,29 @@ const fetchAndCacheSteamGameDetails = async (gameId: number) => {
 	logger.info(`Cached game details for game ID: ${gameId}`);
 	return data;
 };
+
+export const getManySteamGamesDetailsCtrl = async (
+	req: Request,
+	res: Response,
+): Promise<void> => {
+	try {
+		const gameIds = req.query.ids as any[];
+		const games = await getManySteamGamesDetails(gameIds);
+		const results: SteamSearch = {
+			items: games.map((game) => ({
+				...game,
+				id: game.steam_appid,
+				price: { currency: 'USD', initial: 0, final: 0 },
+				tiny_image: game.header_image,
+				metascore: 'N/A',
+				streamingvideo: false,
+				controller_support: game.controller_support || 'unknown',
+			})),
+			total: games.length,
+		};
+		res.json(results);
+	} catch (error) {
+		logger.error("Error fetching multiple Steam game details:", error);
+		res.status(500).json({ error: "Internal server error" });
+	}
+}

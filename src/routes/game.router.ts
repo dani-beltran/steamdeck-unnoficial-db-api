@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { getGameByIdCtrl } from "../controllers/game.ctrl";
 import {
+	getManySteamGamesDetailsCtrl,
 	getMostPlayedSteamDeckGamesCtrl,
 	getSteamGameDetailsCtrl,
 	searchSteamGamesCtrl,
@@ -8,10 +9,16 @@ import {
 import { validateParams, validateQuery } from "../middleware/validation";
 import {
 	gameIdParamSchema,
+	gameIdsQuerySchema,
 	steamSearchTermSchema,
 } from "../schemas/game.schema";
 
 const router = Router();
+
+router.get("/steam/games/batch",
+	validateQuery(gameIdsQuerySchema),
+	getManySteamGamesDetailsCtrl
+);
 
 router.get("/games/:id", validateParams(gameIdParamSchema), getGameByIdCtrl);
 

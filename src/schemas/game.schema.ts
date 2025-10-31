@@ -25,6 +25,13 @@ export const steamSearchTermSchema = z.object({
 	limit: z.coerce.number().int().min(1).max(100).optional().default(10),
 });
 
+export const gameIdsQuerySchema = z.object({
+	ids: z
+		.string()
+		.min(1, "At least one game ID is required")
+		.transform((val) => val.split(",").map((id) => Number(id))),
+});
+
 export const gameSchema = z.object({
 	game_id: gameIdSchema,
 	game_name: z.string().min(1, "Name is required"),
