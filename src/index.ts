@@ -3,6 +3,7 @@ import { connectDB } from "./config/database";
 import { PORT } from "./config/env";
 import logger from "./config/logger";
 import { createGameIndexes } from "./models/game.model";
+import { createGameSettingsIndexes } from "./models/game-settings.model";
 import { createGameQueueIndexes } from "./models/game-queue.model";
 import { createScrapeIndexes } from "./models/scrape.model";
 import { createCacheIndexes } from "./models/steam-cache.model";
@@ -34,6 +35,10 @@ const createIndexes = async () => {
 	logger.info("Creating game indexes...");
 	await createGameIndexes();
 	logger.info("Game indexes created successfully");
+
+	logger.info("Creating game settings indexes...");
+	await createGameSettingsIndexes();
+	logger.info("Game settings indexes created successfully");
 
 	logger.info("Creating scrape indexes...");
 	await createScrapeIndexes();

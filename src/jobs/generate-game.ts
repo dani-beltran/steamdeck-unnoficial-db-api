@@ -4,12 +4,17 @@ import { CLAUDE_AI_MODEL, CLAUDE_API_KEY } from "../config/env";
 import logger from "../config/logger";
 import { saveGame } from "../models/game.model";
 import {
+	deleteGameSettings,
+	saveGameSettingsBulk,
+} from "../models/game-settings.model";
+import {
 	getGameToGenerateFromQueue,
 	removeGameFromQueue,
 	setGameInQueue,
 } from "../models/game-queue.model";
 import { getLastScrapedData } from "../models/scrape.model";
 import type { GameInput, STEAMDECK_RATING } from "../schemas/game.schema";
+import type { GameSettingsInput } from "../schemas/game-settings.schema";
 import type { Post } from "../schemas/post.schema";
 import { SCRAPE_SOURCES, type Scrape } from "../schemas/scrape.schema";
 import { ClaudeService } from "../services/claude";
@@ -70,7 +75,14 @@ async function run() {
 			steamdeckhqData,
 			sharedeckData,
 		);
-		await saveGame(gameInQueue.game_id, game);
+		await saveGame(gameInQueue.game_id, game.gameData);
+		
+		// Delete old settings and save new ones
+		await deleteGameSettings(gameInQueue.game_id);
+		if (game.settings.length > 0) {
+			await saveGameSettingsBulk(gameInQueue.game_id, game.settings);
+		}
+		
 		await removeGameFromQueue(gameInQueue.game_id);
 
 		logger.info(`Game entry for ${gameInQueue.game_id} generated successfully`);
@@ -89,7 +101,7 @@ async function generateGameEntry(
 	protondbData: Scrape | null,
 	steamdeckhqData: Scrape | null,
 	sharedeckData: Scrape | null,
-): Promise<GameInput> {
+): Promise<{ gameData: GameInput; settings: Omit<GameSettingsInput, "game_id">[] }> {
 	const posts: Post[] = [];
 	let steamdeck_rating: STEAMDECK_RATING | undefined;
 	let steamdeck_verified: boolean | undefined;
@@ -121,24 +133,22 @@ async function generateGameEntry(
 	}
 
 	const gameDetails = await getSteamGameDestails(gameId);
-	const { settings, game_performance_summary, data_sources } =
+	const { settings, game_performance_summary } =
 		await extractPostData(posts);
 
 	return {
-		game_name: gameDetails.name,
-		game_performance_summary,
+		gameData: {
+			game_name: gameDetails.name,
+			game_performance_summary,
+			steamdeck_rating,
+			steamdeck_verified,
+		},
 		settings,
-		steamdeck_rating,
-		steamdeck_verified,
-		data_sources: [...data_sources, "steam"],
 	};
 }
 
 const extractPostData = async (mined_posts: Post[]) => {
-	const posts = [];
-	const uniqueSources = Array.from(
-		new Set(mined_posts.map((post) => post.source)),
-	);
+	const posts: Post[] = [];
 	let game_performance_summary = "";
 	// Get all protondb posts
 	const protonbPosts = mined_posts.filter(
@@ -206,6 +216,9 @@ const extractPostData = async (mined_posts: Post[]) => {
 			battery_performance: await generateSteamDeckBatteryPerformance(text),
 			steamdeck_hardware: undefined,
 			steamdeck_experience: undefined,
+			source: SCRAPE_SOURCES.PROTONDB,
+			title: "",
+			raw: text,
 			posted_at: recentPosts[0].posted_at,
 		});
 	}
@@ -214,7 +227,6 @@ const extractPostData = async (mined_posts: Post[]) => {
 	}
 	return {
 		game_performance_summary,
-		data_sources: uniqueSources,
 		settings: posts
 			.map((post) => ({
 				game_settings: post.game_settings,
@@ -222,6 +234,7 @@ const extractPostData = async (mined_posts: Post[]) => {
 				steamdeck_hardware: post.steamdeck_hardware,
 				battery_performance: post.battery_performance,
 				steamdeck_experience: post.steamdeck_experience,
+				source: post.source,
 				posted_at: post.posted_at,
 			}))
 			.sort(createDateComparator("posted_at", "desc")),

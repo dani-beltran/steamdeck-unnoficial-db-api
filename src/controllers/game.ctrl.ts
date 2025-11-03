@@ -6,6 +6,7 @@ import {
 	fetchGameById,
 	removeVoteFromGame,
 } from "../models/game.model";
+import { fetchGameSettingsByGameId } from "../models/game-settings.model";
 import { setGameInQueue } from "../models/game-queue.model";
 import {
 	fetchUserById,
@@ -29,7 +30,10 @@ export const getGameByIdCtrl = async (
 			return;
 		}
 
-		res.json({ status: "ready", game });
+		// Fetch game settings separately
+		const settings = await fetchGameSettingsByGameId(id);
+
+		res.json({ status: "ready", game: { ...game, settings } });
 	} catch (error) {
 		logger.error("Error fetching game:", error);
 		res.status(500).json({ error: "Internal server error" });

@@ -17,6 +17,8 @@ import {
 	STEAMDECK_HARDWARE,
 	STEAMDECK_RATING,
 } from "../../schemas/game.schema";
+import type { GameSettings } from "../../schemas/game-settings.schema";
+import { SCRAPE_SOURCES } from "../../schemas/scrape.schema";
 import {
 	clearTestDB,
 	closeTestDB,
@@ -58,21 +60,30 @@ describe("GET /games/:id", () => {
 				game_performance_summary: "Runs smoothly on Steam Deck",
 				steamdeck_rating: STEAMDECK_RATING.GOLD,
 				steamdeck_verified: true,
-				settings: [
-					{
-						game_settings: { graphics: "High", resolution: "1920x1080" },
-						steamdeck_settings: { tdp: "15W" },
-						steamdeck_hardware: STEAMDECK_HARDWARE.LCD,
-						posted_at: new Date(),
-					},
-				],
 				created_at: new Date(),
 				updated_at: new Date(),
 				thumbs_down: 0,
 				thumbs_up: 0,
 			};
+
+			const testGameSettings: GameSettings[] = [
+				{
+					game_id: 1,
+					game_settings: { graphics: "High", resolution: "1920x1080" },
+					steamdeck_settings: { tdp: "15W" },
+					steamdeck_hardware: STEAMDECK_HARDWARE.LCD,
+					source: SCRAPE_SOURCES.PROTONDB,
+					posted_at: new Date(),
+					created_at: new Date(),
+					updated_at: new Date(),
+					thumbs_up: 10,
+					thumbs_down: 2,
+				},
+			];
+
 			const db: Db = getTestDB();
 			await db.collection("games").insertOne(testGame);
+			await db.collection("game-settings").insertMany(testGameSettings);
 
 			// Act
 			const response = await request(app)
@@ -91,6 +102,7 @@ describe("GET /games/:id", () => {
 			});
 			expect(response.body.game).toHaveProperty("_id");
 			expect(response.body.game.settings).toBeInstanceOf(Array);
+			expect(response.body.game.settings).toHaveLength(1);
 		});
 
 		it("should return a game with minimal data", async () => {
@@ -98,7 +110,6 @@ describe("GET /games/:id", () => {
 			const testGame: Game = {
 				game_id: 2,
 				game_name: "Cyberpunk 2077",
-				settings: [],
 				created_at: new Date(),
 				updated_at: new Date(),
 				thumbs_up: 0,
@@ -120,6 +131,7 @@ describe("GET /games/:id", () => {
 				game_id: 2,
 				game_name: "Cyberpunk 2077",
 			});
+			expect(response.body.game.settings).toEqual([]);
 		});
 
 		it("should return a game with complex settings", async () => {
@@ -127,29 +139,37 @@ describe("GET /games/:id", () => {
 			const testGame: Game = {
 				game_id: 3,
 				game_name: "Red Dead Redemption 2",
-				settings: [
-					{
-						game_settings: {
-							quality: "Ultra",
-							antiAliasing: "TAA",
-							vsync: "yes",
-						},
-						steamdeck_settings: {
-							fps: "60",
-							resolution: "2560x1440",
-						},
-						steamdeck_hardware: STEAMDECK_HARDWARE.OLED,
-						posted_at: new Date(),
-					},
-				],
 				created_at: new Date(),
 				updated_at: new Date(),
 				thumbs_up: 0,
 				thumbs_down: 0,
 			};
 
+			const testGameSettings: GameSettings[] = [
+				{
+					game_id: 3,
+					game_settings: {
+						quality: "Ultra",
+						antiAliasing: "TAA",
+						vsync: "yes",
+					},
+					steamdeck_settings: {
+						fps: "60",
+						resolution: "2560x1440",
+					},
+					steamdeck_hardware: STEAMDECK_HARDWARE.OLED,
+					source: SCRAPE_SOURCES.STEAMDECKHQ,
+					posted_at: new Date(),
+					created_at: new Date(),
+					updated_at: new Date(),
+					thumbs_up: 10,
+					thumbs_down: 2,
+				},
+			];
+
 			const db: Db = getTestDB();
 			await db.collection("games").insertOne(testGame);
+			await db.collection("game-settings").insertMany(testGameSettings);
 
 			// Act
 			const response = await request(app).get("/games/3").expect(200);
@@ -158,9 +178,9 @@ describe("GET /games/:id", () => {
 			expect(response.body.status).toBe("ready");
 			expect(response.body.game.settings).toHaveLength(1);
 			expect(response.body.game.settings[0]).toMatchObject({
-				game_settings: testGame.settings?.[0].game_settings,
-				steamdeck_settings: testGame.settings?.[0].steamdeck_settings,
-				steamdeck_hardware: testGame.settings?.[0].steamdeck_hardware,
+				game_settings: testGameSettings[0].game_settings,
+				steamdeck_settings: testGameSettings[0].steamdeck_settings,
+				steamdeck_hardware: testGameSettings[0].steamdeck_hardware,
 			});
 		});
 
@@ -293,7 +313,6 @@ describe("GET /games/:id", () => {
 			const testGame: Game = {
 				game_id: largeId,
 				game_name: "Test Game",
-				settings: [],
 				created_at: new Date(),
 				updated_at: new Date(),
 				thumbs_up: 0,
@@ -316,7 +335,6 @@ describe("GET /games/:id", () => {
 			const testGame: Game = {
 				game_id: 4,
 				game_name: "Game with no settings",
-				settings: [],
 				created_at: new Date(),
 				updated_at: new Date(),
 				thumbs_up: 0,
