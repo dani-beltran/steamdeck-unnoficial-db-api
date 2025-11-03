@@ -158,7 +158,7 @@ const extractPostData = async (mined_posts: Post[]) => {
 
 	if (steamdeckhqPost) {
 		logger.info("Processing SteamDeckHQ post for data extraction...");
-		logger.info("Generating game performance summary using AI...");
+		logger.info("Generating game performance summary from SteamDeckHQ post using AI...");
 		game_performance_summary = await generateGamePerformanceSummary(
 			steamdeckhqPost.game_review,
 		);
@@ -171,6 +171,12 @@ const extractPostData = async (mined_posts: Post[]) => {
 	if (sharedeckPostLcd) {
 		logger.info("Processing Sharedeck LCD post for data extraction...");
 		posts.push(sharedeckPostLcd);
+	}
+	if (protonbPosts.length > 0 && !game_performance_summary) {
+		logger.info("Generating game performance summary from ProtonDB posts using AI...");
+		game_performance_summary = await generateGamePerformanceSummary(
+			protonbPosts.map((post) => post.raw).join("\n\n"),
+		);
 	}
 	if (posts.length === 0 && protonbPosts.length > 0) {
 		logger.warn(
@@ -187,6 +193,9 @@ const extractPostData = async (mined_posts: Post[]) => {
 			steamdeck_experience: undefined,
 			posted_at: recentPosts[0].posted_at,
 		});
+	}
+	if (!posts.length) {
+		logger.warn("No posts available to extract data from.");
 	}
 	return {
 		game_performance_summary,
@@ -238,7 +247,15 @@ async function askClaudeAI(msg: string) {
 async function generateGameSettingsJson(raw?: string) {
 	const json = await jsonExtractionAI(
 		raw || "",
-		`all mentioned game settings in key-value format. Only include game settings that are explicitly mentioned and prioritize settings from the most recent posts.`,
+		`every mentioned game settings in key-value format. Don't nest the values.
+		Exclude mentions to:
+		- The battery 
+		- Hardware
+		- SteamOS or Proton version
+		- TDP or power settings
+		- Personal opinions
+		- Issues or bugs
+		`,
 	);
 	return stringifyValues(json);
 }
