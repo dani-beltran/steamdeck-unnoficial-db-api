@@ -140,15 +140,18 @@ const extractPostData = async (mined_posts: Post[]) => {
 		new Set(mined_posts.map((post) => post.source)),
 	);
 	let game_performance_summary = "";
+	// Get all protondb posts
 	const protonbPosts = mined_posts.filter(
 		(post) => post.source === SCRAPE_SOURCES.PROTONDB,
 	);
+	// Get first post for steamdeckhq
 	const steamdeckhqPost = mined_posts.filter(
 		(post) => post.source === SCRAPE_SOURCES.STEAMDECKHQ,
 	)[0];
 	const sharedeckPosts = mined_posts.filter(
 		(post) => post.source === SCRAPE_SOURCES.SHAREDECK,
 	);
+	// Get first post for sharedeck oled and lcd
 	const sharedeckPostOled = sharedeckPosts.find(
 		(post) => post.steamdeck_hardware === "oled",
 	);
@@ -166,10 +169,22 @@ const extractPostData = async (mined_posts: Post[]) => {
 	}
 	if (sharedeckPostOled) {
 		logger.info("Processing Sharedeck OLED post for data extraction...");
+		logger.info("Extracting settings from ShareDeck OLED post notes using AI");
+		const settingsFromNotes = await generateGameSettingsFromNotes(sharedeckPostOled);
+		sharedeckPostOled.game_settings = {
+			...settingsFromNotes,
+			...sharedeckPostOled.game_settings 
+		};
 		posts.push(sharedeckPostOled);
 	}
 	if (sharedeckPostLcd) {
 		logger.info("Processing Sharedeck LCD post for data extraction...");
+		logger.info("Extracting settings from ShareDeck LCD post notes using AI");
+		const settingsFromNotes = await generateGameSettingsFromNotes(sharedeckPostLcd);
+		sharedeckPostLcd.game_settings = {
+			...settingsFromNotes,
+			...sharedeckPostLcd.game_settings 
+		};
 		posts.push(sharedeckPostLcd);
 	}
 	if (protonbPosts.length > 0 && !game_performance_summary) {
@@ -212,6 +227,19 @@ const extractPostData = async (mined_posts: Post[]) => {
 			.sort(createDateComparator("posted_at", "desc")),
 	};
 };
+
+function generateGameSettingsFromNotes(post?: Post): Promise<Record<string, string>> {
+	const noteText = getPostNote(post);
+	if (!noteText) return Promise.resolve({});
+	return generateGameSettingsJson(noteText);
+}
+
+function getPostNote(post?: Post): string | null {
+	if (!post?.raw) return null;
+	const noteIndex = post.raw.indexOf("Note\n\n");
+	if (noteIndex === -1) return null;
+	return post.raw.substring(noteIndex + "Note\n\n".length).trim();
+}
 
 async function generateGamePerformanceSummary(raw?: string) {
 	if (!raw) return "";
