@@ -17,14 +17,18 @@ type FindGamesArgs = {
 	rescrapeRequested?: boolean;
 };
 
-export const findGames = async (filter: FindGamesArgs) => {
+export const findGames = async (args: FindGamesArgs) => {
 	const db = getDB();
+	const filter = {} as Record<string, unknown>;
+	if (typeof args.regenerateRequested === "boolean") {
+		filter.regenerate_requested = args.regenerateRequested;
+	}
+	if (typeof args.rescrapeRequested === "boolean") {
+		filter.rescrape_requested = args.rescrapeRequested;
+	}
 	return db
 		.collection<Game>(collection)
-		.find({
-			regenerate_requested: filter.regenerateRequested,
-			rescrape_requested: filter.rescrapeRequested,
-		})
+		.find(filter)
 		.sort("updated_at", "asc")
 		.toArray();
 };
