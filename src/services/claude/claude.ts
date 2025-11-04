@@ -1,3 +1,4 @@
+import https from "node:https";
 import type {
 	ClaudeMessage,
 	ClaudeRequest,
@@ -7,6 +8,15 @@ import type {
 
 const CLAUDE_API_BASE_URL = "https://api.anthropic.com/v1";
 const CLAUDE_API_VERSION = "2023-06-01";
+
+// HTTPS agent with increased TCP keep-alive settings
+const httpsAgent = new https.Agent({
+	keepAlive: true,
+	keepAliveMsecs: 30000, // 30 seconds - increased from default 1000ms
+	maxSockets: 50,
+	maxFreeSockets: 10,
+	timeout: 60000, // 60 seconds
+});
 
 export class ClaudeService {
 	private apiKey: string;
@@ -92,6 +102,8 @@ export class ClaudeService {
 				"anthropic-version": CLAUDE_API_VERSION,
 			},
 			body: JSON.stringify(body),
+			// @ts-expect-error - Node.js fetch supports agent option
+			agent: httpsAgent,
 		});
 
 		if (!response.ok) {
