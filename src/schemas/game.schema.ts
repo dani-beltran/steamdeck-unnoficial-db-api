@@ -49,8 +49,6 @@ export const gameInputSchema = gameSchema.omit({
 	generated_at: true,
 	updated_at: true,
 	created_at: true,
-	thumbs_down: true,
-	thumbs_up: true,
 });
 
 // Type exports

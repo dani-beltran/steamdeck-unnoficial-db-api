@@ -149,7 +149,7 @@ Docker images are built for:
 
 ### Docker push failing
 - Verify `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` secrets are correctly configured
-- Check if the DockerHub repository exists (format: `username/steamdeck-unnoficial-db-api`)
+- Check if the DockerHub repository exists (format: `username/steamdeck-unofficial-db-api`)
 - Ensure the access token has write permissions
 - Verify the workflow is running on `main` branch or a version tag (not a PR)
 
