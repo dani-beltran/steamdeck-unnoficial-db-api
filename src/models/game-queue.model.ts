@@ -1,7 +1,7 @@
 import { getDB } from "../config/database";
 import type { GameQueue, InputGameQueue } from "../schemas/game-queue.schema";
 
-const collection = "game_queue";
+const collection = "game-queue";
 
 export const setGameInQueue = async (game: InputGameQueue) => {
 	const db = getDB();
