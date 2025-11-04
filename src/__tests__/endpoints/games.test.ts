@@ -62,8 +62,6 @@ describe("GET /games/:id", () => {
 				steamdeck_verified: true,
 				created_at: new Date(),
 				updated_at: new Date(),
-				thumbs_down: 0,
-				thumbs_up: 0,
 			};
 
 			const testGameSettings: GameSettings[] = [
@@ -112,8 +110,6 @@ describe("GET /games/:id", () => {
 				game_name: "Cyberpunk 2077",
 				created_at: new Date(),
 				updated_at: new Date(),
-				thumbs_up: 0,
-				thumbs_down: 0,
 			};
 
 			const db: Db = getTestDB();
@@ -141,8 +137,6 @@ describe("GET /games/:id", () => {
 				game_name: "Red Dead Redemption 2",
 				created_at: new Date(),
 				updated_at: new Date(),
-				thumbs_up: 0,
-				thumbs_down: 0,
 			};
 
 			const testGameSettings: GameSettings[] = [
@@ -315,8 +309,6 @@ describe("GET /games/:id", () => {
 				game_name: "Test Game",
 				created_at: new Date(),
 				updated_at: new Date(),
-				thumbs_up: 0,
-				thumbs_down: 0,
 			};
 
 			const db: Db = getTestDB();
@@ -337,8 +329,6 @@ describe("GET /games/:id", () => {
 				game_name: "Game with no settings",
 				created_at: new Date(),
 				updated_at: new Date(),
-				thumbs_up: 0,
-				thumbs_down: 0,
 			};
 
 			const db: Db = getTestDB();
