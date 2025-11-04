@@ -52,40 +52,6 @@ export const saveGame = async (id: number, game: GameInput) => {
 	);
 };
 
-export const addVoteToGame = async (id: number, vote: "up" | "down") => {
-	const db = getDB();
-	const updateField = vote === "up" ? "thumbs_up" : "thumbs_down";
-
-	return db.collection<Game>(collection).updateOne(
-		{ game_id: id },
-		{
-			$inc: {
-				[updateField]: 1,
-			},
-			$set: {
-				updated_at: new Date(),
-			},
-		},
-	);
-};
-
-export const removeVoteFromGame = async (id: number, vote: "up" | "down") => {
-	const db = getDB();
-	const updateField = vote === "up" ? "thumbs_up" : "thumbs_down";
-
-	return db.collection<Game>(collection).updateOne(
-		{ game_id: id },
-		{
-			$inc: {
-				[updateField]: -1,
-			},
-			$set: {
-				updated_at: new Date(),
-			},
-		},
-	);
-};
-
 export const saveGamesBulk = async (
 	games: { id: number; data: GameInput }[],
 ) => {

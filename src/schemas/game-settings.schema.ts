@@ -2,6 +2,7 @@ import { z } from "zod";
 import { gameIdSchema } from "./game-id.schema";
 import { STEAMDECK_HARDWARE } from "./game.schema";
 import { SCRAPE_SOURCES } from "./scrape.schema";
+import { VOTE_TYPE } from "./vote.schema";
 
 // Schema for a single game settings entry
 export const gameSettingsSchema = z.object({
@@ -29,6 +30,10 @@ export const gameSettingsSchema = z.object({
     thumbs_down: z.number().int().nonnegative().optional().default(0),
 	updated_at: z.date(),
 	created_at: z.date(),
+});
+
+export const gameVoteSchema = z.object({
+	vote: z.enum(VOTE_TYPE),
 });
 
 // Input schema for creating/updating game settings (without timestamps)

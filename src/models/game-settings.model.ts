@@ -1,3 +1,4 @@
+import { ObjectId } from "mongodb";
 import { getDB } from "../config/database";
 import {
 	type GameSettings,
@@ -64,4 +65,38 @@ export const createGameSettingsIndexes = async () => {
 	await db
 		.collection<GameSettings>(collection)
 		.createIndex({ game_id: 1, steamdeck_hardware: 1 });
+};
+
+export const addVoteToGameSettings = async (gameSettingsId: string, vote: "up" | "down") => {
+	const db = getDB();
+	const updateField = vote === "up" ? "thumbs_up" : "thumbs_down";
+
+	return db.collection<GameSettings>(collection).updateOne(
+		{ _id: new ObjectId(gameSettingsId) },
+		{
+			$inc: {
+				[updateField]: 1,
+			},
+			$set: {
+				updated_at: new Date(),
+			},
+		},
+	);
+};
+
+export const removeVoteFromGameSettings = async (gameSettingsId: string, vote: "up" | "down") => {
+	const db = getDB();
+	const updateField = vote === "up" ? "thumbs_up" : "thumbs_down";
+
+	return db.collection<GameSettings>(collection).updateOne(
+		{ _id: new ObjectId(gameSettingsId) },
+		{
+			$inc: {
+				[updateField]: -1,
+			},
+			$set: {
+				updated_at: new Date(),
+			},
+		},
+	);
 };

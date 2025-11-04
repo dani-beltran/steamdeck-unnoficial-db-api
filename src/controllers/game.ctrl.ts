@@ -2,11 +2,9 @@ import type { Request, Response } from "express";
 import { getDB } from "../config/database";
 import logger from "../config/logger";
 import {
-	addVoteToGame,
 	fetchGameById,
-	removeVoteFromGame,
 } from "../models/game.model";
-import { fetchGameSettingsByGameId } from "../models/game-settings.model";
+import { addVoteToGameSettings, fetchGameSettingsByGameId, removeVoteFromGameSettings } from "../models/game-settings.model";
 import { setGameInQueue } from "../models/game-queue.model";
 import {
 	fetchUserById,
@@ -47,7 +45,7 @@ export const voteGameCtrl = async (req: Request, res: Response) => {
 			return res.status(401).json({ error: "Authentication required to vote" });
 		}
 
-		const gameId = Number(req.params.id);
+		const gameSettingId = String(req.params.id);
 		const { vote } = req.body as VoteBody;
 
 		const user = await fetchUserById(Number((req.user as SteamProfile).id));
@@ -57,21 +55,21 @@ export const voteGameCtrl = async (req: Request, res: Response) => {
 		}
 
 		await session.withTransaction(async () => {
-			const res = await setUserVote(user.steam_user_id, gameId, vote);
+			const res = await setUserVote(user.steam_user_id, gameSettingId, vote);
 			if (res.voteCreated) {
-				await addVoteToGame(gameId, vote);
+				await addVoteToGameSettings(gameSettingId, vote);
 			} else if (res.voteChanged) {
 				const oppositeVote = vote === "up" ? "down" : "up";
-				await addVoteToGame(gameId, vote);
-				await removeVoteFromGame(gameId, oppositeVote);
+				await addVoteToGameSettings(gameSettingId, vote);
+				await removeVoteFromGameSettings(gameSettingId, oppositeVote);
 			}
 		});
-		res.json({ message: `Vote '${vote}' recorded for game ID ${gameId}` });
+		res.json({ message: `Vote '${vote}' recorded for game ID ${gameSettingId}` });
 	} catch (error) {
 		logger.error("Error processing vote:", error);
 		res.status(500).json({ error: "Internal server error" });
 	} finally {
-		session.endSession();
+		await session.endSession();
 	}
 };
 
@@ -84,15 +82,14 @@ export const removeVoteFromGameCtrl = async (req: Request, res: Response) => {
 				.json({ error: "Authentication required to remove vote" });
 		}
 
-		const gameId = Number(req.params.id);
-
+		const gameSettingsId = String(req.params.id);
 		const user = await fetchUserById(Number((req.user as SteamProfile).id));
 
 		if (!user) {
 			return res.status(401).json({ error: "User not found" });
 		}
 
-		const existingVote = user.votes.find((v) => v.game_id === gameId);
+		const existingVote = user.votes.find((v) => v.game_settings_id === gameSettingsId);
 		if (!existingVote || existingVote?.vote_type === null) {
 			return res
 				.status(400)
@@ -100,17 +97,17 @@ export const removeVoteFromGameCtrl = async (req: Request, res: Response) => {
 		}
 
 		await session.withTransaction(async () => {
-			const { voteRemoved } = await removeUserVote(user.steam_user_id, gameId);
+			const { voteRemoved } = await removeUserVote(user.steam_user_id, gameSettingsId);
 			if (voteRemoved) {
 				// biome-ignore lint/style/noNonNullAssertion: it is already checked that is not null above
-				await removeVoteFromGame(gameId, existingVote.vote_type!);
+				await removeVoteFromGameSettings(gameSettingsId, existingVote.vote_type!);
 			}
 		});
-		res.json({ message: `Vote removed for game ID ${gameId}` });
+		res.json({ message: `Vote removed for game ID ${gameSettingsId}` });
 	} catch (error) {
 		logger.error("Error removing vote:", error);
 		res.status(500).json({ error: "Internal server error" });
 	} finally {
-		session.endSession();
+		await session.endSession();
 	}
 };

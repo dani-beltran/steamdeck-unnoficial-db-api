@@ -34,14 +34,14 @@ export const saveUserSession = async (user: InputUser) => {
 
 export const setUserVote = async (
 	steamUserId: number,
-	gameId: number,
+	gameSettingsId: string,
 	voteType: VOTE_TYPE,
 ) => {
 	const db = getDB();
 	let voteCreated = false;
 	// Update existing vote if present
 	const updateResult = await db.collection<User>(collection).updateOne(
-		{ steam_user_id: steamUserId, "votes.game_id": gameId },
+		{ steam_user_id: steamUserId, "votes.game_settings_id": gameSettingsId },
 		{
 			$set: {
 				"votes.$.vote_type": voteType,
@@ -54,7 +54,7 @@ export const setUserVote = async (
 		await db.collection<User>(collection).updateOne(
 			{ steam_user_id: steamUserId },
 			{
-				$push: { votes: { game_id: gameId, vote_type: voteType } },
+				$push: { votes: { game_settings_id: gameSettingsId, vote_type: voteType } },
 				$set: { updated_at: new Date() },
 			},
 		);
@@ -66,12 +66,12 @@ export const setUserVote = async (
 	};
 };
 
-export const removeUserVote = async (steamUserId: number, gameId: number) => {
+export const removeUserVote = async (steamUserId: number, gameSettingsId: string) => {
 	const db = getDB();
 	const updateResult = await db.collection<User>(collection).updateOne(
 		{ steam_user_id: steamUserId },
 		{
-			$pull: { votes: { game_id: gameId } },
+			$pull: { votes: { game_settings_id: gameSettingsId } },
 			$set: { updated_at: new Date() },
 		},
 	);

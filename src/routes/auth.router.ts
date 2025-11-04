@@ -12,9 +12,10 @@ import {
 import { removeVoteFromGameCtrl, voteGameCtrl } from "../controllers/game.ctrl";
 import { validateBody, validateParams } from "../middleware/validation";
 import { fetchUserById, saveUserSession } from "../models/user.model";
-import { gameIdParamSchema, gameVoteSchema } from "../schemas/game.schema";
 import type { SteamProfile } from "../services/steam/steam.types";
 import { getCookie } from "../utils/express-utils";
+import { gameVoteSchema } from "../schemas/game-settings.schema";
+import { idSchemaParam } from "../schemas/id.schema";
 
 // Load environment variables
 dotenv.config();
@@ -125,7 +126,6 @@ router.get("/auth/logout", (req, res, next) => {
 
 const redirectToRefererOrHome = (req: Request, res: Response) => {
 	const ref = req.get("Referer") || req.get("Referrer");
-	console.log("Logout referer:", ref);
 	if (ref?.startsWith(WEB_HOST)) {
 		res.redirect(ref);
 	} else {
@@ -137,13 +137,13 @@ const redirectToRefererOrHome = (req: Request, res: Response) => {
 ////////////////////////////////////////////////
 router.post(
 	"/games/:id/vote",
-	validateParams(gameIdParamSchema),
+	validateParams(idSchemaParam),
 	validateBody(gameVoteSchema),
 	voteGameCtrl,
 );
 
 router.delete(
 	"/games/:id/vote",
-	validateParams(gameIdParamSchema),
+	validateParams(idSchemaParam),
 	removeVoteFromGameCtrl,
 );

@@ -1,12 +1,12 @@
 import z from "zod";
-import { gameIdSchema } from "./game-id.schema";
 import { VOTE_TYPE } from "./vote.schema";
+import { idSchema } from "./id.schema";
 
 export const userSchema = z.object({
 	steam_user_id: z.number().int().nonnegative(),
 	votes: z.array(
 		z.object({
-			game_id: gameIdSchema,
+			game_settings_id: idSchema,
 			vote_type: z.enum(VOTE_TYPE).nullable(),
 		}),
 	),
