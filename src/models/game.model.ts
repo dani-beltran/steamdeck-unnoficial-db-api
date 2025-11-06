@@ -45,6 +45,7 @@ export const saveGame = async (id: number, game: GameInput) => {
 				updated_at: new Date(),
 			},
 			$setOnInsert: {
+				game_id: id,
 				created_at: new Date(),
 			},
 		},
@@ -67,6 +68,7 @@ export const saveGamesBulk = async (
 						updated_at: new Date(),
 					},
 					$setOnInsert: {
+						game_id: id,
 						created_at: new Date(),
 					},
 				},

@@ -56,7 +56,6 @@ describe("GET /games/:id", () => {
 			// Arrange
 			const testGame: Game = {
 				game_id: 1,
-				game_name: "Elden Ring",
 				game_performance_summary: "Runs smoothly on Steam Deck",
 				steamdeck_rating: STEAMDECK_RATING.GOLD,
 				steamdeck_verified: true,
@@ -93,7 +92,6 @@ describe("GET /games/:id", () => {
 			expect(response.body.status).toBe("ready");
 			expect(response.body.game).toMatchObject({
 				game_id: 1,
-				game_name: "Elden Ring",
 				game_performance_summary: "Runs smoothly on Steam Deck",
 				steamdeck_rating: "gold",
 				steamdeck_verified: true,
@@ -107,7 +105,6 @@ describe("GET /games/:id", () => {
 			// Arrange
 			const testGame: Game = {
 				game_id: 2,
-				game_name: "Cyberpunk 2077",
 				created_at: new Date(),
 				updated_at: new Date(),
 			};
@@ -125,7 +122,6 @@ describe("GET /games/:id", () => {
 			expect(response.body.status).toBe("ready");
 			expect(response.body.game).toMatchObject({
 				game_id: 2,
-				game_name: "Cyberpunk 2077",
 			});
 			expect(response.body.game.settings).toEqual([]);
 		});
@@ -134,7 +130,6 @@ describe("GET /games/:id", () => {
 			// Arrange
 			const testGame: Game = {
 				game_id: 3,
-				game_name: "Red Dead Redemption 2",
 				created_at: new Date(),
 				updated_at: new Date(),
 			};
@@ -183,19 +178,16 @@ describe("GET /games/:id", () => {
 			const games = [
 				{
 					game_id: 1,
-					game_name: "Game 1",
 					created_at: new Date(),
 					updated_at: new Date(),
 				},
 				{
 					game_id: 2,
-					game_name: "Game 2",
 					created_at: new Date(),
 					updated_at: new Date(),
 				},
 				{
 					game_id: 3,
-					game_name: "Game 3",
 					created_at: new Date(),
 					updated_at: new Date(),
 				},
@@ -211,7 +203,6 @@ describe("GET /games/:id", () => {
 			expect(response.body.status).toBe("ready");
 			expect(response.body.game).toMatchObject({
 				game_id: 2,
-				game_name: "Game 2",
 			});
 		});
 	});
@@ -306,7 +297,6 @@ describe("GET /games/:id", () => {
 			const largeId = 2147483647; // Max 32-bit integer
 			const testGame: Game = {
 				game_id: largeId,
-				game_name: "Test Game",
 				created_at: new Date(),
 				updated_at: new Date(),
 			};
@@ -326,7 +316,6 @@ describe("GET /games/:id", () => {
 			// Arrange
 			const testGame: Game = {
 				game_id: 4,
-				game_name: "Game with no settings",
 				created_at: new Date(),
 				updated_at: new Date(),
 			};

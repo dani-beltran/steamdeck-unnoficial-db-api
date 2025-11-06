@@ -8,10 +8,10 @@ import {
 } from "../models/game-queue.model";
 import { saveScrapeData } from "../models/scrape.model";
 import { SCRAPE_SOURCES } from "../schemas/scrape.schema";
-import { ProtondbScraper } from "../services/scraping/ProtondbScraper";
-import type { Scraper } from "../services/scraping/Scraper";
-import { SharedeckScraper } from "../services/scraping/SharedeckScraper";
-import { SteamdeckhqScraper } from "../services/scraping/SteamdeckhqScraper";
+import { ProtondbMiner } from "../services/data-mining/ProtondbMiner";
+import { SharedeckMiner } from "../services/data-mining/SharedeckMiner";
+import { SteamdeckhqMiner } from "../services/data-mining/SteamdeckhqMiner";
+import type { Miner } from "../services/data-mining/Miner";
 
 dotenv.config();
 
@@ -41,17 +41,17 @@ async function run() {
 		logger.info(`Scraping game ${gameInQueue.game_id}...`);
 		await Promise.all([
 			runScrapeProcess(
-				new ProtondbScraper(),
+				new ProtondbMiner(),
 				SCRAPE_SOURCES.PROTONDB,
 				gameInQueue.game_id,
 			),
 			runScrapeProcess(
-				new SteamdeckhqScraper(),
+				new SteamdeckhqMiner(),
 				SCRAPE_SOURCES.STEAMDECKHQ,
 				gameInQueue.game_id,
 			),
 			runScrapeProcess(
-				new SharedeckScraper(),
+				new SharedeckMiner(),
 				SCRAPE_SOURCES.SHAREDECK,
 				gameInQueue.game_id,
 			),
@@ -77,12 +77,12 @@ async function run() {
 }
 
 async function runScrapeProcess(
-	scraper: Scraper,
+	miner: Miner,
 	source: SCRAPE_SOURCES,
 	gameId: number,
 ) {
 	try {
-		const { timestamp: _, ...result } = await scraper.scrape(gameId);
+		const { timestamp: _, ...result } = await miner.mine(gameId);
 		logger.info(`Scraped url ${result.url}`);
 		await saveScrapeData({
 			game_id: gameId,
@@ -103,6 +103,6 @@ async function runScrapeProcess(
 		);
 		await setGameInQueue({ game_id: gameId, rescrape_failed: true });
 	} finally {
-		scraper.close();
+		miner.close();
 	}
 }

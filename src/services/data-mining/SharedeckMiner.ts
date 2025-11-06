@@ -1,5 +1,6 @@
+import { SectionData, WebScraper } from "@danilidonbeltran/webscrapper";
 import { STEAMDECK_HARDWARE } from "../../schemas/game.schema";
-import type { Post } from "../../schemas/post.schema";
+import type { GameReportBody } from "../../schemas/game-report.schema";
 import {
 	SCRAPE_SOURCES,
 	type ScrapedContent,
@@ -7,27 +8,51 @@ import {
 import type { Miner } from "./Miner";
 
 export class SharedeckMiner implements Miner {
-	extractData(result: ScrapedContent) {
+	private scraper: WebScraper;
+	
+	constructor() {
+		this.scraper = new WebScraper({
+			sectionSelectors: ["#reports article"],
+			waitForSelector: "#reports",
+			browser: "chromium",
+			headless: true,
+			timeout: 15_000,
+		});
+	}
+	
+	async mine(gameId: number) {
+		const url = `https://sharedeck.games/apps/${gameId}`;
+		const result = await this.scraper.scrapeTextStructured(url);
+		return result;
+	}
+	
+	close() {
+		this.scraper.close();
+	}
+
+	polish(result: ScrapedContent) {
 		if (!result.sections) {
-			return { posts: [] };
+			return { reports: [] };
 		}
 		const filteredSections = result.sections.filter(
 			(section) => section.otherText && section.otherText.length > 0,
 		);
-		const posts: Post[] = filteredSections.map((section) => {
-			return this.getGamePost(section);
+		const reports: GameReportBody[] = filteredSections.map((section) => {
+			return this.buildGameReport(section, result.url);
 		});
-		return { posts };
+		return { reports };
 	}
 
-	private getGamePost(section: { otherText: string[] }): Post {
+	private buildGameReport(section: SectionData, url: string): GameReportBody {
 		const items = section.otherText;
 		return {
 			title: null,
 			source: SCRAPE_SOURCES.SHAREDECK,
-			raw: (section.otherText || []).join("\n\n"),
-			game_review: "",
-			posted_at: null,
+			url: `${url}#${section.id}`,
+			reporter: {
+				username: this.findValue(items, /to be able to vote/i) || "Anonymous",
+				user_profile_url: section.links[0]?.href || "",
+			},
 			battery_performance: {
 				life_span: items[0].replace(/[\n]/g, "").trim(),
 				consumption: items[1],
@@ -49,6 +74,8 @@ export class SharedeckMiner implements Miner {
 			steamdeck_experience: {
 				average_frame_rate: items[2],
 			},
+			notes: this.getNotes(section),
+			posted_at: null,
 		};
 	}
 
@@ -70,5 +97,11 @@ export class SharedeckMiner implements Miner {
 			return STEAMDECK_HARDWARE.LCD;
 		}
 		return undefined;
+	}
+
+	private getNotes(section: SectionData): string {
+		const notesStartindex = section.otherText.indexOf("Note");
+		const noteEndIndex = section.otherText.indexOf("Sign in with Steam");
+		return (section.otherText || []).slice(notesStartindex + 1, noteEndIndex).join("\n\n");
 	}
 }

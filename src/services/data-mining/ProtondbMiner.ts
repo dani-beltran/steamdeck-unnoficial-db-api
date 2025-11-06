@@ -1,6 +1,6 @@
-import type { SectionData } from "@danilidonbeltran/webscrapper";
+import { type ScrapeStructuredResult, type SectionData, WebScraper } from "@danilidonbeltran/webscrapper";
 import { STEAMDECK_RATING } from "../../schemas/game.schema";
-import type { Post } from "../../schemas/post.schema";
+import type { GameReportBody } from "../../schemas/game-report.schema";
 import {
 	SCRAPE_SOURCES,
 	type ScrapedContent,
@@ -10,35 +10,73 @@ import { createDateComparator } from "../../utils/sort";
 import type { Miner } from "./Miner";
 
 export class ProtondbMiner implements Miner {
-	extractData(result: ScrapedContent) {
+	private scraper: WebScraper;
+	
+	constructor() {
+		this.scraper = new WebScraper({
+			sectionSelectors: [
+				// Selector for rating
+				".GameInfo__SummaryContainer-sc-19o71ac-1",
+				// Selector for verification status
+				".DeckVerifiedInfo__AlignedRowWidthUnset-sc-acfn33-0",
+				// Selector for user reports
+				".for-anchor-tags",
+			],
+			waitForSelector: ".for-anchor-tags",
+			browser: "chromium",
+			headless: true,
+			timeout: 15_000,
+		});
+	}
+
+	async mine(gameId: number): Promise<ScrapeStructuredResult> {
+		const url = `https://www.protondb.com/app/${gameId}?device=steamDeck`;
+		const result = await this.scraper.scrapeTextStructured(url);
+		return result;
+	}
+
+	polish(result: ScrapedContent) {
 		if (!result.sections) {
-			return { posts: [] };
+			return { reports: [] };
 		}
 		const [firstSection, secondSection, ...articles] = result.sections;
-		const posts: Post[] = articles.map((section) => {
+		const reports: GameReportBody[] = articles.map((section) => {
 			return {
 				title: section.title,
 				source: SCRAPE_SOURCES.PROTONDB,
-				raw: (section.paragraphs || []).join("\n\n"),
-				game_review: "",
+				reporter: {
+					username: section.otherText[0],
+					user_profile_url: section.links[0]?.href,
+				},
+				url: section.links[2]?.href || result.url,
+				notes: (section.paragraphs || []).join("\n\n"),
 				posted_at: this.findPostedDate(section.links || []),
 			};
 		});
-		const meaningfulPosts = posts
-			.filter((p) => p.raw.trim() !== "")
+		const meaningfulReports = reports
+			.filter((p) => p.notes.trim() !== "")
 			.sort(createDateComparator("posted_at", "desc"));
 		return {
-			posts: meaningfulPosts,
+			reports: meaningfulReports,
 			steamdeck_rating: this.extractSteamdeckRating(firstSection),
 			steamdeck_verified: this.extractSteamdeckVerified(secondSection),
 		};
+	}
+
+	close() {
+		this.scraper.close();
 	}
 
 	private findPostedDate(links: { text: string }[]): Date | null {
 		const dateLink = links.find((link) => link.text.includes("ago"));
 		if (dateLink) {
 			// Handle direct relative date format like "2 months ago"
-			return parseRelativeDate(dateLink.text.trim());
+			const date = parseRelativeDate(dateLink.text.trim());
+			// Strip time component - set to midnight UTC
+			if (date) {
+				date.setUTCHours(0, 0, 0, 0);
+			}
+			return date;
 		}
 		return null;
 	}

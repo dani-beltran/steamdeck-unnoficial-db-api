@@ -1,50 +1,73 @@
-import type { Post } from "../../schemas/post.schema";
+import { SectionData, WebScraper } from "@danilidonbeltran/webscrapper";
+import type { GameReportBody } from "../../schemas/game-report.schema";
 import {
 	SCRAPE_SOURCES,
 	type ScrapedContent,
 } from "../../schemas/scrape.schema";
 import type { Miner } from "./Miner";
+import { getSteamGameDestails } from "../steam/steam";
 
 export class SteamdeckhqMiner implements Miner {
-	extractData(result: ScrapedContent) {
+	private scraper: WebScraper;
+	
+	constructor() {
+		this.scraper = new WebScraper({
+			sectionSelectors: ["#review", "#recommended", "#entry-time"],
+			waitForSelector: "#review",
+			browser: "chromium",
+			headless: true,
+			followRedirects: false,
+			timeout: 15_000,
+		});
+	}
+	
+	async mine(gameId: number) {
+		const gameDetails = await getSteamGameDestails(gameId);
+		const gameName = this.formatGameName(gameDetails.name);
+
+		const url = `https://steamdeckhq.com/game-reviews/${gameName}`;
+		const result = await this.scraper.scrapeTextStructured(url);
+		return result;
+	}
+	
+	close() {
+		this.scraper.close();
+	}
+
+	polish(result: ScrapedContent) {
 		if (!result.sections) {
-			return { posts: [] };
+			return { reports: [] };
 		}
 		const reviewSection = result.sections.find(
 			(section) => section.id === "review",
 		);
-		const gameReview = reviewSection
-			? (reviewSection.paragraphs || []).join("\n\n")
-			: "";
 		const recommendedSection = result.sections.find(
 			(section) => section.id === "recommended",
 		);
 		const timeSection = result.sections.find(
 			(section) => section.id === "entry-time",
 		);
-		const raw =
-			(recommendedSection?.otherText || [])
-				.concat(recommendedSection?.paragraphs || [])
-				.join("\n\n") || "";
 		const rawPostedAt = timeSection?.otherText[0] || null;
-		const gameSettings = this.extractGameSettings(recommendedSection);
-		const batteryPerformance =
-			this.extractBatteryPerformance(recommendedSection);
-
-		const post: Post = {
+		const report: GameReportBody = {
 			source: SCRAPE_SOURCES.STEAMDECKHQ,
 			title: reviewSection?.title ?? null,
-			raw,
-			game_review: gameReview,
-			game_settings: gameSettings,
+			url: result.url,
+			reporter: this.findAuthorship(reviewSection),
+			game_settings: this.extractGameSettings(recommendedSection),
 			steamdeck_settings: this.extractSteamdeckSettings(recommendedSection),
-			battery_performance: batteryPerformance,
-			posted_at: rawPostedAt
-				? new Date(Date.parse(`${rawPostedAt} UTC`))
-				: null,
+			battery_performance: this.extractBatteryPerformance(recommendedSection),
+			notes: (reviewSection?.paragraphs || []).join("\n\n"),
+			posted_at: rawPostedAt ? new Date(Date.parse(`${rawPostedAt} UTC`)) : null,
 		};
 
-		return { posts: [post] };
+		return { reports: [report] };
+	}
+
+	private formatGameName(name: string): string {
+		return name
+			.toLowerCase()
+			.replace(/\s+/g, "-")
+			.replace(/[^a-z0-9-]/g, "");
 	}
 
 	private extractGameSettings(recommendedSection?: {
@@ -107,6 +130,20 @@ export class SteamdeckhqMiner implements Miner {
 			scaling_filter: items[10]?.trim(),
 			gpu_clock_speed: items[12]?.trim(),
 			proton_version: recommendedSection.paragraphs[0]?.trim(),
+		};
+	}
+
+	private findAuthorship(section?: SectionData): { username: string; user_profile_url: string } {
+		const authorIndex = section?.links?.findIndex((link) =>
+			link.href.includes("/author/"),
+		);
+		const link =
+			typeof authorIndex === "number" && authorIndex >= 0 && section?.links
+				? section.links[authorIndex]
+				: null;
+		return {
+			username: link?.text || "Steam Deck HQ",
+			user_profile_url: link?.href || "https://steamdeckhq.com/",
 		};
 	}
 }

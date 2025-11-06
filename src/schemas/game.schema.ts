@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { gameIdSchema } from "./game-id.schema";
+import { SteamApp } from "../services/steam/steam.types";
 
 export enum STEAMDECK_RATING {
 	GOLD = "gold",
@@ -33,7 +34,7 @@ export const gameIdsQuerySchema = z.object({
 
 export const gameSchema = z.object({
 	game_id: gameIdSchema,
-	game_name: z.string().min(1, "Name is required"),
+	steam_app: z.custom<SteamApp>().optional(),
 	game_performance_summary: z.string().optional(),
 	steamdeck_rating: z.enum(STEAMDECK_RATING).optional().nullable(),
 	steamdeck_verified: z.boolean().optional(),

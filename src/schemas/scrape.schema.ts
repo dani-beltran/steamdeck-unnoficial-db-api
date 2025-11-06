@@ -25,6 +25,13 @@ const sectionSchema = z.object({
 			items: z.array(z.string()),
 		}),
 	),
+	images: z.array(
+		z.object({
+			src: z.string().url(),
+			alt: z.string(),
+			title: z.string(),
+		}),
+	),
 });
 
 const structuredScrapedContentSchema = sectionSchema
