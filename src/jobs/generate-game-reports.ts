@@ -51,6 +51,11 @@ async function run() {
 			logger.warn(
 				`No scraped data found for game ${gameId}. Cannot generate game reports.`,
 			);
+            await setGameInQueue({
+                game_id: gameId,
+                regenerate: true,
+                regenerate_failed: true,
+            });
 			return;
 		}
 
