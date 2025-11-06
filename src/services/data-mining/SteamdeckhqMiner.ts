@@ -1,5 +1,5 @@
 import { SectionData, WebScraper } from "@danilidonbeltran/webscrapper";
-import type { GameReportBody } from "../../schemas/game-report.schema";
+import type { GameReportBody, Reporter } from "../../schemas/game-report.schema";
 import {
 	SCRAPE_SOURCES,
 	type ScrapedContent,
@@ -133,7 +133,7 @@ export class SteamdeckhqMiner implements Miner {
 		};
 	}
 
-	private findAuthorship(section?: SectionData): { username: string; user_profile_url: string } {
+	private findAuthorship(section?: SectionData): Reporter {
 		const authorIndex = section?.links?.findIndex((link) =>
 			link.href.includes("/author/"),
 		);
@@ -141,9 +141,11 @@ export class SteamdeckhqMiner implements Miner {
 			typeof authorIndex === "number" && authorIndex >= 0 && section?.links
 				? section.links[authorIndex]
 				: null;
+		const lastImageIndex = section?.images ? section.images.length - 1 : -1;
 		return {
 			username: link?.text || "Steam Deck HQ",
 			user_profile_url: link?.href || "https://steamdeckhq.com/",
+			user_profile_avatar_url: lastImageIndex >= 0 ? section?.images[lastImageIndex].src : undefined,
 		};
 	}
 }

@@ -47,6 +47,7 @@ export class ProtondbMiner implements Miner {
 				reporter: {
 					username: section.otherText[0],
 					user_profile_url: section.links[0]?.href,
+					user_profile_avatar_url: section.images[0]?.src,
 				},
 				url: section.links[2]?.href || result.url,
 				notes: (section.paragraphs || []).join("\n\n"),

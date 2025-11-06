@@ -52,6 +52,7 @@ export class SharedeckMiner implements Miner {
 			reporter: {
 				username: this.findValue(items, /to be able to vote/i) || "Anonymous",
 				user_profile_url: section.links[0]?.href || "",
+				user_profile_avatar_url: section.images[0]?.src,
 			},
 			battery_performance: {
 				life_span: items[0].replace(/[\n]/g, "").trim(),
