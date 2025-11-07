@@ -5,7 +5,7 @@ import { gameReportBodySchema, type GameReport, type GameReportBody } from "../s
 const collection = "game-reports";
 
 // Fetch all reports for a specific game
-export const fetchGameReportByGameId = async (gameId: number) => {
+export const fetchGameReportsByGameId = async (gameId: number) => {
     const db = getDB();
     return db
         .collection<GameReport>(collection)

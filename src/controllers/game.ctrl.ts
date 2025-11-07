@@ -4,7 +4,7 @@ import logger from "../config/logger";
 import {
 	fetchGameById,
 } from "../models/game.model";
-import { addVoteToGameSettings, fetchGameSettingsByGameId, removeVoteFromGameSettings } from "../models/game-settings.model";
+import { addVoteToGameSettings, removeVoteFromGameSettings } from "../models/game-settings.model";
 import { setGameInQueue } from "../models/game-queue.model";
 import {
 	fetchUserById,
@@ -13,6 +13,7 @@ import {
 } from "../models/user.model";
 import type { VoteBody } from "../schemas/vote.schema";
 import type { SteamProfile } from "../services/steam/steam.types";
+import { fetchGameReportsByGameId } from "../models/game-report.model";
 
 export const getGameByIdCtrl = async (
 	req: Request,
@@ -28,10 +29,10 @@ export const getGameByIdCtrl = async (
 			return;
 		}
 
-		// Fetch game settings separately
-		const settings = await fetchGameSettingsByGameId(id);
+		// Fetch game reports separately
+		const reports = await fetchGameReportsByGameId(id);
 
-		res.json({ status: "ready", game: { ...game, settings } });
+		res.json({ status: "ready", game: { ...game, reports } });
 	} catch (error) {
 		logger.error("Error fetching game:", error);
 		res.status(500).json({ error: "Internal server error" });

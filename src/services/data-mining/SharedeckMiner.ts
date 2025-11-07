@@ -60,15 +60,16 @@ export class SharedeckMiner implements Miner {
 			},
 			steamdeck_hardware: this.parseSteamdeckHardware(items[4]),
 			steamdeck_settings: {
-				screen_refresh_rate: this.findValue(items, /screen refresh rate/i),
-				tdp_limit: this.findValue(items, /tdp limit/i),
-				proton_version: this.findValue(items, /proton version/i),
-				steamos_version: this.findValue(items, /steamos version/i),
+				screen_refresh_rate: this.cleanValue(this.findValue(items, /screen refresh rate/i)),
+				tdp_limit: this.cleanValue(this.findValue(items, /tdp limit/i)),
+				proton_version: this.cleanValue(this.findValue(items, /proton version/i)),
+				steamos_version: this.cleanValue(this.findValue(items, /steamos version/i)),
+				frame_rate_cap: this.cleanValue(this.findValue(items, /framerate limit/i)),
 			},
 			game_settings: {
-				graphics_preset: this.findValue(items, /graphics preset/i),
-				frame_rate_limit: this.findValue(items, /framerate limit/i),
-				resolution: this.findValue(items, /resolution/i)
+				graphics_preset: this.cleanValue(this.findValue(items, /graphics preset/i)),
+				frame_rate_limit: this.cleanValue(this.findValue(items, /framerate limit/i)),
+				resolution: this.cleanValue(this.findValue(items, /resolution/i))
 					.replace(/[\s\n]/g, "")
 					.trim(),
 			},
@@ -78,6 +79,15 @@ export class SharedeckMiner implements Miner {
 			notes: this.getNotes(section),
 			posted_at: null,
 		};
+	}
+
+	/**
+	 * Clean a string value by removing new lines, trimming whitespace, 
+	 * removing unwanted values like "N/A", "Unknown" or "NONE",
+	 * and removing units if necessary.
+	 */
+	private cleanValue(value: string): string {
+		return value.replace(/[\n]/g, "").trim().replace(/^(N\/A|Unknown|NONE)$/i, "").replace(/(ms|fps|%|°C|w)/i, "");
 	}
 
 	private findValue(texts: string[], match: RegExp): string {
