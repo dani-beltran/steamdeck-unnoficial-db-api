@@ -12,7 +12,8 @@ import type { GameReportBody } from "../schemas/game-report.schema";
 import { getSteamGameDestails } from "../services/steam/steam";
 import { saveGame } from "../models/game.model";
 import { deleteDuplicateGameReports, saveGameReportsBulk } from "../models/game-report.model";
-import { set } from "zod";
+import { CLAUDE_AI_MODEL, CLAUDE_API_KEY } from "../config/env";
+import { ClaudeService } from "../services/claude";
 
 dotenv.config();
 
@@ -66,11 +67,13 @@ async function run() {
         });
 
         const steamGame = await getSteamGameDestails(gameId);
+        const summary = await generateGamePerformanceSummary(prepareSummaryInput(reports));
 
         await saveGame(gameId, {
             steam_app: steamGame,
             steamdeck_rating: steamdeck_rating || undefined,
-            steamdeck_verified: steamdeck_verified || undefined,
+            steamdeck_verified: steamdeck_verified ?? undefined,
+            game_performance_summary: summary || undefined,
         });
 
         await saveGameReportsBulk(gameId, reports);
@@ -127,4 +130,53 @@ function getPolishedData(params: {
         steamdeck_rating,
         steamdeck_verified,
     };
+}
+
+function prepareSummaryInput(reports: GameReportBody[]) {
+    const filteredReports = reports.filter(report => {
+        return report.notes && 
+        report.notes.trim().length > 0 && 
+        // We remove reports from SteamdeckHQ for now, they are very long and detailed and skew the summary
+        report.source !== SCRAPE_SOURCES.STEAMDECKHQ 
+    }).sort((a, b) => {
+        const aTime = a.posted_at ? a.posted_at.getTime() : 0;
+        const bTime = b.posted_at ? b.posted_at.getTime() : 0;
+        return bTime - aTime;
+    });
+    const notes = filteredReports.map((report, index) => {
+        return `Report ${index + 1}: \n${report.notes}`;
+    }).join("\n\n");
+    return notes;
+}
+
+async function generateGamePerformanceSummary(raw?: string) {
+	if (!raw) return "";
+	const prompt = `Generate a concise summary (two to three sentences) of the following Steam Deck game's user reports, focusing on key points about performance, technical aspects and fixes or workarounds. 
+Avoid personal opinions or extraneous details. Don't include the name of the game in the summary and don't provide a title for the summary.
+
+Performance Review:
+${raw}
+
+Summary:`;
+	const rawSummary = await askClaudeAI(prompt);
+	// Clean up the summary
+	const cleanedSummary = rawSummary
+		.replace(/^Summary:\s*/i, "")
+		.replace(/Summary\s/i, "")
+		.replace(/\s+/g, " ")
+		.replace(/^#/i, "")
+		.trim();
+	return cleanedSummary;
+}
+
+async function askClaudeAI(msg: string) {
+    if (!msg) return "";
+    const claudeService = new ClaudeService({
+        apiKey: CLAUDE_API_KEY,
+    });
+    return claudeService.prompt(msg, {
+        model: CLAUDE_AI_MODEL,
+        maxTokens: 300,
+        temperature: 0.3,
+    });
 }
