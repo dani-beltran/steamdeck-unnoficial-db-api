@@ -29,8 +29,12 @@ export class ProtondbMiner implements Miner {
 		});
 	}
 
+	getUrl(gameId: number): string {
+		return `https://www.protondb.com/app/${gameId}?device=steamDeck`;
+	}
+
 	async mine(gameId: number): Promise<ScrapeStructuredResult> {
-		const url = `https://www.protondb.com/app/${gameId}?device=steamDeck`;
+		const url = this.getUrl(gameId);
 		const result = await this.scraper.scrapeTextStructured(url);
 		return result;
 	}

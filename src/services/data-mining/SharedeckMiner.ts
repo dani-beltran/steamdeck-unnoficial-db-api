@@ -19,9 +19,13 @@ export class SharedeckMiner implements Miner {
 			timeout: 15_000,
 		});
 	}
+
+	getUrl(gameId: number): string {
+		return `https://sharedeck.games/apps/${gameId}`;
+	}
 	
 	async mine(gameId: number) {
-		const url = `https://sharedeck.games/apps/${gameId}`;
+		const url = this.getUrl(gameId);
 		const result = await this.scraper.scrapeTextStructured(url);
 		return result;
 	}

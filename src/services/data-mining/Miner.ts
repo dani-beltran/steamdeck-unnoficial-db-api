@@ -10,6 +10,8 @@ export type MinedData = {
 };
 
 export interface Miner {
+	/** Get the URL to scrape for a given game ID */
+	getUrl(gameId: number): Promise<string> | string;
 	/** Scrape data for a given game ID */
 	mine(gameId: number): Promise<ScrapeStructuredResult>;
 	/** Convert scraped data into structured format */

@@ -20,12 +20,17 @@ export class SteamdeckhqMiner implements Miner {
 			timeout: 15_000,
 		});
 	}
-	
-	async mine(gameId: number) {
+
+	async getUrl(gameId: number): Promise<string> {
 		const gameDetails = await getSteamGameDestails(gameId);
 		const gameName = this.formatGameName(gameDetails.name);
 
 		const url = `https://steamdeckhq.com/game-reviews/${gameName}`;
+		return url;
+	}
+	
+	async mine(gameId: number) {
+		const url = await this.getUrl(gameId);
 		const result = await this.scraper.scrapeTextStructured(url);
 		return result;
 	}
