@@ -37,7 +37,7 @@ export const gameSchema = z.object({
 	steam_app: z.custom<SteamApp>().optional(),
 	game_performance_summary: z.string().optional(),
 	steamdeck_rating: z.enum(STEAMDECK_RATING).optional().nullable(),
-	steamdeck_verified: z.boolean().optional(),
+	steamdeck_verified: z.boolean().optional().nullable(),
 	rescrape_requested: z.boolean().optional(),
 	regenerate_requested: z.boolean().optional(),
 	generated_at: z.date().optional(),
