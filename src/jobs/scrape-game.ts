@@ -1,4 +1,4 @@
-import { RedirectError } from "@danilidonbeltran/webscrapper/src/scraper";
+import { RedirectError, SectionNotFoundError } from "@danilidonbeltran/webscrapper/src/scraper";
 import dotenv from "dotenv";
 import { connectDB } from "../config/database";
 import logger from "../config/logger";
@@ -82,18 +82,29 @@ async function runScrapeProcess(
 	gameId: number,
 ) {
 	try {
+		const url = await miner.getUrl(gameId);
+		logger.info(`Scraping url ${url}`);
 		const { timestamp: _, ...result } = await miner.mine(gameId);
-		logger.info(`Scraped url ${result.url}`);
 		await saveScrapeData({
 			game_id: gameId,
 			source,
 			scraped_content: result,
 		});
+		logger.info(`Successfully scraped data for game ${gameId} from source ${source}`);
 		return result;
 	} catch (error) {
+		console.log("ERROR", typeof error);
 		if (error instanceof RedirectError) {
 			logger.warn(
 				`Redirection prevented while scraping game ${gameId} from source ${source}`,
+			);
+			return;
+		}
+		if (error instanceof SectionNotFoundError) {
+			logger.warn(
+				`Section not found while scraping game ${gameId} from source ${source}: selectors ${JSON.stringify(
+					error.selectors,
+				)}`,
 			);
 			return;
 		}
