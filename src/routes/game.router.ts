@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getGameByIdCtrl } from "../controllers/game.ctrl";
+import { getGameByIdCtrl, voteGameSummaryCtrl } from "../controllers/game.ctrl";
 import {
 	getManySteamGamesDetailsCtrl,
 	getMostPlayedSteamDeckGamesCtrl,
@@ -39,5 +39,7 @@ router.get(
 	"/steam/most-played-steam-deck-games",
 	getMostPlayedSteamDeckGamesCtrl,
 );
+
+router.post("/games/:id/summary-vote", voteGameSummaryCtrl);
 
 export default router;

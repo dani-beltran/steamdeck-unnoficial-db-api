@@ -14,6 +14,10 @@ import {
 import type { VoteBody } from "../schemas/vote.schema";
 import type { SteamProfile } from "../services/steam/steam.types";
 import { fetchGameReportsByGameId } from "../models/game-report.model";
+import { gameIdParamSchema } from "../schemas/game.schema";
+import z from "zod";
+import { saveGameSummaryVoteSchema } from "../schemas/game-summary-vote.schema";
+import { voteGamePerformanceSummary } from "../models/game-summary-vote.mode";
 
 export const getGameByIdCtrl = async (
 	req: Request,
@@ -112,3 +116,20 @@ export const removeVoteFromGameCtrl = async (req: Request, res: Response) => {
 		await session.endSession();
 	}
 };
+
+export const voteGameSummaryCtrl = async (req: Request, res: Response) => {
+	try {
+		const { id } = gameIdParamSchema.parse(req.params);
+		const { vote_type } = saveGameSummaryVoteSchema.parse(req.body);
+
+		await voteGamePerformanceSummary(id, req.session.id, vote_type);
+		
+		res.json({ message: `Vote '${vote_type}' recorded for game ID ${id}` });
+	} catch (error) {
+		if (error instanceof z.ZodError) {
+			return res.status(400).json({ error: error.issues });
+		}
+		logger.error("Error processing game summary vote:", error);
+		res.status(500).json({ error: "Internal server error" });
+	}
+}
