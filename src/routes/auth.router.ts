@@ -23,15 +23,6 @@ dotenv.config();
 const router = Router();
 export default router;
 
-// Session middleware (required for passport)
-router.use(
-	session({
-		secret: SESSION_SECRET,
-		resave: false,
-		saveUninitialized: true,
-	}),
-);
-
 router.use(passport.initialize());
 router.use(passport.session());
 

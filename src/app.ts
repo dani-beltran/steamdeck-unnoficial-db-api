@@ -1,8 +1,9 @@
 import cors from "cors";
 import express, { type Express } from "express";
-import { WEB_HOST } from "./config/env";
+import { SESSION_SECRET, WEB_HOST } from "./config/env";
 import authRoutes from "./routes/auth.router";
 import gameRoutes from "./routes/game.router";
+import session from "express-session";
 
 const app: Express = express();
 
@@ -14,6 +15,14 @@ app.use(
 	}),
 );
 app.use(express.json());
+
+app.use(
+	session({
+		secret: SESSION_SECRET,
+		resave: false,
+		saveUninitialized: true,
+	}),
+);
 
 // Routes
 app.use("/", gameRoutes);
