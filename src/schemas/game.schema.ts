@@ -37,7 +37,7 @@ export const gameIdsQuerySchema = z.object({
 export const gameSchema = z.object({
 	game_id: gameIdSchema,
 	steam_app: z.custom<SteamApp>().optional(),
-	game_performance_summary: z.string().optional(),
+	game_performance_summary: z.string().optional().nullable(),
 	steamdeck_rating: z.enum(STEAMDECK_RATING).optional().nullable(),
 	steamdeck_verified: z.boolean().optional().nullable(),
 	rescrape_requested: z.boolean().optional(),
