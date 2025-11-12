@@ -1,4 +1,4 @@
-import { RedirectError, SectionNotFoundError } from "@danilidonbeltran/webscrapper/src/scraper";
+import { RedirectError, SectionNotFoundError, SelectorTimeoutError } from "@danilidonbeltran/webscrapper/src/scraper";
 import dotenv from "dotenv";
 import { connectDB } from "../config/database";
 import logger from "../config/logger";
@@ -93,7 +93,6 @@ async function runScrapeProcess(
 		logger.info(`Successfully scraped data for game ${gameId} from source ${source}`);
 		return result;
 	} catch (error) {
-		console.log("ERROR", typeof error);
 		if (error instanceof RedirectError) {
 			logger.warn(
 				`Redirection prevented while scraping game ${gameId} from source ${source}`,
@@ -103,6 +102,14 @@ async function runScrapeProcess(
 		if (error instanceof SectionNotFoundError) {
 			logger.warn(
 				`Section not found while scraping game ${gameId} from source ${source}: selectors ${JSON.stringify(
+					error.selectors,
+				)}`,
+			);
+			return;
+		}
+		if (error instanceof SelectorTimeoutError) {
+			logger.warn(
+				`Selector timeout while scraping game ${gameId} from source ${source}: selectors ${JSON.stringify(
 					error.selectors,
 				)}`,
 			);
