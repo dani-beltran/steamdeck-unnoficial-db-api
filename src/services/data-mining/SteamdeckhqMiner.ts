@@ -112,8 +112,8 @@ export class SteamdeckhqMiner implements Miner {
 			text.match(/\d+\sHours/i),
 		);
 		return {
-			consumption: batteryConsumption ? batteryConsumption.trim() : undefined,
-			temps: temps ? temps.trim() : undefined,
+			consumption: batteryConsumption ? batteryConsumption.trim().replace(/w/i, "") : undefined,
+			temps: temps ? temps.trim().replace(/c/i, "") : undefined,
 			life_span: lifeSpan ? lifeSpan.trim() : undefined,
 		};
 	}
@@ -129,15 +129,15 @@ export class SteamdeckhqMiner implements Miner {
 		const items = recommendedSection.otherText;
 
 		return {
-			frame_rate_cap: items[0]?.trim(),
-			screen_refresh_rate: items[3]?.trim(),
-			tdp_limit: items[8]?.trim(),
+			frame_rate_cap: items[0]?.trim()?.replace(/fps/i, ""),
+			screen_refresh_rate: items[3]?.trim()?.replace(/hz/i, ""),
+			tdp_limit: items[8]?.trim()?.replace(/w/i, "")?.replace(/^(N\/A|Unknown|NONE|NO)$/i, ""),
 			scaling_filter: items[10]?.trim(),
 			gpu_clock_speed: items[12]?.trim(),
 			proton_version: recommendedSection.paragraphs[0]?.trim(),
 		};
 	}
-
+	
 	private findAuthorship(section?: SectionData): Reporter {
 		const authorIndex = section?.links?.findIndex((link) =>
 			link.href.includes("/author/"),
