@@ -10,7 +10,6 @@ export const fetchGameReportsByGameId = async (gameId: number) => {
     return db
         .collection<GameReport>(collection)
         .find({ game_id: gameId })
-        .sort({ posted_at: -1 })
         .toArray();
 };
 
