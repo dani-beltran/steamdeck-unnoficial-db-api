@@ -116,6 +116,9 @@ export class SharedeckMiner implements Miner {
 
 	private getNotes(section: SectionData): string {
 		const notesStartindex = section.otherText.indexOf("Note");
+		if (notesStartindex === -1) {
+			return "";
+		}
 		const noteEndIndex = section.otherText.indexOf("Sign in with Steam");
 		return (section.otherText || []).slice(notesStartindex + 1, noteEndIndex).join("\n\n");
 	}
