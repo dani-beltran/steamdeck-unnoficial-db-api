@@ -10,8 +10,8 @@ const SEARCH_CACHE_COLLECTION = "steam_search_cache";
 const DETAILS_CACHE_COLLECTION = "steam_details_cache";
 const MOST_PLAYED_CACHE_COLLECTION = "steam_deck_most_played_cache";
 
-// Cache duration: 1 month (30 days)
-const CACHE_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
+// Cache duration: 1 day (1 day in milliseconds)
+const CACHE_DURATION_MS = 24 * 60 * 60 * 1000;
 
 /**
  * Get cached search results

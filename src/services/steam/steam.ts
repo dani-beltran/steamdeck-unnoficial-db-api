@@ -23,7 +23,8 @@ export const getSteamGameDestails = async (gameId: number) => {
 
 export const getMostPlayedSteamDeckGameIds = async () => {
 	const origin = "https://deckudb.com";
-	const protobuf_input = "Cg8KB2VuZ2xpc2gaAkVTIAESEAgBEAEYASgBMAFAFEgBUAEYAg==";
+	// Enconded options for past week most played games
+	const protobuf_input = "Cg8KB2VuZ2xpc2gaAkVTIAESEAgBEAEYASgBMAFAFEgBUAEYAQ==";
 	const url = `https://${STEAM_API_DOMAIN}/ISteamChartsService/GetMostPlayedSteamDeckGames/v1?origin=${encodeURIComponent(origin)}&input_protobuf_encoded=${encodeURIComponent(protobuf_input)}`;
 	const response = await fetch(url);
 
