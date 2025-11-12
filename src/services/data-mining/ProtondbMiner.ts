@@ -22,7 +22,6 @@ export class ProtondbMiner implements Miner {
 				// Selector for user reports
 				".for-anchor-tags",
 			],
-			waitForSelector: ".for-anchor-tags",
 			browser: "chromium",
 			headless: true,
 			timeout: 15_000,
