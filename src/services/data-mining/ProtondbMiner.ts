@@ -1,5 +1,5 @@
 import { type ScrapeStructuredResult, type SectionData, WebScraper } from "@danilidonbeltran/webscrapper";
-import { STEAMDECK_RATING } from "../../schemas/game.schema";
+import { STEAMDECK_HARDWARE, STEAMDECK_RATING } from "../../schemas/game.schema";
 import type { GameReportBody } from "../../schemas/game-report.schema";
 import {
 	SCRAPE_SOURCES,
@@ -44,6 +44,7 @@ export class ProtondbMiner implements Miner {
 		}
 		const [firstSection, secondSection, ...articles] = result.sections;
 		const reports: GameReportBody[] = articles.map((section) => {
+			const notes = (section.paragraphs || []).join("\n\n");
 			return {
 				title: section.title,
 				source: SCRAPE_SOURCES.PROTONDB,
@@ -53,8 +54,10 @@ export class ProtondbMiner implements Miner {
 					user_profile_avatar_url: section.images[0]?.src,
 				},
 				url: section.links[2]?.href || result.url,
-				notes: (section.paragraphs || []).join("\n\n"),
+				notes,
 				posted_at: this.findPostedDate(section.links || []),
+				steamdeck_hardware: this.findSteamdeckHardware(notes),
+				steamdeck_settings: this.findSteamdeckConfig(notes),
 			};
 		});
 		const meaningfulReports = reports
@@ -104,5 +107,27 @@ export class ProtondbMiner implements Miner {
 
 	private extractSteamdeckVerified(section: SectionData) {
 		return section.otherText[1].toLowerCase() === "verified";
+	}
+
+	private findSteamdeckHardware(notes: string) {
+		const lowerNotes = notes.toLowerCase();
+		if (lowerNotes.includes("lcd")) {
+			return STEAMDECK_HARDWARE.LCD;
+		} else if (lowerNotes.includes("oled")) {
+			return STEAMDECK_HARDWARE.OLED;
+		}
+		return undefined;
+	}
+
+	private findSteamdeckConfig(notes: string) {
+		const lowerNotes = notes.toLowerCase();
+		const tdpRegex = /(\d+)\s*(W|watts)/i;
+		const frameRateRegex = /(\d+)\s*(fps)/i;
+		const refreshScreenRegex = /(\d+)\s*(hz)/i;
+		return {
+			frame_rate_cap: lowerNotes.match(frameRateRegex)?.[1] || undefined,
+			tdp_limit: lowerNotes.match(tdpRegex)?.[1] || undefined,
+			screen_refresh_rate: lowerNotes.match(refreshScreenRegex)?.[1] || undefined,
+		}
 	}
 }
