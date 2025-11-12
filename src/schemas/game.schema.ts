@@ -7,6 +7,8 @@ export enum STEAMDECK_RATING {
 	PLATINUM = "platinum",
 	NATIVE = "native",
 	UNSUPPORTED = "unsupported",
+	BORKED = "borked",
+
 }
 
 export enum STEAMDECK_HARDWARE {

@@ -95,6 +95,8 @@ export class ProtondbMiner implements Miner {
 				return STEAMDECK_RATING.NATIVE;
 			case "unsupported":
 				return STEAMDECK_RATING.UNSUPPORTED;
+			case "borked":
+				return STEAMDECK_RATING.BORKED;
 			default:
 				return undefined;
 		}
