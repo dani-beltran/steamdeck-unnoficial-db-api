@@ -25,7 +25,7 @@ export class SteamdeckhqMiner implements Miner {
 		const gameDetails = await getSteamGameDestails(gameId);
 		const gameName = this.formatGameName(gameDetails.name);
 
-		const url = `https://steamdeckhq.com/game-reviews/${gameName}`;
+		const url = `https://steamdeckhq.com/game-reviews/${gameName}/`;
 		return url;
 	}
 	
