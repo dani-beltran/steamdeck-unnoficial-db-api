@@ -91,7 +91,7 @@ export class SharedeckMiner implements Miner {
 	 * and removing units if necessary.
 	 */
 	private cleanValue(value: string): string {
-		return value.replace(/[\n]/g, "").trim().replace(/^(N\/A|Unknown|NONE)$/i, "").replace(/(ms|fps|%|°C|w)/i, "");
+		return value.replace(/[\n]/g, "").trim().replace(/^(N\/A|Unknown|NONE|NO)$/i, "").replace(/(ms|fps|%|°C|w)/i, "");
 	}
 
 	private findValue(texts: string[], match: RegExp): string {
