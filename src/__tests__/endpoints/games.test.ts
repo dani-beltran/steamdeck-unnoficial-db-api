@@ -66,7 +66,6 @@ describe("GET /games/:id", () => {
 			const testGameReports: GameReport[] = [
 				{
 					game_id: 1,
-					hash: "abc123",
 					title: "Great performance on LCD",
 					game_settings: { graphics: "High", resolution: "1920x1080" },
 					steamdeck_settings: { tdp_limit: "15W", frame_rate_cap: "60" },
@@ -144,7 +143,6 @@ describe("GET /games/:id", () => {
 			const testGameReports: GameReport[] = [
 				{
 					game_id: 3,
-					hash: "def456",
 					title: "Excellent on OLED",
 					game_settings: {
 						quality: "Ultra",
