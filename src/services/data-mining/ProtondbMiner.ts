@@ -122,13 +122,19 @@ export class ProtondbMiner implements Miner {
 
 	private findSteamdeckConfig(notes: string) {
 		const lowerNotes = notes.toLowerCase();
-		const tdpRegex = /(\d+)\s*(W|watts)/i;
-		const frameRateRegex = /(\d+)\s*(fps)/i;
-		const refreshScreenRegex = /(\d+)\s*(hz)/i;
+		const tdpRegex = /~?(\d+)\s*(w|watts)|(watts|tdp).*?~?(\d+)/i;
+		const frameRateRegex = /~?(\d+)\s*fps|fps.*?~?(\d+)/i;
+		const refreshScreenRegex = /~?(\d+)\s*hz|hz.*?~?(\d+)/i;
+		const frameRateMatch = lowerNotes.match(frameRateRegex);
+		const frameRate = frameRateMatch?.[1] || frameRateMatch?.[2];
+		const tdpMatch = lowerNotes.match(tdpRegex);
+		const tdp = tdpMatch?.[1] || tdpMatch?.[4];
+		const refreshRateMatch = lowerNotes.match(refreshScreenRegex);
+		const refreshRate = refreshRateMatch?.[1] || refreshRateMatch?.[2];
 		return {
-			frame_rate_cap: lowerNotes.match(frameRateRegex)?.[1] || undefined,
-			tdp_limit: lowerNotes.match(tdpRegex)?.[1] || undefined,
-			screen_refresh_rate: lowerNotes.match(refreshScreenRegex)?.[1] || undefined,
+			frame_rate_cap: frameRate || undefined,
+			tdp_limit: tdp || undefined,
+			screen_refresh_rate: refreshRate || undefined,
 		}
 	}
 }
