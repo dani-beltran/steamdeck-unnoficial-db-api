@@ -90,7 +90,7 @@ async function runScrapeProcess(
 			source,
 			scraped_content: result,
 		});
-		logger.info(`Successfully scraped data for game ${gameId} from source ${source}`);
+		logger.info(`Successfully scraped ${result?.sections?.length ?? 0} sections for game ${gameId} from source ${source}`);
 		return result;
 	} catch (error) {
 		if (error instanceof RedirectError) {
