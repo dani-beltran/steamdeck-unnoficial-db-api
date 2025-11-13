@@ -49,8 +49,7 @@ export const gameReportSchema = z.object({
 export const gameReportBodySchema = gameReportSchema.omit({
 	game_id: true,
 	created_at: true,
-	updated_at: true,
-	hash: true,
+	updated_at: true
 });
 
 export type Reporter = z.infer<typeof reporterSchema>;
