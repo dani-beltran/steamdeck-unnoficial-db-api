@@ -13,7 +13,6 @@ export const gameReportSchema = z.object({
 	game_id: gameIdSchema,
 	created_at: z.date(),
 	updated_at: z.date(),
-	hash: z.string(), // SHA-256 hash of the report content, useful for deduplication
 	title: z.string().nullable(),
 	source: z.enum(SCRAPE_SOURCES),
 	url: z.string(),

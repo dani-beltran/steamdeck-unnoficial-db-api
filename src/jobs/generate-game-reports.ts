@@ -11,7 +11,7 @@ import type { STEAMDECK_RATING } from "../schemas/game.schema";
 import type { GameReportBody } from "../schemas/game-report.schema";
 import { getSteamGameDestails } from "../services/steam/steam";
 import { saveGame } from "../models/game.model";
-import { deleteDuplicateGameReports, saveGameReportsBulk } from "../models/game-report.model";
+import { replaceGameReportsForGame } from "../models/game-report.model";
 import { CLAUDE_AI_MODEL, CLAUDE_API_KEY } from "../config/env";
 import { ClaudeService } from "../services/claude";
 
@@ -76,8 +76,7 @@ async function run() {
             game_performance_summary: summary || undefined,
         });
 
-        await saveGameReportsBulk(gameId, reports);
-        await deleteDuplicateGameReports();
+        await replaceGameReportsForGame(gameId, reports);
         await removeGameFromQueue(gameId);
     } catch (error) {
 		logger.error("Error in job generate-game:", error);

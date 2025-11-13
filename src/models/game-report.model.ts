@@ -1,11 +1,12 @@
-import { createHash } from "crypto";
 import { getDB } from "../config/database";
 import { gameReportBodySchema, type GameReport, type GameReportBody } from "../schemas/game-report.schema";
 
 const collection = "game-reports";
 
-// Fetch all reports for a specific game
-export const fetchGameReportsByGameId = async (gameId: number) => {
+/**
+ * Fetch all reports for a specific game
+ */
+export const fetchGameReportsByGameId = async (gameId: number): Promise<GameReport[]> => {
     const db = getDB();
     return db
         .collection<GameReport>(collection)
@@ -13,8 +14,10 @@ export const fetchGameReportsByGameId = async (gameId: number) => {
         .toArray();
 };
 
-// Save multiple game reports entries for a game
-export const saveGameReportsBulk = async (
+/**
+ * Insert multiple game reports entries for a game
+ */
+export const insertGameReportsBulk = async (
     gameId: number,
     reports: GameReportBody[],
 ) => {
@@ -25,7 +28,6 @@ export const saveGameReportsBulk = async (
     );
     const gameReports: GameReport[] = validatedReports.map((report) => ({
         ...report,
-        hash: createHash("sha256").update(JSON.stringify(report)).digest("hex"),
         game_id: gameId,
         updated_at: new Date(),
         created_at: new Date(),
@@ -35,29 +37,25 @@ export const saveGameReportsBulk = async (
     return db.collection<GameReport>(collection).insertMany(gameReports);
 };
 
-export const deleteDuplicateGameReports = async () => {
+/**
+ * Replace all game reports for a specific game with new ones.
+ * If a source has no reports, existing reports from that source are preserved.
+ * This prevents data loss when a source fails to provide reports during rescraping.
+ */
+export const replaceGameReportsForGame = async (
+    gameId: number,
+    reports: GameReportBody[],
+) => {
     const db = getDB();
-    const reports = db.collection<GameReport>(collection);
+    const gameReportsCollection = db.collection<GameReport>(collection);
 
-    const duplicates = await reports
-        .aggregate([
-            {
-                $group: {
-                    _id: { game_id: "$game_id", hash: "$hash" },
-                    ids: { $addToSet: "$_id" },
-                    count: { $sum: 1 },
-                },
-            },
-            { $match: { count: { $gt: 1 } } },
-        ])
-        .toArray();
-
-    for (const doc of duplicates) {
-        const [keepId, ...removeIds] = doc.ids;
-        await reports.deleteMany({ _id: { $in: removeIds } });
+    const sources = Array.from(new Set(reports.map((r) => r.source)));
+    for (const source of sources) {
+        await gameReportsCollection.deleteMany({ game_id: gameId, source });
     }
-};
 
+    return insertGameReportsBulk(gameId, reports);
+};
 
 // Create indexes for the game-reports collection
 export const createGameReportIndexes = async () => {
@@ -66,13 +64,9 @@ export const createGameReportIndexes = async () => {
     // Create index on game_id (primary query field)
     await db.collection<GameReport>(collection).createIndex({ game_id: 1 });
 
-    // Create compound index for game_id and posted_at (for sorting)
+    // Create compound index for game_id and source to optimize queries filtering by both fields
     await db
         .collection<GameReport>(collection)
-        .createIndex({ game_id: 1, posted_at: -1 });
+        .createIndex({ game_id: 1, source: 1 });
 
-    // Create compound index for game_id and hardware type
-    await db
-        .collection<GameReport>(collection)
-        .createIndex({ game_id: 1, steamdeck_hardware: 1 });
 };
