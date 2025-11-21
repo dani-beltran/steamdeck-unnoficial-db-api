@@ -1,4 +1,4 @@
-import { SectionData, WebScraper } from "@danilidonbeltran/webscrapper";
+import { type SectionData, WebScraper } from "@danilidonbeltran/webscrapper";
 import { STEAMDECK_HARDWARE } from "../../schemas/game.schema";
 import type { GameReportBody } from "../../schemas/game-report.schema";
 import {
