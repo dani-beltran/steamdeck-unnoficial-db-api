@@ -67,8 +67,7 @@ async function run() {
         });
 
         // Fetch steamdeck_verified from endpoint
-        const protonMiner = new ProtondbMiner();
-        const steamdeck_verified = await protonMiner.getSteamdeckVerified(gameId);
+        const steamdeck_verified = await ProtondbMiner.getSteamdeckVerified(gameId);
 
         const steamGame = await getSteamGameDestails(gameId);
         const summary = await generateGamePerformanceSummary(prepareSummaryInput(reports));

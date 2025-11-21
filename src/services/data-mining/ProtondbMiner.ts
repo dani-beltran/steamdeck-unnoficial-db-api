@@ -72,7 +72,7 @@ export class ProtondbMiner implements Miner {
 		this.scraper.close();
 	}
 
-	async getSteamdeckVerified(gameId: number): Promise<boolean | undefined> {
+	static async getSteamdeckVerified(gameId: number): Promise<boolean | undefined> {
 		try {
 			const url = `https://www.protondb.com/proxy/steam/deck-verified?nAppID=${gameId}`;
 			const response = await fetch(url);

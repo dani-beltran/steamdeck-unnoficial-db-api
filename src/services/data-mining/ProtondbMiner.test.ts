@@ -20,8 +20,7 @@ describe("ProtondbMiner", () => {
 				}),
 			});
 
-			const miner = new ProtondbMiner();
-			const result = await miner.getSteamdeckVerified(1091500);
+			const result = await ProtondbMiner.getSteamdeckVerified(1091500);
 
 			expect(result).toBe(true);
 			expect(global.fetch).toHaveBeenCalledWith(
@@ -39,8 +38,7 @@ describe("ProtondbMiner", () => {
 				}),
 			});
 
-			const miner = new ProtondbMiner();
-			const result = await miner.getSteamdeckVerified(1091500);
+			const result = await ProtondbMiner.getSteamdeckVerified(1091500);
 
 			expect(result).toBe(false);
 		});
@@ -50,8 +48,7 @@ describe("ProtondbMiner", () => {
 				ok: false,
 			});
 
-			const miner = new ProtondbMiner();
-			const result = await miner.getSteamdeckVerified(1091500);
+			const result = await ProtondbMiner.getSteamdeckVerified(1091500);
 
 			expect(result).toBeUndefined();
 		});
@@ -62,8 +59,7 @@ describe("ProtondbMiner", () => {
 				json: async () => ({}),
 			});
 
-			const miner = new ProtondbMiner();
-			const result = await miner.getSteamdeckVerified(1091500);
+			const result = await ProtondbMiner.getSteamdeckVerified(1091500);
 
 			expect(result).toBeUndefined();
 		});
@@ -73,8 +69,7 @@ describe("ProtondbMiner", () => {
 				new Error("Network error"),
 			);
 
-			const miner = new ProtondbMiner();
-			const result = await miner.getSteamdeckVerified(1091500);
+			const result = await ProtondbMiner.getSteamdeckVerified(1091500);
 
 			expect(result).toBeUndefined();
 		});
