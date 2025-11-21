@@ -43,6 +43,21 @@ describe("ProtondbMiner", () => {
 			expect(result).toBe(false);
 		});
 
+		it("should return false when resolved_category is 0", async () => {
+			(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({
+					results: {
+						resolved_category: 0, // Category 0
+					},
+				}),
+			});
+
+			const result = await ProtondbMiner.getSteamdeckVerified(1091500);
+
+			expect(result).toBe(false);
+		});
+
 		it("should return undefined when API response is not OK", async () => {
 			(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
 				ok: false,

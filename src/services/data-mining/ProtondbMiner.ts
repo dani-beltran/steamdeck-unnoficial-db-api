@@ -82,7 +82,7 @@ export class ProtondbMiner implements Miner {
 			const data = await response.json() as { results?: { resolved_category?: number } };
 			// Check if the response contains verified status information
 			// The API returns deck compatibility status
-			if (data?.results?.resolved_category) {
+			if (data?.results?.resolved_category !== undefined) {
 				return data.results.resolved_category === 3; // 3 = Verified
 			}
 			return undefined;
