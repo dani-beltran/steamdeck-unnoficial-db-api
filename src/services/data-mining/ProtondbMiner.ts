@@ -17,8 +17,6 @@ export class ProtondbMiner implements Miner {
 			sectionSelectors: [
 				// Selector for rating
 				".GameInfo__SummaryContainer-sc-19o71ac-1",
-				// Selector for verification status
-				".DeckVerifiedInfo__AlignedRowWidthUnset-sc-acfn33-0",
 				// Selector for user reports
 				".for-anchor-tags",
 			],
@@ -43,7 +41,7 @@ export class ProtondbMiner implements Miner {
 		if (!result.sections) {
 			return { reports: [] };
 		}
-		const [firstSection, secondSection, ...articles] = result.sections;
+		const [firstSection, ...articles] = result.sections;
 		const reports: GameReportBody[] = articles.map((section) => {
 			const notes = (section.paragraphs || []).join("\n\n");
 			return {
@@ -67,12 +65,30 @@ export class ProtondbMiner implements Miner {
 		return {
 			reports: meaningfulReports,
 			steamdeck_rating: this.extractSteamdeckRating(firstSection),
-			steamdeck_verified: this.extractSteamdeckVerified(secondSection),
 		};
 	}
 
 	close() {
 		this.scraper.close();
+	}
+
+	async getSteamdeckVerified(gameId: number): Promise<boolean | undefined> {
+		try {
+			const url = `https://www.protondb.com/proxy/steam/deck-verified?nAppID=${gameId}`;
+			const response = await fetch(url);
+			if (!response.ok) {
+				return undefined;
+			}
+			const data = await response.json() as { results?: { resolved_category?: number } };
+			// Check if the response contains verified status information
+			// The API returns deck compatibility status
+			if (data?.results?.resolved_category) {
+				return data.results.resolved_category === 3; // 3 = Verified
+			}
+			return undefined;
+		} catch (_error) {
+			return undefined;
+		}
 	}
 
 	private findPostedDate(links: { text: string }[]): Date | null {
@@ -104,10 +120,6 @@ export class ProtondbMiner implements Miner {
 			default:
 				return undefined;
 		}
-	}
-
-	private extractSteamdeckVerified(section: SectionData) {
-		return section.otherText[1].toLowerCase() === "verified";
 	}
 
 	private findSteamdeckHardware(notes: string) {

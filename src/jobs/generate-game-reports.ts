@@ -60,11 +60,15 @@ async function run() {
 			return;
 		}
 
-        const { reports, steamdeck_rating, steamdeck_verified } = getPolishedData({
+        const { reports, steamdeck_rating } = getPolishedData({
             protondbData,
             steamdeckhqData,
             sharedeckData,
         });
+
+        // Fetch steamdeck_verified from endpoint
+        const protonMiner = new ProtondbMiner();
+        const steamdeck_verified = await protonMiner.getSteamdeckVerified(gameId);
 
         const steamGame = await getSteamGameDestails(gameId);
         const summary = await generateGamePerformanceSummary(prepareSummaryInput(reports));
@@ -96,7 +100,6 @@ function getPolishedData(params: {
     const { protondbData, steamdeckhqData, sharedeckData } = params;
     const reports: GameReportBody[] = [];
     let steamdeck_rating: STEAMDECK_RATING | undefined;
-    let steamdeck_verified: boolean | undefined;
 
     if (protondbData) {
         const protonMiner = new ProtondbMiner();
@@ -104,7 +107,6 @@ function getPolishedData(params: {
             protondbData.scraped_content,
         );
         steamdeck_rating = protonMinerData.steamdeck_rating;
-        steamdeck_verified = protonMinerData.steamdeck_verified;
         reports.push(...protonMinerData.reports);
     }
 
@@ -127,7 +129,6 @@ function getPolishedData(params: {
     return {
         reports,
         steamdeck_rating,
-        steamdeck_verified,
     };
 }
 
