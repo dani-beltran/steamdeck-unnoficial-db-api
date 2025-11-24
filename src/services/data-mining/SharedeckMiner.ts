@@ -78,7 +78,7 @@ export class SharedeckMiner implements Miner {
 					.trim(),
 			},
 			steamdeck_experience: {
-				average_frame_rate: items[2],
+				average_frame_rate: this.cleanValue(items[2]),
 			},
 			notes: this.getNotes(section),
 			posted_at: null,
