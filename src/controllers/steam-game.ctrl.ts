@@ -84,7 +84,22 @@ export const getMostPlayedSteamDeckGamesCtrl = async (
 		const cachedIds = await getCachedMostPlayedGames();
 		if (cachedIds) {
 			const games = await getManySteamGamesDetails(cachedIds.slice(offset, limit));
-			res.json(games);
+			const results: SteamSearch = {
+				items: games.map((game) => ({
+					...game,
+					id: game.steam_appid,
+					type: game.type,
+					name: game.name,
+					price: game.price_overview || { currency: "USD", initial: 0, final: 0 },
+					tiny_image: game.header_image,
+					metascore: game.metacritic?.score.toString() || "N/A",
+					platforms: game.platforms,
+					streamingvideo: false,
+					controller_support: game.controller_support || "unknown",
+				})),
+				total: cachedIds.length,
+			};
+			res.json(results);
 			return;
 		}
 
@@ -96,7 +111,22 @@ export const getMostPlayedSteamDeckGamesCtrl = async (
 		logger.info(`Cached most played Steam Deck games: ${ids.length} games`);
 
 		const games = await getManySteamGamesDetails(ids.slice(offset, limit));
-		res.json(games);
+		const results: SteamSearch = {
+			items: games.map((game) => ({
+				...game,
+				id: game.steam_appid,
+				type: game.type,
+				name: game.name,
+				price: game.price_overview || { currency: "USD", initial: 0, final: 0 },
+				tiny_image: game.header_image,
+				metascore: game.metacritic?.score.toString() || "N/A",
+				platforms: game.platforms,
+				streamingvideo: false,
+				controller_support: game.controller_support || "unknown",
+			})),
+			total: ids.length,
+		};
+		res.json(results);
 	} catch (error) {
 		logger.error("Error fetching most played Steam Deck games:", error);
 		res.status(500).json({ error: "Internal server error" });
