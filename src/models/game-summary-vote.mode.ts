@@ -6,7 +6,7 @@ const collection = "game-summary-votes";
 
 export const voteGamePerformanceSummary = async (
 	gameId: number,
-    sessionId: string,
+	sessionId: string,
 	type: VOTE_TYPE,
 ) => {
 	const db = getDB();
@@ -15,15 +15,14 @@ export const voteGamePerformanceSummary = async (
 		{
 			$set: {
 				vote_type: type,
-                updated_at: new Date(),
+				updated_at: new Date(),
 			},
-            $setOnInsert: {
-                session_id: sessionId,
-                game_id: gameId,
-                created_at: new Date(),
-            },
+			$setOnInsert: {
+				session_id: sessionId,
+				game_id: gameId,
+				created_at: new Date(),
+			},
 		},
-        { upsert: true },
-    );
-}
-
+		{ upsert: true },
+	);
+};

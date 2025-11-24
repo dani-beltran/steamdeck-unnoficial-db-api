@@ -9,7 +9,7 @@ import type { Miner } from "./Miner";
 
 export class SharedeckMiner implements Miner {
 	private scraper: WebScraper;
-	
+
 	constructor() {
 		this.scraper = new WebScraper({
 			sectionSelectors: ["#reports article"],
@@ -23,13 +23,13 @@ export class SharedeckMiner implements Miner {
 	getUrl(gameId: number): string {
 		return `https://sharedeck.games/apps/${gameId}`;
 	}
-	
+
 	async mine(gameId: number) {
 		const url = this.getUrl(gameId);
 		const result = await this.scraper.scrapeTextStructured(url);
 		return result;
 	}
-	
+
 	close() {
 		this.scraper.close();
 	}
@@ -64,15 +64,27 @@ export class SharedeckMiner implements Miner {
 			},
 			steamdeck_hardware: this.parseSteamdeckHardware(items[4]),
 			steamdeck_settings: {
-				screen_refresh_rate: this.cleanValue(this.findValue(items, /screen refresh rate/i)),
+				screen_refresh_rate: this.cleanValue(
+					this.findValue(items, /screen refresh rate/i),
+				),
 				tdp_limit: this.cleanValue(this.findValue(items, /tdp limit/i)),
-				proton_version: this.cleanValue(this.findValue(items, /proton version/i)),
-				steamos_version: this.cleanValue(this.findValue(items, /steamos version/i)),
-				frame_rate_cap: this.cleanValue(this.findValue(items, /framerate limit/i)),
+				proton_version: this.cleanValue(
+					this.findValue(items, /proton version/i),
+				),
+				steamos_version: this.cleanValue(
+					this.findValue(items, /steamos version/i),
+				),
+				frame_rate_cap: this.cleanValue(
+					this.findValue(items, /framerate limit/i),
+				),
 			},
 			game_settings: {
-				graphics_preset: this.cleanValue(this.findValue(items, /graphics preset/i)),
-				frame_rate_limit: this.cleanValue(this.findValue(items, /framerate limit/i)),
+				graphics_preset: this.cleanValue(
+					this.findValue(items, /graphics preset/i),
+				),
+				frame_rate_limit: this.cleanValue(
+					this.findValue(items, /framerate limit/i),
+				),
 				resolution: this.cleanValue(this.findValue(items, /resolution/i))
 					.replace(/[\s\n]/g, "")
 					.trim(),
@@ -86,12 +98,16 @@ export class SharedeckMiner implements Miner {
 	}
 
 	/**
-	 * Clean a string value by removing new lines, trimming whitespace, 
+	 * Clean a string value by removing new lines, trimming whitespace,
 	 * removing unwanted values like "N/A", "Unknown" or "NONE",
 	 * and removing units if necessary.
 	 */
 	private cleanValue(value: string): string {
-		return value.replace(/[\n]/g, "").trim().replace(/^(N\/A|Unknown|NONE|NO)$/i, "").replace(/(ms|fps|%|°C|w)/i, "");
+		return value
+			.replace(/[\n]/g, "")
+			.trim()
+			.replace(/^(N\/A|Unknown|NONE|NO)$/i, "")
+			.replace(/(ms|fps|%|°C|w)/i, "");
 	}
 
 	private findValue(texts: string[], match: RegExp): string {
@@ -120,6 +136,8 @@ export class SharedeckMiner implements Miner {
 			return "";
 		}
 		const noteEndIndex = section.otherText.indexOf("Sign in with Steam");
-		return (section.otherText || []).slice(notesStartindex + 1, noteEndIndex).join("\n\n");
+		return (section.otherText || [])
+			.slice(notesStartindex + 1, noteEndIndex)
+			.join("\n\n");
 	}
 }

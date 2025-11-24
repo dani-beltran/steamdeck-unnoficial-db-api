@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ProtondbMiner } from "./ProtondbMiner";
-import { STEAMDECK_HARDWARE, STEAMDECK_RATING } from "../../schemas/game.schema";
+import {
+	STEAMDECK_HARDWARE,
+	STEAMDECK_RATING,
+} from "../../schemas/game.schema";
 import type { ScrapedContent } from "../../schemas/scrape.schema";
+import { ProtondbMiner } from "./ProtondbMiner";
 
 // Mock fetch
 global.fetch = vi.fn();
@@ -20,7 +23,9 @@ const createSection = (overrides: Record<string, unknown> = {}) => ({
 });
 
 // Helper to create scraped content
-const createScrapedContent = (overrides: Partial<ScrapedContent> = {}): ScrapedContent => ({
+const createScrapedContent = (
+	overrides: Partial<ScrapedContent> = {},
+): ScrapedContent => ({
 	title: "ProtonDB",
 	url: "https://www.protondb.com/app/1091500",
 	...overrides,
@@ -221,7 +226,9 @@ describe("ProtondbMiner", () => {
 							{ href: "https://protondb.com/report/1", text: "" },
 							{ href: "", text: "2 months ago" },
 						],
-						images: [{ src: "https://example.com/avatar.jpg", alt: "", title: "" }],
+						images: [
+							{ src: "https://example.com/avatar.jpg", alt: "", title: "" },
+						],
 					}),
 				],
 			});
@@ -230,10 +237,16 @@ describe("ProtondbMiner", () => {
 
 			expect(polished.reports).toHaveLength(1);
 			expect(polished.reports[0].title).toBe("Great performance!");
-			expect(polished.reports[0].notes).toBe("Game runs smoothly\n\nNo issues found");
+			expect(polished.reports[0].notes).toBe(
+				"Game runs smoothly\n\nNo issues found",
+			);
 			expect(polished.reports[0].reporter.username).toBe("john_doe");
-			expect(polished.reports[0].reporter.user_profile_url).toBe("https://protondb.com/users/john_doe");
-			expect(polished.reports[0].reporter.user_profile_avatar_url).toBe("https://example.com/avatar.jpg");
+			expect(polished.reports[0].reporter.user_profile_url).toBe(
+				"https://protondb.com/users/john_doe",
+			);
+			expect(polished.reports[0].reporter.user_profile_avatar_url).toBe(
+				"https://example.com/avatar.jpg",
+			);
 			expect(polished.reports[0].url).toBe("https://protondb.com/report/1");
 		});
 
@@ -258,7 +271,9 @@ describe("ProtondbMiner", () => {
 
 			const polished = miner.polish(result);
 
-			expect(polished.reports[0].steamdeck_hardware).toBe(STEAMDECK_HARDWARE.LCD);
+			expect(polished.reports[0].steamdeck_hardware).toBe(
+				STEAMDECK_HARDWARE.LCD,
+			);
 		});
 
 		it("should detect OLED hardware from notes", () => {
@@ -268,7 +283,9 @@ describe("ProtondbMiner", () => {
 
 			const polished = miner.polish(result);
 
-			expect(polished.reports[0].steamdeck_hardware).toBe(STEAMDECK_HARDWARE.OLED);
+			expect(polished.reports[0].steamdeck_hardware).toBe(
+				STEAMDECK_HARDWARE.OLED,
+			);
 		});
 
 		it("should detect frame rate from notes", () => {
@@ -298,7 +315,9 @@ describe("ProtondbMiner", () => {
 
 			const polished = miner.polish(result);
 
-			expect(polished.reports[0].steamdeck_settings?.screen_refresh_rate).toBe("90");
+			expect(polished.reports[0].steamdeck_settings?.screen_refresh_rate).toBe(
+				"90",
+			);
 		});
 
 		it("should parse posted date from relative time", () => {
@@ -375,7 +394,9 @@ describe("ProtondbMiner", () => {
 
 			const polished = miner.polish(result);
 
-			expect(polished.reports[0].url).toBe("https://www.protondb.com/app/1091500");
+			expect(polished.reports[0].url).toBe(
+				"https://www.protondb.com/app/1091500",
+			);
 		});
 
 		it("should handle complex TDP patterns", () => {
@@ -390,14 +411,22 @@ describe("ProtondbMiner", () => {
 
 		it("should handle multiple settings in one report", () => {
 			const result = createScrapedContent({
-				sections: [createSection({ paragraphs: ["Running on LCD at 60fps, 90Hz, TDP 12W"] })],
+				sections: [
+					createSection({
+						paragraphs: ["Running on LCD at 60fps, 90Hz, TDP 12W"],
+					}),
+				],
 			});
 
 			const polished = miner.polish(result);
 
-			expect(polished.reports[0].steamdeck_hardware).toBe(STEAMDECK_HARDWARE.LCD);
+			expect(polished.reports[0].steamdeck_hardware).toBe(
+				STEAMDECK_HARDWARE.LCD,
+			);
 			expect(polished.reports[0].steamdeck_settings?.frame_rate_cap).toBe("60");
-			expect(polished.reports[0].steamdeck_settings?.screen_refresh_rate).toBe("90");
+			expect(polished.reports[0].steamdeck_settings?.screen_refresh_rate).toBe(
+				"90",
+			);
 			expect(polished.reports[0].steamdeck_settings?.tdp_limit).toBe("12");
 		});
 
@@ -428,7 +457,9 @@ describe("ProtondbMiner", () => {
 
 			const polished = miner.polish(result);
 
-			expect(polished.reports[0].steamdeck_settings?.screen_refresh_rate).toBe("40");
+			expect(polished.reports[0].steamdeck_settings?.screen_refresh_rate).toBe(
+				"40",
+			);
 		});
 
 		it("should handle whitespace trimming in notes", () => {

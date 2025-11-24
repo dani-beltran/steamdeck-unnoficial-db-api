@@ -1,13 +1,13 @@
 import type { Request, Response } from "express";
 import logger from "../config/logger";
 import {
+	cacheGameDetails,
+	cacheMostPlayedGamesIds,
+	cacheSearchResults,
 	getCachedGameDetails,
 	getCachedGamesDetails,
 	getCachedMostPlayedGamesIds,
 	getCachedSearchResults,
-	cacheGameDetails,
-	cacheMostPlayedGamesIds,
-	cacheSearchResults,
 } from "../models/steam-cache.model";
 import {
 	getMostPlayedSteamDeckGameIds,
@@ -82,7 +82,7 @@ export const getMostPlayedSteamDeckGamesCtrl = async (
 		const limit = offset + pageSize;
 
 		// Check cache first
-		const ids = await getCachedMostPlayedGamesIds() ?? [];
+		const ids = (await getCachedMostPlayedGamesIds()) ?? [];
 
 		if (ids.length === 0) {
 			// Fetch from Steam API

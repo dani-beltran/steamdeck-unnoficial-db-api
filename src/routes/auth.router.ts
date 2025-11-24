@@ -12,10 +12,10 @@ import {
 import { removeVoteFromGameCtrl, voteGameCtrl } from "../controllers/game.ctrl";
 import { validateBody, validateParams } from "../middleware/validation";
 import { fetchUserById, saveUserSession } from "../models/user.model";
-import type { SteamProfile } from "../services/steam/steam.types";
-import { getCookie } from "../utils/express-utils";
 import { gameVoteSchema } from "../schemas/game-settings.schema";
 import { idSchemaParam } from "../schemas/id.schema";
+import type { SteamProfile } from "../services/steam/steam.types";
+import { getCookie } from "../utils/express-utils";
 
 // Load environment variables
 dotenv.config();

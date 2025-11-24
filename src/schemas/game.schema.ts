@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { gameIdSchema } from "./game-id.schema";
 import type { SteamApp } from "../services/steam/steam.types";
+import { gameIdSchema } from "./game-id.schema";
 
 export enum STEAMDECK_RATING {
 	GOLD = "gold",
@@ -8,7 +8,6 @@ export enum STEAMDECK_RATING {
 	NATIVE = "native",
 	UNSUPPORTED = "unsupported",
 	BORKED = "borked",
-
 }
 
 export enum STEAMDECK_HARDWARE {

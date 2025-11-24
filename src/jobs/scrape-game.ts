@@ -1,4 +1,8 @@
-import { RedirectError, SectionNotFoundError, SelectorTimeoutError } from "@danilidonbeltran/webscrapper/src/scraper";
+import {
+	RedirectError,
+	SectionNotFoundError,
+	SelectorTimeoutError,
+} from "@danilidonbeltran/webscrapper/src/scraper";
 import dotenv from "dotenv";
 import { connectDB } from "../config/database";
 import logger from "../config/logger";
@@ -8,10 +12,10 @@ import {
 } from "../models/game-queue.model";
 import { saveScrapeData } from "../models/scrape.model";
 import { SCRAPE_SOURCES } from "../schemas/scrape.schema";
+import type { Miner } from "../services/data-mining/Miner";
 import { ProtondbMiner } from "../services/data-mining/ProtondbMiner";
 import { SharedeckMiner } from "../services/data-mining/SharedeckMiner";
 import { SteamdeckhqMiner } from "../services/data-mining/SteamdeckhqMiner";
-import type { Miner } from "../services/data-mining/Miner";
 
 dotenv.config();
 
@@ -90,7 +94,9 @@ async function runScrapeProcess(
 			source,
 			scraped_content: result,
 		});
-		logger.info(`Successfully scraped ${result?.sections?.length ?? 0} sections for game ${gameId} from source ${source}`);
+		logger.info(
+			`Successfully scraped ${result?.sections?.length ?? 0} sections for game ${gameId} from source ${source}`,
+		);
 		return result;
 	} catch (error) {
 		if (error instanceof RedirectError) {
