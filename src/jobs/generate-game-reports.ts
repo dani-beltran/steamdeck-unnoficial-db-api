@@ -7,7 +7,6 @@ import { type Scrape, SCRAPE_SOURCES } from "../schemas/scrape.schema";
 import { ProtondbMiner } from "../services/data-mining/ProtondbMiner";
 import { SharedeckMiner } from "../services/data-mining/SharedeckMiner";
 import { SteamdeckhqMiner } from "../services/data-mining/SteamdeckhqMiner";
-import type { STEAMDECK_RATING } from "../schemas/game.schema";
 import type { GameReportBody } from "../schemas/game-report.schema";
 import { getSteamdeckVerified, getSteamGameDestails } from "../services/steam/steam";
 import { saveGame } from "../models/game.model";
@@ -20,7 +19,7 @@ dotenv.config();
 ///////////////////////////////////////////////////////////////////////////////
 // Run the generate game reports job
 // Job to generate a game entry in the database and its associated game reports.
-// It picks one game from the queue, generates the entry, and removes it from the queue.
+// It pops one game from the queue and generates the entry.
 // The game data is assumed to be already scraped and available in the scrapes collection.
 ///////////////////////////////////////////////////////////////////////////////
 run();
@@ -41,6 +40,8 @@ async function run() {
         const gameId = gameInQueue.game_id;
 		logger.info(`Generating game entry for game ${gameId}...`);
 
+        await removeGameFromQueue(gameId);
+
 		// Fetch the latest scraped data for the game from all sources
 		const [protondbData, steamdeckhqData, sharedeckData] = await Promise.all([
 			getLastScrapedData(gameId, SCRAPE_SOURCES.PROTONDB),
@@ -60,25 +61,27 @@ async function run() {
 			return;
 		}
 
-        const { reports, steamdeck_rating } = getPolishedData({
+        const { reports } = getPolishedData({
             protondbData,
             steamdeckhqData,
             sharedeckData,
         });
 
-        const steamGame = await getSteamGameDestails(gameId);
-        const steamdeckVerified = await getSteamdeckVerified(gameId);
-        const summary = await generateGamePerformanceSummary(prepareSummaryInput(reports));
+        const [ steamGame, steamdeckVerified, steamdeckRating, summary ] = await Promise.all([
+            getSteamGameDestails(gameId),
+            getSteamdeckVerified(gameId),
+            ProtondbMiner.getSteamdeckRating(gameId),
+            generateGamePerformanceSummary(prepareSummaryInput(reports)),
+        ]);
 
         await saveGame(gameId, {
             steam_app: steamGame,
-            steamdeck_rating: steamdeck_rating || undefined,
+            steamdeck_rating: steamdeckRating || undefined,
             steamdeck_verified: steamdeckVerified ?? undefined,
             game_performance_summary: summary || undefined,
         });
 
         await replaceGameReportsForGame(gameId, reports);
-        await removeGameFromQueue(gameId);
     } catch (error) {
 		logger.error("Error in job generate-game:", error);
 	} finally {
@@ -96,14 +99,12 @@ function getPolishedData(params: {
 }) {
     const { protondbData, steamdeckhqData, sharedeckData } = params;
     const reports: GameReportBody[] = [];
-    let steamdeck_rating: STEAMDECK_RATING | undefined;
 
     if (protondbData) {
         const protonMiner = new ProtondbMiner();
         const protonMinerData = protonMiner.polish(
             protondbData.scraped_content,
         );
-        steamdeck_rating = protonMinerData.steamdeck_rating;
         reports.push(...protonMinerData.reports);
     }
 
@@ -124,8 +125,7 @@ function getPolishedData(params: {
     }
 
     return {
-        reports,
-        steamdeck_rating,
+        reports
     };
 }
 
