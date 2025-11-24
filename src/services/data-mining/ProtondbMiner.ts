@@ -72,25 +72,6 @@ export class ProtondbMiner implements Miner {
 		this.scraper.close();
 	}
 
-	static async getSteamdeckVerified(gameId: number): Promise<boolean | undefined> {
-		try {
-			const url = `https://www.protondb.com/proxy/steam/deck-verified?nAppID=${gameId}`;
-			const response = await fetch(url);
-			if (!response.ok) {
-				return undefined;
-			}
-			const data = await response.json() as { results?: { resolved_category?: number } };
-			// Check if the response contains verified status information
-			// The API returns deck compatibility status
-			if (data?.results?.resolved_category !== undefined) {
-				return data.results.resolved_category === 3; // 3 = Verified
-			}
-			return undefined;
-		} catch (_error) {
-			return undefined;
-		}
-	}
-
 	private findPostedDate(links: { text: string }[]): Date | null {
 		const dateLink = links.find((link) => link.text.includes("ago"));
 		if (dateLink) {
