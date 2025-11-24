@@ -73,8 +73,8 @@ export const getMostPlayedSteamDeckGamesCtrl = async (
 	res: Response,
 ): Promise<void> => {
 	try {
-		const page = Number(req.query.page) || 1;
-		const pageSize = Number(req.query.pageSize) || 25;
+		const page = Number(req.query.page);
+		const pageSize = Number(req.query.pageSize);
 
 		// Calculate offset based on page number
 		const offset = (page - 1) * pageSize;
