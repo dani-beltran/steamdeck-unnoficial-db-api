@@ -6,7 +6,6 @@ import type { ScrapedContent } from "../../schemas/scrape.schema";
 export type MinedData = {
 	reports: GameReportBody[];
 	steamdeck_rating?: STEAMDECK_RATING;
-	steamdeck_verified?: boolean;
 };
 
 export interface Miner {

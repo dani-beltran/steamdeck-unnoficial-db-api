@@ -1,4 +1,4 @@
-import { SectionData, WebScraper } from "@danilidonbeltran/webscrapper";
+import { type SectionData, WebScraper } from "@danilidonbeltran/webscrapper";
 import type { GameReportBody, Reporter } from "../../schemas/game-report.schema";
 import {
 	SCRAPE_SOURCES,
