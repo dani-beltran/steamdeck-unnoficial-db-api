@@ -3,15 +3,16 @@ import logger from "../config/logger";
 import {
 	getCachedGameDetails,
 	getCachedGamesDetails,
-	getCachedMostPlayedGames,
+	getCachedMostPlayedGamesIds,
 	getCachedSearchResults,
-	saveGameDetailsCache,
-	saveMostPlayedGamesCache,
-	saveSearchResultsCache,
+	cacheGameDetails,
+	cacheMostPlayedGamesIds,
+	cacheSearchResults,
 } from "../models/steam-cache.model";
 import {
 	getMostPlayedSteamDeckGameIds,
 	getSteamGameDestails,
+	mapGamesToSearchItems,
 	searchSteamGames,
 } from "../services/steam/steam";
 import type { SteamSearch } from "../services/steam/steam.types";
@@ -35,7 +36,7 @@ export const searchSteamGamesCtrl = async (
 		const data = await searchSteamGames(term, limit);
 
 		// Save to cache
-		await saveSearchResultsCache(term, limit, data);
+		await cacheSearchResults(term, limit, data);
 		logger.info(`Cached search results for term: ${term}, limit: ${limit}`);
 
 		res.json(data);
@@ -69,29 +70,39 @@ export const getSteamGameDetailsCtrl = async (
 };
 
 export const getMostPlayedSteamDeckGamesCtrl = async (
-	_req: Request,
+	req: Request,
 	res: Response,
 ): Promise<void> => {
 	try {
-		const LIMIT = 32;
+		const page = Number(req.query.page);
+		const pageSize = Number(req.query.pageSize);
+
+		// Calculate offset based on page number
+		const offset = (page - 1) * pageSize;
+		const limit = offset + pageSize;
 
 		// Check cache first
-		const cachedIds = await getCachedMostPlayedGames();
-		if (cachedIds) {
-			const games = await getManySteamGamesDetails(cachedIds.slice(0, LIMIT));
-			res.json(games);
-			return;
+		const ids = await getCachedMostPlayedGamesIds() ?? [];
+
+		if (ids.length === 0) {
+			// Fetch from Steam API
+			const fetchedIds = await getMostPlayedSteamDeckGameIds();
+
+			// Save to cache
+			await cacheMostPlayedGamesIds(fetchedIds);
+			logger.info(
+				`Cached most played Steam Deck games: ${fetchedIds.length} games`,
+			);
+
+			ids.push(...fetchedIds);
 		}
 
-		// Fetch from Steam API
-		const ids = await getMostPlayedSteamDeckGameIds();
-
-		// Save to cache
-		await saveMostPlayedGamesCache(ids);
-		logger.info(`Cached most played Steam Deck games: ${ids.length} games`);
-
-		const games = await getManySteamGamesDetails(ids.slice(0, LIMIT));
-		res.json(games);
+		const games = await getManySteamGamesDetails(ids.slice(offset, limit));
+		const results: SteamSearch = {
+			items: mapGamesToSearchItems(games),
+			total: ids.length,
+		};
+		res.json(results);
 	} catch (error) {
 		logger.error("Error fetching most played Steam Deck games:", error);
 		res.status(500).json({ error: "Internal server error" });
@@ -123,7 +134,7 @@ const getManySteamGamesDetails = async (gameIds: number[]) => {
 
 const fetchAndCacheSteamGameDetails = async (gameId: number) => {
 	const data = await getSteamGameDestails(gameId);
-	await saveGameDetailsCache(gameId, data);
+	await cacheGameDetails(gameId, data);
 	logger.info(`Cached game details for game ID: ${gameId}`);
 	return data;
 };
@@ -137,15 +148,7 @@ export const getManySteamGamesDetailsCtrl = async (
 		const gameIds = req.query.ids as any[];
 		const games = await getManySteamGamesDetails(gameIds);
 		const results: SteamSearch = {
-			items: games.map((game) => ({
-				...game,
-				id: game.steam_appid,
-				price: { currency: "USD", initial: 0, final: 0 },
-				tiny_image: game.header_image,
-				metascore: "N/A",
-				streamingvideo: false,
-				controller_support: game.controller_support || "unknown",
-			})),
+			items: mapGamesToSearchItems(games),
 			total: games.length,
 		};
 		res.json(results);
