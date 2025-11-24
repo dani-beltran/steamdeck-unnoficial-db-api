@@ -14,7 +14,7 @@ import {
 	getSteamGameDestails,
 	searchSteamGames,
 } from "../services/steam/steam";
-import type { SteamSearch } from "../services/steam/steam.types";
+import type { SteamApp, SteamSearch } from "../services/steam/steam.types";
 
 export const searchSteamGamesCtrl = async (
 	req: Request,
@@ -85,18 +85,7 @@ export const getMostPlayedSteamDeckGamesCtrl = async (
 		if (cachedIds) {
 			const games = await getManySteamGamesDetails(cachedIds.slice(offset, limit));
 			const results: SteamSearch = {
-				items: games.map((game) => ({
-					...game,
-					id: game.steam_appid,
-					type: game.type,
-					name: game.name,
-					price: game.price_overview || { currency: "USD", initial: 0, final: 0 },
-					tiny_image: game.header_image,
-					metascore: game.metacritic?.score.toString() || "N/A",
-					platforms: game.platforms,
-					streamingvideo: false,
-					controller_support: game.controller_support || "unknown",
-				})),
+				items: mapGamesToSearchItems(games),
 				total: cachedIds.length,
 			};
 			res.json(results);
@@ -112,18 +101,7 @@ export const getMostPlayedSteamDeckGamesCtrl = async (
 
 		const games = await getManySteamGamesDetails(ids.slice(offset, limit));
 		const results: SteamSearch = {
-			items: games.map((game) => ({
-				...game,
-				id: game.steam_appid,
-				type: game.type,
-				name: game.name,
-				price: game.price_overview || { currency: "USD", initial: 0, final: 0 },
-				tiny_image: game.header_image,
-				metascore: game.metacritic?.score.toString() || "N/A",
-				platforms: game.platforms,
-				streamingvideo: false,
-				controller_support: game.controller_support || "unknown",
-			})),
+			items: mapGamesToSearchItems(games),
 			total: ids.length,
 		};
 		res.json(results);
@@ -163,6 +141,21 @@ const fetchAndCacheSteamGameDetails = async (gameId: number) => {
 	return data;
 };
 
+const mapGamesToSearchItems = (games: SteamApp[]): SteamSearch["items"] => {
+	return games.map((game) => ({
+		...game,
+		id: game.steam_appid,
+		type: game.type,
+		name: game.name,
+		price: game.price_overview || { currency: "USD", initial: 0, final: 0 },
+		tiny_image: game.header_image,
+		metascore: game.metacritic?.score.toString() || "N/A",
+		platforms: game.platforms,
+		streamingvideo: false,
+		controller_support: game.controller_support || "unknown",
+	}));
+};
+
 export const getManySteamGamesDetailsCtrl = async (
 	req: Request,
 	res: Response,
@@ -172,15 +165,7 @@ export const getManySteamGamesDetailsCtrl = async (
 		const gameIds = req.query.ids as any[];
 		const games = await getManySteamGamesDetails(gameIds);
 		const results: SteamSearch = {
-			items: games.map((game) => ({
-				...game,
-				id: game.steam_appid,
-				price: { currency: "USD", initial: 0, final: 0 },
-				tiny_image: game.header_image,
-				metascore: "N/A",
-				streamingvideo: false,
-				controller_support: game.controller_support || "unknown",
-			})),
+			items: mapGamesToSearchItems(games),
 			total: games.length,
 		};
 		res.json(results);
