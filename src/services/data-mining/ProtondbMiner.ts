@@ -1,4 +1,4 @@
-import { type ScrapeStructuredResult, type SectionData, WebScraper } from "@danilidonbeltran/webscrapper";
+import { type ScrapeStructuredResult, WebScraper } from "@danilidonbeltran/webscrapper";
 import { STEAMDECK_HARDWARE, STEAMDECK_RATING } from "../../schemas/game.schema";
 import type { GameReportBody } from "../../schemas/game-report.schema";
 import {
@@ -41,7 +41,7 @@ export class ProtondbMiner implements Miner {
 		if (!result.sections) {
 			return { reports: [] };
 		}
-		const [firstSection, ...articles] = result.sections;
+		const [_firstSection, ...articles] = result.sections;
 		const reports: GameReportBody[] = articles.map((section) => {
 			const notes = (section.paragraphs || []).join("\n\n");
 			return {
@@ -64,7 +64,6 @@ export class ProtondbMiner implements Miner {
 			.sort(createDateComparator("posted_at", "desc"));
 		return {
 			reports: meaningfulReports,
-			steamdeck_rating: this.extractSteamdeckRating(firstSection),
 		};
 	}
 
@@ -91,6 +90,38 @@ export class ProtondbMiner implements Miner {
 		}
 	}
 
+	static async getSteamdeckRating(gameId: number): Promise<STEAMDECK_RATING | undefined> {
+		try {
+			const url = `https://www.protondb.com/api/v1/reports/summaries/${gameId}.json`;
+			const response = await fetch(url);
+			if (!response.ok) {
+				return undefined;
+			}
+			const data = await response.json() as { tier?: string };
+			// Map the tier from the API response to STEAMDECK_RATING enum
+			if (data?.tier) {
+				const tier = data.tier.toLowerCase();
+				switch (tier) {
+					case "platinum":
+						return STEAMDECK_RATING.PLATINUM;
+					case "gold":
+						return STEAMDECK_RATING.GOLD;
+					case "native":
+						return STEAMDECK_RATING.NATIVE;
+					case "unsupported":
+						return STEAMDECK_RATING.UNSUPPORTED;
+					case "borked":
+						return STEAMDECK_RATING.BORKED;
+					default:
+						return undefined;
+				}
+			}
+			return undefined;
+		} catch (_error) {
+			return undefined;
+		}
+	}
+
 	private findPostedDate(links: { text: string }[]): Date | null {
 		const dateLink = links.find((link) => link.text.includes("ago"));
 		if (dateLink) {
@@ -105,22 +136,7 @@ export class ProtondbMiner implements Miner {
 		return null;
 	}
 
-	private extractSteamdeckRating(section: SectionData) {
-		switch (section.otherText[0].toLowerCase()) {
-			case "platinum":
-				return STEAMDECK_RATING.PLATINUM;
-			case "gold":
-				return STEAMDECK_RATING.GOLD;
-			case "native":
-				return STEAMDECK_RATING.NATIVE;
-			case "unsupported":
-				return STEAMDECK_RATING.UNSUPPORTED;
-			case "borked":
-				return STEAMDECK_RATING.BORKED;
-			default:
-				return undefined;
-		}
-	}
+
 
 	private findSteamdeckHardware(notes: string) {
 		const lowerNotes = notes.toLowerCase();

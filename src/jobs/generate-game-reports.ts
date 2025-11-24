@@ -7,7 +7,6 @@ import { type Scrape, SCRAPE_SOURCES } from "../schemas/scrape.schema";
 import { ProtondbMiner } from "../services/data-mining/ProtondbMiner";
 import { SharedeckMiner } from "../services/data-mining/SharedeckMiner";
 import { SteamdeckhqMiner } from "../services/data-mining/SteamdeckhqMiner";
-import type { STEAMDECK_RATING } from "../schemas/game.schema";
 import type { GameReportBody } from "../schemas/game-report.schema";
 import { getSteamGameDestails } from "../services/steam/steam";
 import { saveGame } from "../models/game.model";
@@ -60,14 +59,17 @@ async function run() {
 			return;
 		}
 
-        const { reports, steamdeck_rating } = getPolishedData({
+        const { reports } = getPolishedData({
             protondbData,
             steamdeckhqData,
             sharedeckData,
         });
 
-        // Fetch steamdeck_verified from endpoint
-        const steamdeck_verified = await ProtondbMiner.getSteamdeckVerified(gameId);
+        // Fetch steamdeck_verified and steamdeck_rating from endpoints
+        const [steamdeck_verified, steamdeck_rating] = await Promise.all([
+            ProtondbMiner.getSteamdeckVerified(gameId),
+            ProtondbMiner.getSteamdeckRating(gameId),
+        ]);
 
         const steamGame = await getSteamGameDestails(gameId);
         const summary = await generateGamePerformanceSummary(prepareSummaryInput(reports));
@@ -98,14 +100,12 @@ function getPolishedData(params: {
 }) {
     const { protondbData, steamdeckhqData, sharedeckData } = params;
     const reports: GameReportBody[] = [];
-    let steamdeck_rating: STEAMDECK_RATING | undefined;
 
     if (protondbData) {
         const protonMiner = new ProtondbMiner();
         const protonMinerData = protonMiner.polish(
             protondbData.scraped_content,
         );
-        steamdeck_rating = protonMinerData.steamdeck_rating;
         reports.push(...protonMinerData.reports);
     }
 
@@ -127,7 +127,6 @@ function getPolishedData(params: {
 
     return {
         reports,
-        steamdeck_rating,
     };
 }
 
