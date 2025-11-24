@@ -9,7 +9,7 @@ import { SharedeckMiner } from "../services/data-mining/SharedeckMiner";
 import { SteamdeckhqMiner } from "../services/data-mining/SteamdeckhqMiner";
 import type { STEAMDECK_RATING } from "../schemas/game.schema";
 import type { GameReportBody } from "../schemas/game-report.schema";
-import { getSteamGameDestails } from "../services/steam/steam";
+import { getSteamdeckVerified, getSteamGameDestails } from "../services/steam/steam";
 import { saveGame } from "../models/game.model";
 import { replaceGameReportsForGame } from "../models/game-report.model";
 import { CLAUDE_AI_MODEL, CLAUDE_API_KEY } from "../config/env";
@@ -60,19 +60,20 @@ async function run() {
 			return;
 		}
 
-        const { reports, steamdeck_rating, steamdeck_verified } = getPolishedData({
+        const { reports, steamdeck_rating } = getPolishedData({
             protondbData,
             steamdeckhqData,
             sharedeckData,
         });
 
         const steamGame = await getSteamGameDestails(gameId);
+        const steamdeckVerified = await getSteamdeckVerified(gameId);
         const summary = await generateGamePerformanceSummary(prepareSummaryInput(reports));
 
         await saveGame(gameId, {
             steam_app: steamGame,
             steamdeck_rating: steamdeck_rating || undefined,
-            steamdeck_verified: steamdeck_verified ?? undefined,
+            steamdeck_verified: steamdeckVerified ?? undefined,
             game_performance_summary: summary || undefined,
         });
 
@@ -96,7 +97,6 @@ function getPolishedData(params: {
     const { protondbData, steamdeckhqData, sharedeckData } = params;
     const reports: GameReportBody[] = [];
     let steamdeck_rating: STEAMDECK_RATING | undefined;
-    let steamdeck_verified: boolean | undefined;
 
     if (protondbData) {
         const protonMiner = new ProtondbMiner();
@@ -104,7 +104,6 @@ function getPolishedData(params: {
             protondbData.scraped_content,
         );
         steamdeck_rating = protonMinerData.steamdeck_rating;
-        steamdeck_verified = protonMinerData.steamdeck_verified;
         reports.push(...protonMinerData.reports);
     }
 
@@ -127,7 +126,6 @@ function getPolishedData(params: {
     return {
         reports,
         steamdeck_rating,
-        steamdeck_verified,
     };
 }
 

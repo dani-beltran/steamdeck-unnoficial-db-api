@@ -86,3 +86,22 @@ export const mapGamesToSearchItems = (games: SteamApp[]): SteamSearch["items"] =
 		controller_support: game.controller_support || "unknown",
 	}));
 };
+
+export const getSteamdeckVerified = async (gameId: number): Promise<boolean | undefined> => {
+	try {
+		const url = `https://${STEAM_STORE_DOMAIN}/saleaction/ajaxgetdeckappcompatibilityreport?nAppID=${gameId}`;
+		const response = await fetch(url);
+		if (!response.ok) {
+			return undefined;
+		}
+		const data = await response.json() as { results?: { resolved_category?: number } };
+		// Check if the response contains verified status information
+		// The API returns deck compatibility status
+		if (data?.results?.resolved_category !== undefined) {
+			return data.results.resolved_category === 3; // 3 = Verified
+		}
+		return undefined;
+	} catch (_error) {
+		return undefined;
+	}
+}
