@@ -69,16 +69,21 @@ export const getSteamGameDetailsCtrl = async (
 };
 
 export const getMostPlayedSteamDeckGamesCtrl = async (
-	_req: Request,
+	req: Request,
 	res: Response,
 ): Promise<void> => {
 	try {
-		const LIMIT = 32;
+		const page = Number(req.query.page) || 1;
+		const pageSize = Number(req.query.pageSize) || 25;
+
+		// Calculate offset based on page number
+		const offset = (page - 1) * pageSize;
+		const limit = offset + pageSize;
 
 		// Check cache first
 		const cachedIds = await getCachedMostPlayedGames();
 		if (cachedIds) {
-			const games = await getManySteamGamesDetails(cachedIds.slice(0, LIMIT));
+			const games = await getManySteamGamesDetails(cachedIds.slice(offset, limit));
 			res.json(games);
 			return;
 		}
@@ -90,7 +95,7 @@ export const getMostPlayedSteamDeckGamesCtrl = async (
 		await saveMostPlayedGamesCache(ids);
 		logger.info(`Cached most played Steam Deck games: ${ids.length} games`);
 
-		const games = await getManySteamGamesDetails(ids.slice(0, LIMIT));
+		const games = await getManySteamGamesDetails(ids.slice(offset, limit));
 		res.json(games);
 	} catch (error) {
 		logger.error("Error fetching most played Steam Deck games:", error);

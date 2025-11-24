@@ -34,6 +34,12 @@ export const gameIdsQuerySchema = z.object({
 		.transform((val) => val.split(",").map((id) => Number(id))),
 });
 
+// Schema for pagination parameters
+export const paginationQuerySchema = z.object({
+	page: z.coerce.number().int().min(1).optional().default(1),
+	pageSize: z.coerce.number().int().min(1).max(100).optional().default(25),
+});
+
 export const gameSchema = z.object({
 	game_id: gameIdSchema,
 	steam_app: z.custom<SteamApp>().optional(),

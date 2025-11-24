@@ -10,6 +10,7 @@ import { validateParams, validateQuery } from "../middleware/validation";
 import {
 	gameIdParamSchema,
 	gameIdsQuerySchema,
+	paginationQuerySchema,
 	steamSearchTermSchema,
 } from "../schemas/game.schema";
 
@@ -37,6 +38,7 @@ router.get(
 
 router.get(
 	"/steam/most-played-steam-deck-games",
+	validateQuery(paginationQuerySchema),
 	getMostPlayedSteamDeckGamesCtrl,
 );
 
