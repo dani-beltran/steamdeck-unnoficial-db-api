@@ -34,7 +34,7 @@ export const getCachedSearchResults = async (term: string, limit: number) => {
 /**
  * Save search results to cache
  */
-export const saveSearchResultsCache = async (
+export const cacheSearchResults = async (
 	term: string,
 	limit: number,
 	data: SteamSearch,
@@ -89,7 +89,7 @@ export const getCachedGamesDetails = async (gameIds: number[]) => {
 /**
  * Save game details to cache
  */
-export const saveGameDetailsCache = async (gameId: number, data: SteamApp) => {
+export const cacheGameDetails = async (gameId: number, data: SteamApp) => {
 	const db = getDB();
 	const now = new Date();
 	const expires_at = new Date(now.getTime() + CACHE_DURATION_MS);
@@ -112,7 +112,7 @@ export const saveGameDetailsCache = async (gameId: number, data: SteamApp) => {
 /**
  * Get cached Steam Deck most played games
  */
-export const getCachedMostPlayedGames = async () => {
+export const getCachedMostPlayedGamesIds = async () => {
 	const db = getDB();
 	const now = new Date();
 
@@ -128,7 +128,7 @@ export const getCachedMostPlayedGames = async () => {
 /**
  * Save Steam Deck most played games to cache
  */
-export const saveMostPlayedGamesCache = async (gameIds: number[]) => {
+export const cacheMostPlayedGamesIds = async (gameIds: number[]) => {
 	const db = getDB();
 	const now = new Date();
 	const expires_at = new Date(now.getTime() + CACHE_DURATION_MS);

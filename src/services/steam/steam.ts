@@ -1,5 +1,5 @@
 import protobuf from "protobufjs";
-import type { SteamAppDetailsResponse, SteamSearch } from "./steam.types";
+import type { SteamApp, SteamAppDetailsResponse, SteamSearch } from "./steam.types";
 
 const STEAM_STORE_DOMAIN = "store.steampowered.com";
 const STEAM_API_DOMAIN = "api.steampowered.com";
@@ -70,4 +70,19 @@ const extractAppIdsFromProtobufData = (buffer: Uint8Array): number[] => {
 		}
 	}
 	return Array.from(results).map((id) => Number(id));
+};
+
+export const mapGamesToSearchItems = (games: SteamApp[]): SteamSearch["items"] => {
+	return games.map((game) => ({
+		...game,
+		id: game.steam_appid,
+		type: game.type,
+		name: game.name,
+		price: game.price_overview || { currency: "USD", initial: 0, final: 0 },
+		tiny_image: game.header_image,
+		metascore: game.metacritic?.score.toString() || "N/A",
+		platforms: game.platforms,
+		streamingvideo: false,
+		controller_support: game.controller_support || "unknown",
+	}));
 };
