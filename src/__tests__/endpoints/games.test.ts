@@ -16,6 +16,7 @@ import {
 	type Game,
 	STEAMDECK_HARDWARE,
 	STEAMDECK_RATING,
+	STEAMDECK_VERIFIED,
 } from "../../schemas/game.schema";
 import type { GameReport } from "../../schemas/game-report.schema";
 import { SCRAPE_SOURCES } from "../../schemas/scrape.schema";
@@ -58,7 +59,7 @@ describe("GET /games/:id", () => {
 				game_id: 1,
 				game_performance_summary: "Runs smoothly on Steam Deck",
 				steamdeck_rating: STEAMDECK_RATING.GOLD,
-				steamdeck_verified: true,
+				steamdeck_verified: STEAMDECK_VERIFIED.VERIFIED,
 				created_at: new Date(),
 				updated_at: new Date(),
 			};
@@ -100,7 +101,7 @@ describe("GET /games/:id", () => {
 				game_id: 1,
 				game_performance_summary: "Runs smoothly on Steam Deck",
 				steamdeck_rating: "gold",
-				steamdeck_verified: true,
+				steamdeck_verified: "Verified",
 			});
 			expect(response.body.game).toHaveProperty("_id");
 			expect(response.body.game.reports).toBeInstanceOf(Array);
