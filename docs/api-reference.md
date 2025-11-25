@@ -27,7 +27,8 @@ Fetches a game by its ID from the database. If the game is not found, it will be
     "game_name": "Example Game",
     "game_performance_summary": "Runs well on Steam Deck",
     "steamdeck_rating": "gold",
-    "steamdeck_verified": "Verified",
+    "steamdeck_verified": true,
+    "steamdeck_verification_status": "Verified",
     "settings": [],
     "updated_at": "2025-10-20T00:00:00.000Z",
     "created_at": "2025-10-20T00:00:00.000Z"
@@ -35,7 +36,7 @@ Fetches a game by its ID from the database. If the game is not found, it will be
 }
 ```
 
-**Note:** `steamdeck_verified` is an enum with the following possible values:
+**Note:** `steamdeck_verification_status` is an enum with the following possible values:
 - `"Unknown"` - Steam Deck compatibility status is unknown
 - `"Unsupported"` - Game is not supported on Steam Deck
 - `"Playable"` - Game is playable on Steam Deck

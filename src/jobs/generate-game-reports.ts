@@ -8,7 +8,7 @@ import { ProtondbMiner } from "../services/data-mining/ProtondbMiner";
 import { SharedeckMiner } from "../services/data-mining/SharedeckMiner";
 import { SteamdeckhqMiner } from "../services/data-mining/SteamdeckhqMiner";
 import type { GameReportBody } from "../schemas/game-report.schema";
-import { getSteamdeckVerified, getSteamGameDestails } from "../services/steam/steam";
+import { getSteamdeckVerificationStatus, getSteamGameDestails } from "../services/steam/steam";
 import { saveGame } from "../models/game.model";
 import { replaceGameReportsForGame } from "../models/game-report.model";
 import { CLAUDE_AI_MODEL, CLAUDE_API_KEY } from "../config/env";
@@ -67,9 +67,9 @@ async function run() {
             sharedeckData,
         });
 
-        const [ steamGame, steamdeckVerified, steamdeckRating, summary ] = await Promise.all([
+        const [ steamGame, steamdeckVerificationStatus, steamdeckRating, summary ] = await Promise.all([
             getSteamGameDestails(gameId),
-            getSteamdeckVerified(gameId),
+            getSteamdeckVerificationStatus(gameId),
             ProtondbMiner.getSteamdeckRating(gameId),
             generateGamePerformanceSummary(prepareSummaryInput(reports)),
         ]);
@@ -77,7 +77,7 @@ async function run() {
         await saveGame(gameId, {
             steam_app: steamGame,
             steamdeck_rating: steamdeckRating || undefined,
-            steamdeck_verified: steamdeckVerified ?? undefined,
+            steamdeck_verification_status: steamdeckVerificationStatus ?? undefined,
             game_performance_summary: summary || undefined,
         });
 
