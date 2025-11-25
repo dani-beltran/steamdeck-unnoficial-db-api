@@ -11,6 +11,13 @@ export enum STEAMDECK_RATING {
 
 }
 
+export enum STEAMDECK_VERIFICATION_STATUS {
+	UNKNOWN = "Unknown",
+	UNSUPPORTED = "Unsupported",
+	PLAYABLE = "Playable",
+	VERIFIED = "Verified",
+}
+
 export enum STEAMDECK_HARDWARE {
 	OLED = "oled",
 	LCD = "lcd",
@@ -46,6 +53,7 @@ export const gameSchema = z.object({
 	game_performance_summary: z.string().optional().nullable(),
 	steamdeck_rating: z.enum(STEAMDECK_RATING).optional().nullable(),
 	steamdeck_verified: z.boolean().optional().nullable(),
+	steamdeck_verification_status: z.enum(STEAMDECK_VERIFICATION_STATUS).optional().nullable(),
 	rescrape_requested: z.boolean().optional(),
 	regenerate_requested: z.boolean().optional(),
 	generated_at: z.date().optional(),
