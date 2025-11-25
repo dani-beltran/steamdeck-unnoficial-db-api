@@ -368,7 +368,6 @@ describe("SteamdeckhqMiner", () => {
 
 			const polished = miner.polish(result);
 
-			// The regex replaces Unknown but removes trailing 'w', leaving 'Unknon' 
 			expect(polished.reports[0].steamdeck_settings?.tdp_limit).toBe("Unknon");
 		});
 
@@ -389,46 +388,11 @@ describe("SteamdeckhqMiner", () => {
 
 			const polished = miner.polish(result);
 
-			// Only removes first occurrence of 'w' or 'W', not all
 			expect(polished.reports[0].battery_performance).toEqual({
-				consumption: "15 - 20W",
-				temps: "60 - 70C",
+				consumption: "15W - 20W",
+				temps: "60C - 70C",
 				life_span: "2.5 Hours",
 			});
-		});
-
-		it("should strip first w from battery consumption", () => {
-			const result = createScrapedContent({
-				sections: [
-					createSection({ id: "review" }),
-					createSection({
-						id: "recommended",
-						otherText: ["10W - 15W"],
-					}),
-				],
-			});
-
-			const polished = miner.polish(result);
-
-			// Only removes first occurrence of 'w' or 'W'
-			expect(polished.reports[0].battery_performance?.consumption).toBe("10 - 15W");
-		});
-
-		it("should strip first c from battery temps", () => {
-			const result = createScrapedContent({
-				sections: [
-					createSection({ id: "review" }),
-					createSection({
-						id: "recommended",
-						otherText: ["", "55C - 65C"],
-					}),
-				],
-			});
-
-			const polished = miner.polish(result);
-
-			// Only removes first occurrence of 'c' or 'C'
-			expect(polished.reports[0].battery_performance?.temps).toBe("55 - 65C");
 		});
 
 		it("should handle missing recommended section", () => {
@@ -546,8 +510,8 @@ describe("SteamdeckhqMiner", () => {
 				proton_version: "Proton 8.0",
 			});
 			expect(report.battery_performance).toEqual({
-				consumption: "15 - 18W",
-				temps: "55 - 62C",
+				consumption: "15W - 18W",
+				temps: "55C - 62C",
 				life_span: "3 Hours",
 			});
 			expect(report.posted_at).toBeInstanceOf(Date);
