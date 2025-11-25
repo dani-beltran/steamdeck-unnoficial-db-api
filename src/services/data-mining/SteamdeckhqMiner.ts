@@ -112,8 +112,8 @@ export class SteamdeckhqMiner implements Miner {
 			text.match(/\d+\sHours/i),
 		);
 		return {
-			consumption: batteryConsumption ? batteryConsumption.trim().replace(/w/i, "") : undefined,
-			temps: temps ? temps.trim().replace(/c/i, "") : undefined,
+			consumption: batteryConsumption ? batteryConsumption.trim() : undefined,
+			temps: temps ? temps.trim() : undefined,
 			life_span: lifeSpan ? lifeSpan.trim() : undefined,
 		};
 	}
