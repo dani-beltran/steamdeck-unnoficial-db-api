@@ -33,6 +33,12 @@ vi.mock("../../config/database", () => ({
 	connectDB: vi.fn(),
 }));
 
+// Mock steam-cache.model to prevent getCachedGameDetails from using a different DB connection
+vi.mock("../../services/steam/steam", () => ({
+	getSteamGameDestails: vi.fn()
+}));
+
+
 describe("GET /games/:id", () => {
 	beforeAll(async () => {
 		await connectTestDB();
@@ -241,9 +247,9 @@ describe("GET /games/:id", () => {
 				.expect(200);
 
 			// Assert
-			expect(response.body).toEqual({
-				status: "queued",
-				game: null,
+			expect(response.body.status).toBe("queued");
+			expect(response.body.game).toMatchObject({
+				game_id: 999,
 			});
 		});
 

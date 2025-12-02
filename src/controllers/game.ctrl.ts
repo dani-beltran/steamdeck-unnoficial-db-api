@@ -18,6 +18,8 @@ import { gameIdParamSchema } from "../schemas/game.schema";
 import z from "zod";
 import { saveGameSummaryVoteSchema } from "../schemas/game-summary-vote.schema";
 import { voteGamePerformanceSummary } from "../models/game-summary-vote.mode";
+import { getCachedGameDetails } from "../models/steam-cache.model";
+import { fetchAndCacheSteamGameDetails } from "./steam-game.ctrl";
 
 export const getGameByIdCtrl = async (
 	req: Request,
@@ -29,7 +31,12 @@ export const getGameByIdCtrl = async (
 
 		if (!game) {
 			await setGameInQueue({ game_id: id, rescrape: true, regenerate: true });
-			res.json({ status: "queued", game: null });
+			const cachedGame = await getCachedGameDetails(id);
+			const steamApp = cachedGame ? cachedGame : await  fetchAndCacheSteamGameDetails(id);
+			res.json({ status: "queued", game: {
+				game_id: id,
+				steam_app: steamApp
+			} });
 			return;
 		}
 

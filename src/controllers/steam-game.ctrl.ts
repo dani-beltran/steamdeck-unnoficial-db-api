@@ -132,7 +132,7 @@ const getManySteamGamesDetails = async (gameIds: number[]) => {
 		.filter((game) => game !== undefined);
 };
 
-const fetchAndCacheSteamGameDetails = async (gameId: number) => {
+export const fetchAndCacheSteamGameDetails = async (gameId: number) => {
 	const data = await getSteamGameDestails(gameId);
 	await cacheGameDetails(gameId, data);
 	logger.info(`Cached game details for game ID: ${gameId}`);

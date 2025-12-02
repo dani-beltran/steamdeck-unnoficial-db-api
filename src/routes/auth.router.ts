@@ -1,10 +1,8 @@
 import dotenv from "dotenv";
 import { type Request, type Response, Router } from "express";
-import session from "express-session";
 import passport from "passport";
 import { Strategy as SteamStrategy } from "passport-steam";
 import {
-	SESSION_SECRET,
 	STEAM_API_KEY,
 	STEAM_REALM,
 	WEB_HOST,
