@@ -28,11 +28,11 @@ export const getGameByIdCtrl = async (
 	try {
 		const id = Number(req.params.id);
 		const game = await fetchGameById(id);
+		const cachedGame = await getCachedGameDetails(id);
+		const steamApp = cachedGame ? cachedGame : await  fetchAndCacheSteamGameDetails(id);
 
 		if (!game) {
 			await setGameInQueue({ game_id: id, rescrape: true, regenerate: true });
-			const cachedGame = await getCachedGameDetails(id);
-			const steamApp = cachedGame ? cachedGame : await  fetchAndCacheSteamGameDetails(id);
 			res.json({ status: "queued", game: {
 				game_id: id,
 				steam_app: steamApp
@@ -43,7 +43,7 @@ export const getGameByIdCtrl = async (
 		// Fetch game reports separately
 		const reports = await fetchGameReportsByGameId(id);
 
-		res.json({ status: "ready", game: { ...game, reports } });
+		res.json({ status: "ready", game: { ...game, reports, steam_app: steamApp } });
 	} catch (error) {
 		logger.error("Error fetching game:", error);
 		res.status(500).json({ error: "Internal server error" });

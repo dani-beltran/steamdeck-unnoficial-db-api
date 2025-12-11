@@ -68,15 +68,13 @@ async function run() {
             sharedeckData,
         });
 
-        const [ steamGame, steamdeckVerificationStatus, steamdeckRating, summary ] = await Promise.all([
-            getSteamGameDestails(gameId),
+        const [ steamdeckVerificationStatus, steamdeckRating, summary ] = await Promise.all([
             getSteamdeckVerificationStatus(gameId),
             ProtondbMiner.getSteamdeckRating(gameId),
             generateGamePerformanceSummary(prepareSummaryInput(reports)),
         ]);
 
         await saveGame(gameId, {
-            steam_app: steamGame,
             steamdeck_rating: steamdeckRating || undefined,
             steamdeck_verified: steamdeckVerificationStatus === STEAMDECK_VERIFICATION_STATUS.VERIFIED,
             steamdeck_verification_status: steamdeckVerificationStatus ?? undefined,
