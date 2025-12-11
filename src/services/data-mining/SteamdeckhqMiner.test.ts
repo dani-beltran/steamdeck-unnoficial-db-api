@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { SteamdeckhqMiner } from "./SteamdeckhqMiner";
-import { SCRAPE_SOURCES } from "../../schemas/scrape.schema";
 import type { ScrapedContent } from "../../schemas/scrape.schema";
+import { SCRAPE_SOURCES } from "../../schemas/scrape.schema";
 import * as steamService from "../../services/steam/steam";
 import type { SteamApp } from "../../services/steam/steam.types";
+import { SteamdeckhqMiner } from "./SteamdeckhqMiner";
 
 // Mock the steam service
 vi.mock("../../services/steam/steam", () => ({
@@ -24,7 +24,9 @@ const createSection = (overrides: Record<string, unknown> = {}) => ({
 });
 
 // Helper to create scraped content
-const createScrapedContent = (overrides: Partial<ScrapedContent> = {}): ScrapedContent => ({
+const createScrapedContent = (
+	overrides: Partial<ScrapedContent> = {},
+): ScrapedContent => ({
 	title: "SteamDeckHQ",
 	url: "https://steamdeckhq.com/game-reviews/test-game/",
 	...overrides,
@@ -67,7 +69,9 @@ describe("SteamdeckhqMiner", () => {
 
 			const url = await miner.getUrl(1091500);
 
-			expect(url).toBe("https://steamdeckhq.com/game-reviews/games-title-the-adventure/");
+			expect(url).toBe(
+				"https://steamdeckhq.com/game-reviews/games-title-the-adventure/",
+			);
 		});
 
 		it("should handle game names with multiple spaces", async () => {
@@ -119,7 +123,9 @@ describe("SteamdeckhqMiner", () => {
 
 			const polished = miner.polish(result);
 
-			expect(polished.reports[0].notes).toBe("First paragraph\n\nSecond paragraph");
+			expect(polished.reports[0].notes).toBe(
+				"First paragraph\n\nSecond paragraph",
+			);
 		});
 
 		it("should set source as STEAMDECKHQ", () => {
@@ -140,7 +146,9 @@ describe("SteamdeckhqMiner", () => {
 
 			const polished = miner.polish(result);
 
-			expect(polished.reports[0].url).toBe("https://steamdeckhq.com/game-reviews/test-game/");
+			expect(polished.reports[0].url).toBe(
+				"https://steamdeckhq.com/game-reviews/test-game/",
+			);
 		});
 
 		it("should parse posted date from entry-time section", () => {
@@ -177,9 +185,14 @@ describe("SteamdeckhqMiner", () => {
 					createSection({
 						id: "review",
 						links: [
-							{ href: "https://steamdeckhq.com/author/john/", text: "John Doe" },
+							{
+								href: "https://steamdeckhq.com/author/john/",
+								text: "John Doe",
+							},
 						],
-						images: [{ src: "https://example.com/avatar.jpg", alt: "", title: "" }],
+						images: [
+							{ src: "https://example.com/avatar.jpg", alt: "", title: "" },
+						],
 					}),
 				],
 			});
@@ -187,8 +200,12 @@ describe("SteamdeckhqMiner", () => {
 			const polished = miner.polish(result);
 
 			expect(polished.reports[0].reporter.username).toBe("John Doe");
-			expect(polished.reports[0].reporter.user_profile_url).toBe("https://steamdeckhq.com/author/john/");
-			expect(polished.reports[0].reporter.user_profile_avatar_url).toBe("https://example.com/avatar.jpg");
+			expect(polished.reports[0].reporter.user_profile_url).toBe(
+				"https://steamdeckhq.com/author/john/",
+			);
+			expect(polished.reports[0].reporter.user_profile_avatar_url).toBe(
+				"https://example.com/avatar.jpg",
+			);
 		});
 
 		it("should use default reporter when author link is missing", () => {
@@ -199,7 +216,9 @@ describe("SteamdeckhqMiner", () => {
 			const polished = miner.polish(result);
 
 			expect(polished.reports[0].reporter.username).toBe("Steam Deck HQ");
-			expect(polished.reports[0].reporter.user_profile_url).toBe("https://steamdeckhq.com/");
+			expect(polished.reports[0].reporter.user_profile_url).toBe(
+				"https://steamdeckhq.com/",
+			);
 		});
 
 		it("should use last image as author avatar", () => {
@@ -218,7 +237,9 @@ describe("SteamdeckhqMiner", () => {
 
 			const polished = miner.polish(result);
 
-			expect(polished.reports[0].reporter.user_profile_avatar_url).toBe("https://example.com/avatar.jpg");
+			expect(polished.reports[0].reporter.user_profile_avatar_url).toBe(
+				"https://example.com/avatar.jpg",
+			);
 		});
 
 		it("should extract game settings from recommended section", () => {
@@ -250,10 +271,7 @@ describe("SteamdeckhqMiner", () => {
 					createSection({ id: "review" }),
 					createSection({
 						id: "recommended",
-						paragraphs: [
-							"Proton 8.0",
-							"Setting1: Value1",
-						],
+						paragraphs: ["Proton 8.0", "Setting1: Value1"],
 					}),
 				],
 			});
@@ -273,19 +291,19 @@ describe("SteamdeckhqMiner", () => {
 						id: "recommended",
 						paragraphs: ["Proton 8.0"],
 						otherText: [
-							"60fps",    // 0: frame_rate_cap
+							"60fps", // 0: frame_rate_cap
 							"",
 							"",
-							"90Hz",     // 3: screen_refresh_rate
+							"90Hz", // 3: screen_refresh_rate
 							"",
 							"",
 							"",
 							"",
-							"15W",      // 8: tdp_limit
+							"15W", // 8: tdp_limit
 							"",
-							"Linear",   // 10: scaling_filter
+							"Linear", // 10: scaling_filter
 							"",
-							"1600MHz",  // 12: gpu_clock_speed
+							"1600MHz", // 12: gpu_clock_speed
 						],
 					}),
 				],
@@ -334,7 +352,9 @@ describe("SteamdeckhqMiner", () => {
 
 			const polished = miner.polish(result);
 
-			expect(polished.reports[0].steamdeck_settings?.screen_refresh_rate).toBe("60");
+			expect(polished.reports[0].steamdeck_settings?.screen_refresh_rate).toBe(
+				"60",
+			);
 		});
 
 		it("should replace N/A with empty string in tdp_limit", () => {
@@ -377,11 +397,7 @@ describe("SteamdeckhqMiner", () => {
 					createSection({ id: "review" }),
 					createSection({
 						id: "recommended",
-						otherText: [
-							"15W - 20W",
-							"60C - 70C",
-							"2.5 Hours",
-						],
+						otherText: ["15W - 20W", "60C - 70C", "2.5 Hours"],
 					}),
 				],
 			});
@@ -438,8 +454,12 @@ describe("SteamdeckhqMiner", () => {
 
 			const polished = miner.polish(result);
 
-			expect(polished.reports[0].steamdeck_settings?.frame_rate_cap).toBeUndefined();
-			expect(polished.reports[0].battery_performance?.consumption).toBeUndefined();
+			expect(
+				polished.reports[0].steamdeck_settings?.frame_rate_cap,
+			).toBeUndefined();
+			expect(
+				polished.reports[0].battery_performance?.consumption,
+			).toBeUndefined();
 		});
 
 		it("should handle complete example with all sections", () => {
@@ -451,9 +471,14 @@ describe("SteamdeckhqMiner", () => {
 						title: "Excellent Performance",
 						paragraphs: ["Game runs great on Steam Deck", "Highly recommended"],
 						links: [
-							{ href: "https://steamdeckhq.com/author/reviewer/", text: "Reviewer" },
+							{
+								href: "https://steamdeckhq.com/author/reviewer/",
+								text: "Reviewer",
+							},
 						],
-						images: [{ src: "https://example.com/avatar.jpg", alt: "", title: "" }],
+						images: [
+							{ src: "https://example.com/avatar.jpg", alt: "", title: "" },
+						],
 					}),
 					createSection({
 						id: "recommended",
@@ -493,9 +518,13 @@ describe("SteamdeckhqMiner", () => {
 			expect(polished.reports).toHaveLength(1);
 			const report = polished.reports[0];
 			expect(report.title).toBe("Excellent Performance");
-			expect(report.notes).toBe("Game runs great on Steam Deck\n\nHighly recommended");
+			expect(report.notes).toBe(
+				"Game runs great on Steam Deck\n\nHighly recommended",
+			);
 			expect(report.source).toBe(SCRAPE_SOURCES.STEAMDECKHQ);
-			expect(report.url).toBe("https://steamdeckhq.com/game-reviews/cyberpunk-2077/");
+			expect(report.url).toBe(
+				"https://steamdeckhq.com/game-reviews/cyberpunk-2077/",
+			);
 			expect(report.reporter.username).toBe("Reviewer");
 			expect(report.game_settings).toEqual({
 				Graphics: "Medium",

@@ -1,5 +1,11 @@
-import { type ScrapeStructuredResult, WebScraper } from "@danilidonbeltran/webscrapper";
-import { STEAMDECK_HARDWARE, STEAMDECK_RATING } from "../../schemas/game.schema";
+import {
+	type ScrapeStructuredResult,
+	WebScraper,
+} from "@danilidonbeltran/webscrapper";
+import {
+	STEAMDECK_HARDWARE,
+	STEAMDECK_RATING,
+} from "../../schemas/game.schema";
 import type { GameReportBody } from "../../schemas/game-report.schema";
 import {
 	SCRAPE_SOURCES,
@@ -11,7 +17,7 @@ import type { Miner } from "./Miner";
 
 export class ProtondbMiner implements Miner {
 	private scraper: WebScraper;
-	
+
 	constructor() {
 		this.scraper = new WebScraper({
 			sectionSelectors: [
@@ -59,7 +65,9 @@ export class ProtondbMiner implements Miner {
 		});
 		const meaningfulReports = reports.filter((p) => p.notes.trim() !== "");
 		return {
-			reports: meaningfulReports.sort(createDateComparator("posted_at", "desc"))
+			reports: meaningfulReports.sort(
+				createDateComparator("posted_at", "desc"),
+			),
 		};
 	}
 
@@ -67,14 +75,16 @@ export class ProtondbMiner implements Miner {
 		this.scraper.close();
 	}
 
-	static async getSteamdeckRating(gameId: number): Promise<STEAMDECK_RATING | undefined> {
+	static async getSteamdeckRating(
+		gameId: number,
+	): Promise<STEAMDECK_RATING | undefined> {
 		try {
 			const url = `https://www.protondb.com/api/v1/reports/summaries/${gameId}.json`;
 			const response = await fetch(url);
 			if (!response.ok) {
 				return undefined;
 			}
-			const data = await response.json() as { tier?: string };
+			const data = (await response.json()) as { tier?: string };
 			// Map the tier from the API response to STEAMDECK_RATING enum
 			if (data?.tier) {
 				const tier = data.tier.toLowerCase();
@@ -138,6 +148,6 @@ export class ProtondbMiner implements Miner {
 			frame_rate_cap: frameRate || undefined,
 			tdp_limit: tdp || undefined,
 			screen_refresh_rate: refreshRate || undefined,
-		}
+		};
 	}
 }

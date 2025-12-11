@@ -1,19 +1,23 @@
 import dotenv from "dotenv";
 import { connectDB } from "../config/database";
+import { CLAUDE_AI_MODEL, CLAUDE_API_KEY } from "../config/env";
 import logger from "../config/logger";
-import { getGameToGenerateFromQueue, removeGameFromQueue, setGameInQueue } from "../models/game-queue.model";
+import { saveGame } from "../models/game.model";
+import {
+	getGameToGenerateFromQueue,
+	removeGameFromQueue,
+	setGameInQueue,
+} from "../models/game-queue.model";
+import { replaceGameReportsForGame } from "../models/game-report.model";
 import { getLastScrapedData } from "../models/scrape.model";
-import { type Scrape, SCRAPE_SOURCES } from "../schemas/scrape.schema";
+import { STEAMDECK_VERIFICATION_STATUS } from "../schemas/game.schema";
+import type { GameReportBody } from "../schemas/game-report.schema";
+import { SCRAPE_SOURCES, type Scrape } from "../schemas/scrape.schema";
+import { ClaudeService } from "../services/claude";
 import { ProtondbMiner } from "../services/data-mining/ProtondbMiner";
 import { SharedeckMiner } from "../services/data-mining/SharedeckMiner";
 import { SteamdeckhqMiner } from "../services/data-mining/SteamdeckhqMiner";
-import type { GameReportBody } from "../schemas/game-report.schema";
-import { getSteamdeckVerificationStatus, getSteamGameDestails } from "../services/steam/steam";
-import { STEAMDECK_VERIFICATION_STATUS } from "../schemas/game.schema";
-import { saveGame } from "../models/game.model";
-import { replaceGameReportsForGame } from "../models/game-report.model";
-import { CLAUDE_AI_MODEL, CLAUDE_API_KEY } from "../config/env";
-import { ClaudeService } from "../services/claude";
+import { getSteamdeckVerificationStatus } from "../services/steam/steam";
 
 dotenv.config();
 
@@ -38,10 +42,10 @@ async function run() {
 			return;
 		}
 
-        const gameId = gameInQueue.game_id;
+		const gameId = gameInQueue.game_id;
 		logger.info(`Generating game entry for game ${gameId}...`);
 
-        await removeGameFromQueue(gameId);
+		await removeGameFromQueue(gameId);
 
 		// Fetch the latest scraped data for the game from all sources
 		const [protondbData, steamdeckhqData, sharedeckData] = await Promise.all([
@@ -54,35 +58,37 @@ async function run() {
 			logger.warn(
 				`No scraped data found for game ${gameId}. Cannot generate game reports.`,
 			);
-            await setGameInQueue({
-                game_id: gameId,
-                regenerate: true,
-                regenerate_failed: true,
-            });
+			await setGameInQueue({
+				game_id: gameId,
+				regenerate: true,
+				regenerate_failed: true,
+			});
 			return;
 		}
 
-        const { reports } = getPolishedData({
-            protondbData,
-            steamdeckhqData,
-            sharedeckData,
-        });
+		const { reports } = getPolishedData({
+			protondbData,
+			steamdeckhqData,
+			sharedeckData,
+		});
 
-        const [ steamdeckVerificationStatus, steamdeckRating, summary ] = await Promise.all([
-            getSteamdeckVerificationStatus(gameId),
-            ProtondbMiner.getSteamdeckRating(gameId),
-            generateGamePerformanceSummary(prepareSummaryInput(reports)),
-        ]);
+		const [steamdeckVerificationStatus, steamdeckRating, summary] =
+			await Promise.all([
+				getSteamdeckVerificationStatus(gameId),
+				ProtondbMiner.getSteamdeckRating(gameId),
+				generateGamePerformanceSummary(prepareSummaryInput(reports)),
+			]);
 
-        await saveGame(gameId, {
-            steamdeck_rating: steamdeckRating || undefined,
-            steamdeck_verified: steamdeckVerificationStatus === STEAMDECK_VERIFICATION_STATUS.VERIFIED,
-            steamdeck_verification_status: steamdeckVerificationStatus ?? undefined,
-            game_performance_summary: summary || undefined,
-        });
+		await saveGame(gameId, {
+			steamdeck_rating: steamdeckRating || undefined,
+			steamdeck_verified:
+				steamdeckVerificationStatus === STEAMDECK_VERIFICATION_STATUS.VERIFIED,
+			steamdeck_verification_status: steamdeckVerificationStatus ?? undefined,
+			game_performance_summary: summary || undefined,
+		});
 
-        await replaceGameReportsForGame(gameId, reports);
-    } catch (error) {
+		await replaceGameReportsForGame(gameId, reports);
+	} catch (error) {
 		logger.error("Error in job generate-game:", error);
 	} finally {
 		logger.info(
@@ -93,57 +99,61 @@ async function run() {
 }
 
 function getPolishedData(params: {
-    protondbData: Scrape | null;
-    steamdeckhqData: Scrape | null;
-    sharedeckData: Scrape | null;
+	protondbData: Scrape | null;
+	steamdeckhqData: Scrape | null;
+	sharedeckData: Scrape | null;
 }) {
-    const { protondbData, steamdeckhqData, sharedeckData } = params;
-    const reports: GameReportBody[] = [];
+	const { protondbData, steamdeckhqData, sharedeckData } = params;
+	const reports: GameReportBody[] = [];
 
-    if (protondbData) {
-        const protonMiner = new ProtondbMiner();
-        const protonMinerData = protonMiner.polish(
-            protondbData.scraped_content,
-        );
-        reports.push(...protonMinerData.reports);
-    }
+	if (protondbData) {
+		const protonMiner = new ProtondbMiner();
+		const protonMinerData = protonMiner.polish(protondbData.scraped_content);
+		reports.push(...protonMinerData.reports);
+	}
 
-    if (steamdeckhqData) {
-        const steamdeckhqMiner = new SteamdeckhqMiner();
-        const steamdeckhqMinerData = steamdeckhqMiner.polish(
-            steamdeckhqData.scraped_content,
-        );
-        reports.push(...steamdeckhqMinerData.reports);
-    }
+	if (steamdeckhqData) {
+		const steamdeckhqMiner = new SteamdeckhqMiner();
+		const steamdeckhqMinerData = steamdeckhqMiner.polish(
+			steamdeckhqData.scraped_content,
+		);
+		reports.push(...steamdeckhqMinerData.reports);
+	}
 
-    if (sharedeckData) {
-        const sharedeckMiner = new SharedeckMiner();
-        const sharedeckMinerData = sharedeckMiner.polish(
-            sharedeckData.scraped_content,
-        );
-        reports.push(...sharedeckMinerData.reports);
-    }
+	if (sharedeckData) {
+		const sharedeckMiner = new SharedeckMiner();
+		const sharedeckMinerData = sharedeckMiner.polish(
+			sharedeckData.scraped_content,
+		);
+		reports.push(...sharedeckMinerData.reports);
+	}
 
-    return {
-        reports
-    };
+	return {
+		reports,
+	};
 }
 
 function prepareSummaryInput(reports: GameReportBody[]) {
-    const filteredReports = reports.filter(report => {
-        return report.notes && 
-        report.notes.trim().length > 0 && 
-        // We remove reports from SteamdeckHQ for now, they are very long and detailed and skew the summary
-        report.source !== SCRAPE_SOURCES.STEAMDECKHQ 
-    }).sort((a, b) => {
-        const aTime = a.posted_at ? a.posted_at.getTime() : 0;
-        const bTime = b.posted_at ? b.posted_at.getTime() : 0;
-        return bTime - aTime;
-    });
-    const notes = filteredReports.map((report, index) => {
-        return `Report ${index + 1}: \n${report.notes}`;
-    }).join("\n\n");
-    return notes;
+	const filteredReports = reports
+		.filter((report) => {
+			return (
+				report.notes &&
+				report.notes.trim().length > 0 &&
+				// We remove reports from SteamdeckHQ for now, they are very long and detailed and skew the summary
+				report.source !== SCRAPE_SOURCES.STEAMDECKHQ
+			);
+		})
+		.sort((a, b) => {
+			const aTime = a.posted_at ? a.posted_at.getTime() : 0;
+			const bTime = b.posted_at ? b.posted_at.getTime() : 0;
+			return bTime - aTime;
+		});
+	const notes = filteredReports
+		.map((report, index) => {
+			return `Report ${index + 1}: \n${report.notes}`;
+		})
+		.join("\n\n");
+	return notes;
 }
 
 async function generateGamePerformanceSummary(raw?: string) {
@@ -167,13 +177,13 @@ Summary:`;
 }
 
 async function askClaudeAI(msg: string) {
-    if (!msg) return "";
-    const claudeService = new ClaudeService({
-        apiKey: CLAUDE_API_KEY,
-    });
-    return claudeService.prompt(msg, {
-        model: CLAUDE_AI_MODEL,
-        maxTokens: 300,
-        temperature: 0.3,
-    });
+	if (!msg) return "";
+	const claudeService = new ClaudeService({
+		apiKey: CLAUDE_API_KEY,
+	});
+	return claudeService.prompt(msg, {
+		model: CLAUDE_AI_MODEL,
+		maxTokens: 300,
+		temperature: 0.3,
+	});
 }

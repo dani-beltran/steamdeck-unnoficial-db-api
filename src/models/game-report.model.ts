@@ -1,40 +1,46 @@
 import { getDB } from "../config/database";
-import { gameReportBodySchema, type GameReport, type GameReportBody } from "../schemas/game-report.schema";
+import {
+	type GameReport,
+	type GameReportBody,
+	gameReportBodySchema,
+} from "../schemas/game-report.schema";
 
 const collection = "game-reports";
 
 /**
  * Fetch all reports for a specific game
  */
-export const fetchGameReportsByGameId = async (gameId: number): Promise<GameReport[]> => {
-    const db = getDB();
-    return db
-        .collection<GameReport>(collection)
-        .find({ game_id: gameId })
-        .toArray();
+export const fetchGameReportsByGameId = async (
+	gameId: number,
+): Promise<GameReport[]> => {
+	const db = getDB();
+	return db
+		.collection<GameReport>(collection)
+		.find({ game_id: gameId })
+		.toArray();
 };
 
 /**
  * Insert multiple game reports entries for a game
  */
 export const insertGameReportsBulk = async (
-    gameId: number,
-    reports: GameReportBody[],
+	gameId: number,
+	reports: GameReportBody[],
 ) => {
-    if (reports.length === 0) return;
+	if (reports.length === 0) return;
 
-    const validatedReports = reports.map((report) =>
-        gameReportBodySchema.parse({ ...report }),
-    );
-    const gameReports: GameReport[] = validatedReports.map((report) => ({
-        ...report,
-        game_id: gameId,
-        updated_at: new Date(),
-        created_at: new Date(),
-    }));
+	const validatedReports = reports.map((report) =>
+		gameReportBodySchema.parse({ ...report }),
+	);
+	const gameReports: GameReport[] = validatedReports.map((report) => ({
+		...report,
+		game_id: gameId,
+		updated_at: new Date(),
+		created_at: new Date(),
+	}));
 
-    const db = getDB();
-    return db.collection<GameReport>(collection).insertMany(gameReports);
+	const db = getDB();
+	return db.collection<GameReport>(collection).insertMany(gameReports);
 };
 
 /**
@@ -43,30 +49,29 @@ export const insertGameReportsBulk = async (
  * This prevents data loss when a source fails to provide reports during rescraping.
  */
 export const replaceGameReportsForGame = async (
-    gameId: number,
-    reports: GameReportBody[],
+	gameId: number,
+	reports: GameReportBody[],
 ) => {
-    const db = getDB();
-    const gameReportsCollection = db.collection<GameReport>(collection);
+	const db = getDB();
+	const gameReportsCollection = db.collection<GameReport>(collection);
 
-    const sources = Array.from(new Set(reports.map((r) => r.source)));
-    for (const source of sources) {
-        await gameReportsCollection.deleteMany({ game_id: gameId, source });
-    }
+	const sources = Array.from(new Set(reports.map((r) => r.source)));
+	for (const source of sources) {
+		await gameReportsCollection.deleteMany({ game_id: gameId, source });
+	}
 
-    return insertGameReportsBulk(gameId, reports);
+	return insertGameReportsBulk(gameId, reports);
 };
 
 // Create indexes for the game-reports collection
 export const createGameReportIndexes = async () => {
-    const db = getDB();
+	const db = getDB();
 
-    // Create index on game_id (primary query field)
-    await db.collection<GameReport>(collection).createIndex({ game_id: 1 });
+	// Create index on game_id (primary query field)
+	await db.collection<GameReport>(collection).createIndex({ game_id: 1 });
 
-    // Create compound index for game_id and source to optimize queries filtering by both fields
-    await db
-        .collection<GameReport>(collection)
-        .createIndex({ game_id: 1, source: 1 });
-
+	// Create compound index for game_id and source to optimize queries filtering by both fields
+	await db
+		.collection<GameReport>(collection)
+		.createIndex({ game_id: 1, source: 1 });
 };

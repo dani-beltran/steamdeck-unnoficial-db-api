@@ -39,15 +39,18 @@ export const saveGameSettingsBulk = async (
 		created_at: new Date(),
 	})) as GameSettings[];
 
-	return db.collection<GameSettings>(collection).insertMany(settingsWithTimestamps);
+	return db
+		.collection<GameSettings>(collection)
+		.insertMany(settingsWithTimestamps);
 };
 
 // Delete all settings for a specific game (useful for regeneration)
 export const deleteGameSettings = async (gameId: number) => {
 	const db = getDB();
-	return db.collection<GameSettings>(collection).deleteMany({ game_id: gameId });
+	return db
+		.collection<GameSettings>(collection)
+		.deleteMany({ game_id: gameId });
 };
-
 
 // Create indexes for the game-settings collection
 export const createGameSettingsIndexes = async () => {
@@ -67,7 +70,10 @@ export const createGameSettingsIndexes = async () => {
 		.createIndex({ game_id: 1, steamdeck_hardware: 1 });
 };
 
-export const addVoteToGameSettings = async (gameSettingsId: string, vote: "up" | "down") => {
+export const addVoteToGameSettings = async (
+	gameSettingsId: string,
+	vote: "up" | "down",
+) => {
 	const db = getDB();
 	const updateField = vote === "up" ? "thumbs_up" : "thumbs_down";
 
@@ -84,7 +90,10 @@ export const addVoteToGameSettings = async (gameSettingsId: string, vote: "up" |
 	);
 };
 
-export const removeVoteFromGameSettings = async (gameSettingsId: string, vote: "up" | "down") => {
+export const removeVoteFromGameSettings = async (
+	gameSettingsId: string,
+	vote: "up" | "down",
+) => {
 	const db = getDB();
 	const updateField = vote === "up" ? "thumbs_up" : "thumbs_down";
 

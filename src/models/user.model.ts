@@ -54,7 +54,9 @@ export const setUserVote = async (
 		await db.collection<User>(collection).updateOne(
 			{ steam_user_id: steamUserId },
 			{
-				$push: { votes: { game_settings_id: gameSettingsId, vote_type: voteType } },
+				$push: {
+					votes: { game_settings_id: gameSettingsId, vote_type: voteType },
+				},
 				$set: { updated_at: new Date() },
 			},
 		);
@@ -66,7 +68,10 @@ export const setUserVote = async (
 	};
 };
 
-export const removeUserVote = async (steamUserId: number, gameSettingsId: string) => {
+export const removeUserVote = async (
+	steamUserId: number,
+	gameSettingsId: string,
+) => {
 	const db = getDB();
 	const updateResult = await db.collection<User>(collection).updateOne(
 		{ steam_user_id: steamUserId },

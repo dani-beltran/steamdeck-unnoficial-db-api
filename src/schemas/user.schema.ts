@@ -1,6 +1,6 @@
 import z from "zod";
-import { VOTE_TYPE } from "./vote.schema";
 import { idSchema } from "./id.schema";
+import { VOTE_TYPE } from "./vote.schema";
 
 export const userSchema = z.object({
 	steam_user_id: z.number().int().nonnegative(),

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { STEAMDECK_HARDWARE } from "./game.schema";
-import { SCRAPE_SOURCES } from "./scrape.schema";
 import { gameIdSchema } from "./game-id.schema";
+import { SCRAPE_SOURCES } from "./scrape.schema";
 
 export const reporterSchema = z.object({
 	username: z.string(),
@@ -49,10 +49,9 @@ export const gameReportSchema = z.object({
 export const gameReportBodySchema = gameReportSchema.omit({
 	game_id: true,
 	created_at: true,
-	updated_at: true
+	updated_at: true,
 });
 
 export type Reporter = z.infer<typeof reporterSchema>;
 export type GameReport = z.infer<typeof gameReportSchema>;
 export type GameReportBody = z.input<typeof gameReportBodySchema>;
-

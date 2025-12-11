@@ -1,15 +1,18 @@
 import { type SectionData, WebScraper } from "@danilidonbeltran/webscrapper";
-import type { GameReportBody, Reporter } from "../../schemas/game-report.schema";
+import type {
+	GameReportBody,
+	Reporter,
+} from "../../schemas/game-report.schema";
 import {
 	SCRAPE_SOURCES,
 	type ScrapedContent,
 } from "../../schemas/scrape.schema";
-import type { Miner } from "./Miner";
 import { getSteamGameDestails } from "../steam/steam";
+import type { Miner } from "./Miner";
 
 export class SteamdeckhqMiner implements Miner {
 	private scraper: WebScraper;
-	
+
 	constructor() {
 		this.scraper = new WebScraper({
 			sectionSelectors: ["#review", "#recommended", "#entry-time"],
@@ -28,13 +31,13 @@ export class SteamdeckhqMiner implements Miner {
 		const url = `https://steamdeckhq.com/game-reviews/${gameName}/`;
 		return url;
 	}
-	
+
 	async mine(gameId: number) {
 		const url = await this.getUrl(gameId);
 		const result = await this.scraper.scrapeTextStructured(url);
 		return result;
 	}
-	
+
 	close() {
 		this.scraper.close();
 	}
@@ -62,7 +65,9 @@ export class SteamdeckhqMiner implements Miner {
 			steamdeck_settings: this.extractSteamdeckSettings(recommendedSection),
 			battery_performance: this.extractBatteryPerformance(recommendedSection),
 			notes: (reviewSection?.paragraphs || []).join("\n\n"),
-			posted_at: rawPostedAt ? new Date(Date.parse(`${rawPostedAt} UTC`)) : null,
+			posted_at: rawPostedAt
+				? new Date(Date.parse(`${rawPostedAt} UTC`))
+				: null,
 		};
 
 		return { reports: [report] };
@@ -131,13 +136,16 @@ export class SteamdeckhqMiner implements Miner {
 		return {
 			frame_rate_cap: items[0]?.trim()?.replace(/fps/i, ""),
 			screen_refresh_rate: items[3]?.trim()?.replace(/hz/i, ""),
-			tdp_limit: items[8]?.trim()?.replace(/w/i, "")?.replace(/^(N\/A|Unknown|NONE|NO)$/i, ""),
+			tdp_limit: items[8]
+				?.trim()
+				?.replace(/w/i, "")
+				?.replace(/^(N\/A|Unknown|NONE|NO)$/i, ""),
 			scaling_filter: items[10]?.trim(),
 			gpu_clock_speed: items[12]?.trim(),
 			proton_version: recommendedSection.paragraphs[0]?.trim(),
 		};
 	}
-	
+
 	private findAuthorship(section?: SectionData): Reporter {
 		const authorIndex = section?.links?.findIndex((link) =>
 			link.href.includes("/author/"),
@@ -150,7 +158,8 @@ export class SteamdeckhqMiner implements Miner {
 		return {
 			username: link?.text || "Steam Deck HQ",
 			user_profile_url: link?.href || "https://steamdeckhq.com/",
-			user_profile_avatar_url: lastImageIndex >= 0 ? section?.images[lastImageIndex].src : undefined,
+			user_profile_avatar_url:
+				lastImageIndex >= 0 ? section?.images[lastImageIndex].src : undefined,
 		};
 	}
 }

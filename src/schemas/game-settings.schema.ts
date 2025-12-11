@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { gameIdSchema } from "./game-id.schema";
 import { STEAMDECK_HARDWARE } from "./game.schema";
+import { gameIdSchema } from "./game-id.schema";
 import { SCRAPE_SOURCES } from "./scrape.schema";
 import { VOTE_TYPE } from "./vote.schema";
 
@@ -24,10 +24,10 @@ export const gameSettingsSchema = z.object({
 		.record(z.string(), z.string().optional().nullable())
 		.optional()
 		.nullable(),
-    source: z.enum(SCRAPE_SOURCES),
+	source: z.enum(SCRAPE_SOURCES),
 	posted_at: z.date().nullable(),
-    thumbs_up: z.number().int().nonnegative().optional().default(0),
-    thumbs_down: z.number().int().nonnegative().optional().default(0),
+	thumbs_up: z.number().int().nonnegative().optional().default(0),
+	thumbs_down: z.number().int().nonnegative().optional().default(0),
 	updated_at: z.date(),
 	created_at: z.date(),
 });

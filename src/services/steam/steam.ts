@@ -1,6 +1,10 @@
 import protobuf from "protobufjs";
-import type { SteamApp, SteamAppDetailsResponse, SteamSearch } from "./steam.types";
 import { STEAMDECK_VERIFICATION_STATUS } from "../../schemas/game.schema";
+import type {
+	SteamApp,
+	SteamAppDetailsResponse,
+	SteamSearch,
+} from "./steam.types";
 
 const STEAM_STORE_DOMAIN = "store.steampowered.com";
 const STEAM_API_DOMAIN = "api.steampowered.com";
@@ -73,7 +77,9 @@ const extractAppIdsFromProtobufData = (buffer: Uint8Array): number[] => {
 	return Array.from(results).map((id) => Number(id));
 };
 
-export const mapGamesToSearchItems = (games: SteamApp[]): SteamSearch["items"] => {
+export const mapGamesToSearchItems = (
+	games: SteamApp[],
+): SteamSearch["items"] => {
 	return games.map((game) => ({
 		...game,
 		id: game.steam_appid,
@@ -88,14 +94,18 @@ export const mapGamesToSearchItems = (games: SteamApp[]): SteamSearch["items"] =
 	}));
 };
 
-export const getSteamdeckVerificationStatus = async (gameId: number): Promise<STEAMDECK_VERIFICATION_STATUS | undefined> => {
+export const getSteamdeckVerificationStatus = async (
+	gameId: number,
+): Promise<STEAMDECK_VERIFICATION_STATUS | undefined> => {
 	try {
 		const url = `https://${STEAM_STORE_DOMAIN}/saleaction/ajaxgetdeckappcompatibilityreport?nAppID=${gameId}`;
 		const response = await fetch(url);
 		if (!response.ok) {
 			return undefined;
 		}
-		const data = await response.json() as { results?: { resolved_category?: number } };
+		const data = (await response.json()) as {
+			results?: { resolved_category?: number };
+		};
 		// Check if the response contains verified status information
 		// The API returns deck compatibility status
 		// resolved_category values: 0 = Unknown, 1 = Unsupported, 2 = Playable, 3 = Verified
@@ -117,4 +127,4 @@ export const getSteamdeckVerificationStatus = async (gameId: number): Promise<ST
 	} catch (_error) {
 		return undefined;
 	}
-}
+};

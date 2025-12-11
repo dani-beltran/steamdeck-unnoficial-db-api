@@ -1,9 +1,9 @@
 import cors from "cors";
 import express, { type Express } from "express";
+import session from "express-session";
 import { SESSION_SECRET, WEB_HOST } from "./config/env";
 import authRoutes from "./routes/auth.router";
 import gameRoutes from "./routes/game.router";
-import session from "express-session";
 
 const app: Express = express();
 

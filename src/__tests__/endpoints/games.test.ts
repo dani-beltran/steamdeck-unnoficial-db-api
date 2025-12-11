@@ -35,9 +35,8 @@ vi.mock("../../config/database", () => ({
 
 // Mock steam-cache.model to prevent getCachedGameDetails from using a different DB connection
 vi.mock("../../services/steam/steam", () => ({
-	getSteamGameDestails: vi.fn()
+	getSteamGameDestails: vi.fn(),
 }));
-
 
 describe("GET /games/:id", () => {
 	beforeAll(async () => {
