@@ -31,7 +31,7 @@ export const WEB_HOST = process.env.WEB_HOST || "http://localhost:3001";
 
 export const MONGODB_URI =
 	process.env.MONGODB_URI || "mongodb://localhost:27017/steamdeckdb";
-export const DB_NAME = process.env.DB_NAME || "steamdeckdb";
+export const MONGODB_DATABASE = process.env.MONGODB_DATABASE || "steamdeckdb";
 
 export const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
 export const CLAUDE_AI_MODEL =

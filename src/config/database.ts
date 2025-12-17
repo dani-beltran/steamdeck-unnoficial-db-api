@@ -1,5 +1,5 @@
 import { type Db, MongoClient } from "mongodb";
-import { DB_NAME, MONGODB_URI } from "./env";
+import { MONGODB_DATABASE, MONGODB_URI } from "./env";
 import logger from "./logger";
 
 let db: Db | null = null;
@@ -7,7 +7,7 @@ let db: Db | null = null;
 export const connectDB = async (): Promise<Db> => {
 	try {
 		const uri = MONGODB_URI || "mongodb://localhost:27017";
-		const dbName = DB_NAME || "decku";
+		const dbName = MONGODB_DATABASE || "decku";
 
 		logger.info("Connecting to MongoDB...");
 

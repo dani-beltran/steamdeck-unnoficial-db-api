@@ -32,7 +32,7 @@ cp .env.example .env
 ```
 PORT=3000
 MONGODB_URI=mongodb://localhost:27017/decku
-DB_NAME=decku
+MONGODB_DATABASE=decku
 ```
 
 ## Development
