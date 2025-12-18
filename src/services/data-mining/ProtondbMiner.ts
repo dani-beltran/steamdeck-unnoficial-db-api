@@ -127,19 +127,46 @@ export class ProtondbMiner implements Miner {
 
 	private findSteamdeckConfig(notes: string) {
 		const lowerNotes = notes.toLowerCase();
-		const tdpRegex = /~?(\d+)\s*(w|watts)|(watts|tdp).*?~?(\d+)/i;
-		const frameRateRegex = /~?(\d+)\s*fps|fps.*?~?(\d+)/i;
-		const refreshScreenRegex = /~?(\d+)\s*hz|hz.*?~?(\d+)/i;
-		const frameRateMatch = lowerNotes.match(frameRateRegex);
-		const frameRate = frameRateMatch?.[1] || frameRateMatch?.[2];
-		const tdpMatch = lowerNotes.match(tdpRegex);
-		const tdp = tdpMatch?.[1] || tdpMatch?.[4];
-		const refreshRateMatch = lowerNotes.match(refreshScreenRegex);
-		const refreshRate = refreshRateMatch?.[1] || refreshRateMatch?.[2];
 		return {
-			frame_rate_cap: frameRate || undefined,
-			tdp_limit: tdp || undefined,
-			screen_refresh_rate: refreshRate || undefined,
+			frame_rate_cap: this.findFrameRate(lowerNotes),
+			tdp_limit: this.findTdpLimit(lowerNotes),
+			screen_refresh_rate: this.findRefreshRate(lowerNotes),
 		};
+	}
+
+	private findFrameRate(notes: string): string | undefined {
+		// Skip frame rate extraction if explicitly disabled
+		const fpsOffRegex = /fps\s*(limit)?\s*(off|disabled)/i;
+		if (fpsOffRegex.test(notes)) {
+			return undefined;
+		}
+		// FPS regex: matches "X fps" or "fps (to/at/:) X"
+		const frameRateRegex = /~?(\d+)\s*fps|fps\s*(?:limit\s*)?(?:to|of|at|:|\s)\s*~?(\d+)/i;
+		const match = notes.match(frameRateRegex);
+		return match?.[1] || match?.[2] || undefined;
+	}
+
+	private findRefreshRate(notes: string): string | undefined {
+		// Skip refresh rate extraction if explicitly disabled
+		const hzOffRegex = /hz\s*(off|disabled)/i;
+		if (hzOffRegex.test(notes)) {
+			return undefined;
+		}
+		// Hz regex: matches "X hz" or "hz (to/at/:) X"
+		const refreshScreenRegex = /~?(\d+)\s*hz|hz\s*(?:limit\s*)?(?:to|of|at|:|\s)\s*~?(\d+)/i;
+		const match = notes.match(refreshScreenRegex);
+		return match?.[1] || match?.[2] || undefined;
+	}
+
+	private findTdpLimit(notes: string): string | undefined {
+		// Skip TDP extraction if explicitly disabled
+		const tdpOffRegex = /tdp\s*(limit)?\s*(off|disabled)/i;
+		if (tdpOffRegex.test(notes)) {
+			return undefined;
+		}
+		// TDP regex: matches "X w/watts" or "tdp/watts (to/at/:) X"
+		const tdpRegex = /~?(\d+)\s*(w(?!\s+tdp))|(watts|tdp)\s*(?:limit\s*)?(?:of|to|at|:|\s)\s*~?(\d+)/i;
+		const tdpMatch = notes.match(tdpRegex);
+		return tdpMatch?.[1] || tdpMatch?.[4] || undefined;
 	}
 }
