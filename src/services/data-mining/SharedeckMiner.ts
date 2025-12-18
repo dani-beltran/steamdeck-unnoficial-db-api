@@ -24,7 +24,7 @@ export class SharedeckMiner implements Miner {
 		return `https://sharedeck.games/apps/${gameId}`;
 	}
 
-	async mine(gameId: number) {
+	async scrape(gameId: number) {
 		const url = this.getUrl(gameId);
 		const result = await this.scraper.scrapeTextStructured(url);
 		return result;

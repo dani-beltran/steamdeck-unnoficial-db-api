@@ -88,7 +88,7 @@ async function runScrapeProcess(
 	try {
 		const url = await miner.getUrl(gameId);
 		logger.info(`Scraping url ${url}`);
-		const { timestamp: _, ...result } = await miner.mine(gameId);
+		const { timestamp: _, ...result } = await miner.scrape(gameId);
 		await saveScrapeData({
 			game_id: gameId,
 			source,

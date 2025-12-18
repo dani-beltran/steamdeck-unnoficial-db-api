@@ -32,7 +32,7 @@ export class SteamdeckhqMiner implements Miner {
 		return url;
 	}
 
-	async mine(gameId: number) {
+	async scrape(gameId: number) {
 		const url = await this.getUrl(gameId);
 		const result = await this.scraper.scrapeTextStructured(url);
 		return result;

@@ -35,7 +35,7 @@ export class ProtondbMiner implements Miner {
 		return `https://www.protondb.com/app/${gameId}?device=steamDeck`;
 	}
 
-	async mine(gameId: number): Promise<ScrapeStructuredResult> {
+	async scrape(gameId: number): Promise<ScrapeStructuredResult> {
 		const url = this.getUrl(gameId);
 		const result = await this.scraper.scrapeTextStructured(url);
 		return result;
