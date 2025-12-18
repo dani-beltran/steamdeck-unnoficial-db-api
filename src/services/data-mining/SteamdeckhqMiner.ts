@@ -134,14 +134,11 @@ export class SteamdeckhqMiner implements Miner {
 		const items = recommendedSection.otherText;
 
 		return {
-			frame_rate_cap: items[0]?.trim()?.replace(/fps/i, ""),
-			screen_refresh_rate: items[3]?.trim()?.replace(/hz/i, ""),
-			tdp_limit: items[8]
-				?.trim()
-				?.replace(/w/i, "")
-				?.replace(/^(N\/A|Unknown|NONE|NO)$/i, ""),
+			frame_rate_cap: items[0]?.match(/(\d+)\s*fps/i)?.[1] || '',
+			screen_refresh_rate: items[3]?.match(/(\d+)\s*hz/i)?.[1] || '',
+			tdp_limit: items[8]?.match(/(\d+)\s*w/i)?.[1] || '',
 			scaling_filter: items[10]?.trim(),
-			gpu_clock_speed: items[12]?.trim(),
+			gpu_clock_speed: items[12]?.match(/(\d+)/i)?.[1] || '',
 			proton_version: recommendedSection.paragraphs[0]?.trim(),
 		};
 	}
