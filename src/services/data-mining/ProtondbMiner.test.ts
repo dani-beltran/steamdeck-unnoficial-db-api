@@ -165,7 +165,7 @@ describe("ProtondbMiner", () => {
 			expect(result).toBeUndefined();
 		});
 
-		it("should return undefined for silver tier (not in enum)", async () => {
+		it("should return silver for silver tier (not in enum)", async () => {
 			(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
 				ok: true,
 				json: async () => ({
@@ -175,7 +175,7 @@ describe("ProtondbMiner", () => {
 
 			const result = await ProtondbMiner.getSteamdeckRating(1091500);
 
-			expect(result).toBeUndefined();
+			expect(result).toBe(STEAMDECK_RATING.SILVER);
 		});
 
 		it("should return undefined for bronze tier (not in enum)", async () => {

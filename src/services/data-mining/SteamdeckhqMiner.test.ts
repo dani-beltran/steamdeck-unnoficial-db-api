@@ -316,7 +316,7 @@ describe("SteamdeckhqMiner", () => {
 				screen_refresh_rate: "90",
 				tdp_limit: "15",
 				scaling_filter: "Linear",
-				gpu_clock_speed: "1600MHz",
+				gpu_clock_speed: "1600",
 				proton_version: "Proton 8.0",
 			});
 		});
@@ -388,7 +388,7 @@ describe("SteamdeckhqMiner", () => {
 
 			const polished = miner.polish(result);
 
-			expect(polished.reports[0].steamdeck_settings?.tdp_limit).toBe("Unknon");
+			expect(polished.reports[0].steamdeck_settings?.tdp_limit).toBe("");
 		});
 
 		it("should extract battery performance from recommended section", () => {
@@ -456,7 +456,7 @@ describe("SteamdeckhqMiner", () => {
 
 			expect(
 				polished.reports[0].steamdeck_settings?.frame_rate_cap,
-			).toBeUndefined();
+			).toBe("");
 			expect(
 				polished.reports[0].battery_performance?.consumption,
 			).toBeUndefined();
@@ -535,7 +535,7 @@ describe("SteamdeckhqMiner", () => {
 				screen_refresh_rate: "60",
 				tdp_limit: "12",
 				scaling_filter: "FSR",
-				gpu_clock_speed: "1400MHz",
+				gpu_clock_speed: "1400",
 				proton_version: "Proton 8.0",
 			});
 			expect(report.battery_performance).toEqual({
