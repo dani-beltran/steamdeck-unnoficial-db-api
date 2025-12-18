@@ -2,6 +2,7 @@ import { z } from "zod";
 import { gameIdSchema } from "./game-id.schema";
 
 export enum STEAMDECK_RATING {
+	SILVER = "silver",
 	GOLD = "gold",
 	PLATINUM = "platinum",
 	NATIVE = "native",

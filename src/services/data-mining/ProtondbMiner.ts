@@ -87,21 +87,13 @@ export class ProtondbMiner implements Miner {
 			const data = (await response.json()) as { tier?: string };
 			// Map the tier from the API response to STEAMDECK_RATING enum
 			if (data?.tier) {
-				const tier = data.tier.toLowerCase();
-				switch (tier) {
-					case "platinum":
-						return STEAMDECK_RATING.PLATINUM;
-					case "gold":
-						return STEAMDECK_RATING.GOLD;
-					case "native":
-						return STEAMDECK_RATING.NATIVE;
-					case "unsupported":
-						return STEAMDECK_RATING.UNSUPPORTED;
-					case "borked":
-						return STEAMDECK_RATING.BORKED;
-					default:
-						return undefined;
+				const tier = data.tier.toUpperCase();
+				if (!Object.keys(STEAMDECK_RATING).includes(tier)) {
+					console.warn(`Unknown Steam Deck rating tier '${tier}' for game ID ${gameId}`);
+					return undefined;
 				}
+				const rating = STEAMDECK_RATING[tier as keyof typeof STEAMDECK_RATING];
+				return rating;
 			}
 			return undefined;
 		} catch (_error) {
